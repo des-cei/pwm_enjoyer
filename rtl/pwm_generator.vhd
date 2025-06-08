@@ -61,6 +61,7 @@ architecture beh of pwm_generator is
     -- Señales
     -------------------------------------------------
     -- Entradas
+    signal r_set    : std_logic;
     signal tabla    : t_tabla;
 
     -- Salidas
@@ -86,6 +87,20 @@ begin
     -------------------------------------------------
     -- Procesos
     -------------------------------------------------
+    -- Registro de la señal de set
+    P_SET : process (CLK_I, RST_I)
+    begin
+        if (RST_I = '1') then
+            r_set <= '0';
+        elsif rising_edge(CLK_I) then
+            if (SET_I = '1') then
+                r_set <= '1';
+            elsif ((r_set = '1') and (r_cnt_estados = (G_PARAMS_N - 1)) and (r_cnt_bits = (tabla(G_PARAMS_N - 1).ancho - 1))) then
+                r_set <= '0';
+            end if;
+        end if;
+    end process P_SET;
+
     -- Set de los parámetros de entrada
     P_REG_IN : process (CLK_I, RST_I)
     begin
@@ -95,7 +110,7 @@ begin
             tabla(2) <= (ancho => G_PARAM_MAX_N, salida => C_VAL_PARAM_3);
             tabla(3) <= (ancho => G_PARAM_MAX_N, salida => C_VAL_PARAM_4);
         elsif rising_edge(CLK_I) then
-            if (SET_I = '1') then
+            if ((r_set = '1') and (r_cnt_estados = (G_PARAMS_N - 1)) and (r_cnt_bits = (tabla(G_PARAMS_N - 1).ancho - 1))) then
                 tabla(0) <= (ancho => to_integer(unsigned(PARAM_1_I)), salida => C_VAL_PARAM_1);
                 tabla(1) <= (ancho => to_integer(unsigned(PARAM_2_I)), salida => C_VAL_PARAM_2);
                 tabla(2) <= (ancho => to_integer(unsigned(PARAM_3_I)), salida => C_VAL_PARAM_3);
@@ -110,14 +125,10 @@ begin
         if (RST_I = '1') then
             r_cnt_bits <= 0;
         elsif rising_edge(CLK_I) then
-            if (SET_I = '1') then
-                r_cnt_bits <= 0;
+            if (r_cnt_bits < (tabla(r_cnt_estados).ancho - 1)) then
+                r_cnt_bits <= r_cnt_bits + 1;
             else
-                if (r_cnt_bits < (tabla(r_cnt_estados).ancho - 1)) then
-                    r_cnt_bits <= r_cnt_bits + 1;
-                else
-                    r_cnt_bits <= 0;
-                end if;
+                r_cnt_bits <= 0;
             end if;
         end if;
     end process P_CNT_BITS;
@@ -128,9 +139,7 @@ begin
         if (RST_I = '1') then
             r_cnt_estados <= 0;
         elsif rising_edge(CLK_I) then
-            if (SET_I = '1') then
-                r_cnt_estados <= 0;
-            elsif (r_cnt_bits = (tabla(r_cnt_estados).ancho - 1)) then
+            if (r_cnt_bits = (tabla(r_cnt_estados).ancho - 1)) then
                 if (r_cnt_estados < (G_PARAMS_N - 1)) then
                     r_cnt_estados <= r_cnt_estados + 1;
                 else

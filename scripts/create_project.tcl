@@ -20,6 +20,10 @@ add_files -fileset sources_1 ../rtl/my_pkg.vhd
 add_files -fileset sim_1 ../tb/counter_tb.vhd
 add_files -fileset sim_1 ../tb/pwm_generator_tb.vhd
 
+## Top module files
+set_property top pwm_generator [get_filesets sources_1]
+set_property top pwm_generator_tb [get_filesets sim_1]
+
 ## Add constraint files here (only for FPGA implementation)
 #add_files -fileset constrs_1 ../constr/pynq.xdc
 

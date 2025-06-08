@@ -93,24 +93,30 @@ architecture beh of pwm_generator_tb is
         rst <= '0';
     end procedure reset;
 
-    -- Set
-    procedure set (
+    -- Presentar tabla
+    procedure prep_tabla (
         constant p1 : in integer;
         constant p2 : in integer;
         constant p3 : in integer;
         constant p4 : in integer;
-        signal set  : out std_logic;
         signal p_1  : out std_logic_vector;
         signal p_2  : out std_logic_vector;
         signal p_3  : out std_logic_vector;
         signal p_4  : out std_logic_vector
     ) is
     begin
-        set <= '1';
         p_1 <= std_logic_vector(to_unsigned(p1, p_1'length));
         p_2 <= std_logic_vector(to_unsigned(p2, p_2'length));
         p_3 <= std_logic_vector(to_unsigned(p3, p_3'length));
         p_4 <= std_logic_vector(to_unsigned(p4, p_4'length));
+    end procedure prep_tabla;
+
+    -- Set
+    procedure set (
+        signal set  : out std_logic
+    ) is
+    begin
+        set <= '1';
         p_wait(clk_period);
         set <= '0';
     end procedure set;
@@ -170,8 +176,10 @@ begin
         ------------------------------
         -- sim <= "SET 1 ";
         sim <= x"53_45_54_20_31_20";
-        set(4, 2, 7, 3, SET_I, PARAM_1_I, PARAM_2_I, PARAM_3_I, PARAM_4_I);
+        prep_tabla(4, 2, 7, 3, PARAM_1_I, PARAM_2_I, PARAM_3_I, PARAM_4_I);
 
+        p_wait(43*clk_period);
+        set(SET_I);
         p_wait(100*clk_period);
 
         ------------------------------
@@ -179,9 +187,22 @@ begin
         ------------------------------
         -- sim <= "SET 2 ";
         sim <= x"53_45_54_20_32_20";
-        set(5, 3, 10, 1, SET_I, PARAM_1_I, PARAM_2_I, PARAM_3_I, PARAM_4_I);
+        prep_tabla(5, 3, 10, 1, PARAM_1_I, PARAM_2_I, PARAM_3_I, PARAM_4_I);
 
-        p_wait(100*clk_period);
+        p_wait(13*clk_period);
+        set(SET_I);
+        p_wait(143*clk_period);
+
+        ------------------------------
+        -- Set 3
+        ------------------------------
+        -- sim <= "SET 3 ";
+        sim <= x"53_45_54_20_33_20";
+        prep_tabla(2, 2, 7, 5, PARAM_1_I, PARAM_2_I, PARAM_3_I, PARAM_4_I);
+
+        p_wait(79*clk_period);
+        set(SET_I);
+        p_wait(202*clk_period);
 
         ------------------------------
         -- End

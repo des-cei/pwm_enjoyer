@@ -74,32 +74,6 @@ begin
     -------------------------------------------------
     -- Procesos
     -------------------------------------------------
-    -- P_CNT : process (CLK_I, RST_I)
-    -- begin
-    --     if (RST_I = G_RST_POL) then
-    --         r_cnt   <= (others => '0');
-    --         r_pwm   <= PWM_INIT_I;
-    --         CNT_END <= '0';
-    --     elsif rising_edge(CLK_I) then
-    --         CNT_END <= '0';
-    --         if (EN_I = '1') then
-    --             if (r_cnt < (unsigned(CNT_LEN_I) - 1)) then
-    --                 r_cnt <= r_cnt + 1;
-    --                 if (r_cnt = (unsigned(CNT_LEN_I) - 2)) then
-    --                     CNT_END <= '1';
-    --                 end if;
-    --             else
-    --                 r_cnt <= (others => '0');
-    --                 r_pwm <= not r_pwm;
-    --             end if;
-    --         else
-    --             r_cnt   <= (others => '0');
-    --         end if;
-    --     end if;
-    -- end process P_CNT;
-
-
-
     P_CNT : process (CLK_I, RST_I)
     begin
         if (RST_I = G_RST_POL) then
@@ -119,6 +93,5 @@ begin
             end if;
         end if;
     end process P_CNT;
-
 
 end architecture beh;

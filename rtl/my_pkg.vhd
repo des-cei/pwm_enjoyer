@@ -1,6 +1,6 @@
 -- Módulo: my_pkg
 -- Autor: Alejandro Martínez Salgado
--- Fecha de creación: 02.06.2025
+-- Fecha de creación: 23.06.2025
 
 -----------------------------------------------------------
 -- Librerías
@@ -21,12 +21,14 @@ package my_pkg is
     -- Relojes
     constant G_SYS_CLK_HZ   : integer := 50_000_000;    -- Reloj de referencia
 
-    -- Número de parámetros
-    constant G_PARAMS_N     : integer := 4; -- Número de parámetros o estados
+    -- Nivel activo del reset
+    constant G_RST_POL      : std_logic := '1';
 
     -- Tamaño de los parámetros
-    constant G_PARAM_MAX_N  : integer := 10;                                        -- Número máximo de bits de cualquiera de los parámetros
-    constant G_PARAM_MAX_L2 : integer := integer(ceil(log2(real(G_PARAM_MAX_N))));  -- Tamaño del vector de cualquiera de los parámetros
+    constant G_STATE_MAX_N      : integer := 10;                                            -- Número máximo de pulsos que dura un estado
+    constant G_STATE_MAX_L2     : integer := integer(ceil(log2(real(G_STATE_MAX_N))));      -- Tamaño del vector de número de pulsos de un estado
+    constant G_MEM_SIZE_MAX_N   : integer := 8;                                             -- Número máximo de estados, tamaño máximo de la memoria
+    constant G_MEM_SIZE_MAX_L2  : integer := integer(ceil(log2(real(G_MEM_SIZE_MAX_N))));   -- Tamaño del vector del número de estados
 
     -------------------------------------------------
     -- Tipos
@@ -36,11 +38,7 @@ package my_pkg is
     -------------------------------------------------
     -- Constantes
     -------------------------------------------------
-    -- Valores de los parámetros
-    constant C_VAL_PARAM_1  : std_logic := '1';
-    constant C_VAL_PARAM_2  : std_logic := '0';
-    constant C_VAL_PARAM_3  : std_logic := '1';
-    constant C_VAL_PARAM_4  : std_logic := '0';
+    -- n/a
 
     -------------------------------------------------
     -- Funciones y procedimientos

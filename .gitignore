@@ -3,3 +3,7 @@ build/
 *.jou
 *.str
 *.bkp
+ghdl/
+notas.txt
+versiones/
+pruebas/

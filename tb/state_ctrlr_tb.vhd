@@ -31,13 +31,19 @@ architecture beh of state_ctrlr_tb is
             G_RST_POL   : std_logic := '1'
         );
         port (
-            CLK_I       : in std_logic;
-            RST_I       : in std_logic;                                             -- Reset asíncrono
-            EN_I        : in std_logic;                                             -- Señal de habilitación
-            N_ADDR_I    : in std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0);    -- Número de estados del PWM
-            CYC_SYNC_I  : in std_logic;                                             -- Señal de sincronismo de todos los PWM
-            CNT_END_I   : in std_logic;                                             -- Fin de estado  
-            RD_ADDR_O   : out std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0)    -- Dirección de memoria (estado) a ejecutar
+            CLK_I           : in std_logic;
+            RST_I           : in std_logic;                                             -- Reset asíncrono
+            EN_I            : in std_logic;                                             -- Señal de habilitación
+            N_ADDR_I        : in std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0);    -- Número de estados del PWM
+            N_TOT_CYC_I     : in std_logic_vector((G_PERIOD_MAX_L2 - 1) downto 0);      -- Número total de ciclos que dura la configuración
+            UPD_MEM_I       : in std_logic;                                             -- Señal de actualización de memoria
+            CNT_END_I       : in std_logic;                                             -- Fin de estado
+            NEXT_CONFIG_I   : in mem;                                                   -- Siguiente configuración
+            RD_ADDR_O       : out std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0);   -- Dirección de memoria (estado) a leer
+            EN_CNT_O        : out std_logic;                                            -- Habiltador del contador
+            SWITCH_MEM_O    : out std_logic;                                            -- Cambio de memoria
+            LAST_CYC_O      : out std_logic;                                            -- Inidicador de último ciclo
+            EN_WR_CONFIG_O  : out std_logic                                             -- Bloqueo de escritura de configuración
         );
     end component state_ctrlr;
 
@@ -49,13 +55,28 @@ architecture beh of state_ctrlr_tb is
     signal sim          : std_logic_vector(47 downto 0) := (others => '0'); -- 6 caracteres ASCII
 
     -- Port map
-    signal CLK_I       : std_logic;
-    signal RST_I       : std_logic;                                        
-    signal EN_I        : std_logic;                                         
-    signal N_ADDR_I    : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0);
-    signal CYC_SYNC_I  : std_logic;                                         
-    signal CNT_END_I   : std_logic;                                         
-    signal RD_ADDR_O   : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0);
+    signal CLK_I            : std_logic;
+    signal RST_I            : std_logic;                                         
+    signal EN_I             : std_logic;                                         
+    signal N_ADDR_I         : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0);
+    signal N_TOT_CYC_I      : std_logic_vector((G_PERIOD_MAX_L2 - 1) downto 0);
+    signal UPD_MEM_I        : std_logic;
+    signal NEXT_CONFIG_I    : mem;                                         
+    signal CNT_END_I        : std_logic;                                         
+    signal RD_ADDR_O        : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0);
+    signal EN_CNT_O         : std_logic;                                         
+    signal SWITCH_MEM_O     : std_logic;
+    signal LAST_CYC_O       : std_logic;
+    signal EN_WR_CONFIG_O   : std_logic;
+
+    -- Soporte
+    type memory is array (0 to (G_MEM_SIZE_MAX_N - 1)) of integer range 0 to G_STATE_MAX_N;
+    shared variable v_mem       : memory := (others => 0);
+    signal cnt_data_sim         : integer range 0 to G_STATE_MAX_N := 0;
+    signal data_sim             : integer range 0 to G_MEM_SIZE_MAX_N := 0;
+    signal internal_n_addr      : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0) := (others => '0');  
+    signal internal_n_tot_cyc   : std_logic_vector((G_PERIOD_MAX_L2 - 1) downto 0) := (others => '0'); 
+    signal internal_mem         : memory := (others => 0);
 
     -------------------------------------------------
     -- Funciones y procedimientos
@@ -74,33 +95,30 @@ architecture beh of state_ctrlr_tb is
         signal rst      : out std_logic;
         signal en       : out std_logic;
         signal n_addr   : out std_logic_vector;
-        signal c_sync   : out std_logic;
-        signal cnt_end  : out std_logic
+        signal n_tot    : out std_logic_vector;
+        signal upd      : out std_logic;
+        signal config   : out mem
     ) is
     begin
-        rst     <= '1';
+        rst     <= G_RST_POL;
         en      <= '0';
         n_addr  <= (others => '0');
-        c_sync  <= '0';
-        cnt_end <= '0';
+        n_tot   <= (others => '0');
+        upd     <= '0';
+        config  <= (others => (others => '0'));
         p_wait(clk_period);
-        rst     <= '0';
+        rst     <= not G_RST_POL;
     end procedure reset;
 
-    -- Contador de estado
-    procedure cnt_est (
-        variable duracion   : in integer;
-        signal cnt_end      : out std_logic
-    ) is begin
-        if (duracion = 1) then
-            cnt_end <= '1';
-        else
-            p_wait((duracion - 1) * clk_period);
-            cnt_end <= '1';
-        end if;
+    -- Pulso
+    procedure pulso (
+        signal s    : out std_logic
+    ) is
+    begin
+        s   <= '1';
         p_wait(clk_period);
-        cnt_end <= '0';
-    end procedure cnt_est;
+        s   <= '0';
+    end procedure pulso;
 
 begin
 
@@ -112,13 +130,19 @@ begin
             G_RST_POL   => G_RST_POL
         )
         port map (
-            CLK_I       => CLK_I,
-            RST_I       => RST_I,
-            EN_I        => EN_I,
-            N_ADDR_I    => N_ADDR_I,
-            CYC_SYNC_I  => CYC_SYNC_I,
-            CNT_END_I   => CNT_END_I,
-            RD_ADDR_O   => RD_ADDR_O
+            CLK_I           => CLK_I,
+            RST_I           => RST_I,
+            EN_I            => EN_I,
+            N_ADDR_I        => N_ADDR_I,
+            N_TOT_CYC_I     => N_TOT_CYC_I,
+            UPD_MEM_I       => UPD_MEM_I,
+            CNT_END_I       => CNT_END_I,
+            NEXT_CONFIG_I   => NEXT_CONFIG_I,
+            RD_ADDR_O       => RD_ADDR_O,
+            EN_CNT_O        => EN_CNT_O,
+            SWITCH_MEM_O    => SWITCH_MEM_O,
+            LAST_CYC_O      => LAST_CYC_O,
+            EN_WR_CONFIG_O  => EN_WR_CONFIG_O
         );
 
     -------------------------------------------------
@@ -133,14 +157,36 @@ begin
         wait for clk_period/2;
     end process;
 
+    -- Emulador del contador y señal de END
+    P_CNT : process (CLK_I, RST_I)
+    begin
+        if (RST_I = G_RST_POL) then
+            cnt_data_sim     <= 0;
+            data_sim      <= 0;
+        elsif rising_edge(CLK_I) then
+            if (EN_CNT_O = '1') then
+                if (cnt_data_sim < (internal_mem(data_sim) - 1)) then
+                    cnt_data_sim     <= cnt_data_sim + 1;
+                else
+                    cnt_data_sim     <= 0;
+                    if (data_sim < (to_integer(unsigned(internal_n_addr)) - 1)) then
+                        data_sim <= data_sim + 1;
+                    else
+                        data_sim  <= 0;
+                    end if;
+                end if;
+            end if;
+        end if;
+    end process;
+
+    CNT_END_I <= '1' when (EN_CNT_O = '1') and (cnt_data_sim = (internal_mem(data_sim) - 1)) else '0';
+
     -------------------------------------------------
     -- Estímulos
     -------------------------------------------------
     P_STIM : process
-
-        variable v_estado     : integer range 0 to G_MEM_SIZE_MAX_N := 0;
-        variable v_duracion   : integer range 0 to G_STATE_MAX_N    := 0;
-
+        variable v_n_est    : integer := 0;
+        variable v_n_tot    : integer := 0;
     begin
 
         assert FALSE report "Start simulation" severity note;
@@ -148,137 +194,101 @@ begin
         ------------------------------
         -- Init
         ------------------------------
-        sim <= x"49_4E_49_54_20_20";
-        reset(RST_I, EN_I, N_ADDR_I, CYC_SYNC_I, CNT_END_I);
+        sim <= x"49_4E_49_54_20_20";    -- INIT
+        reset(RST_I, EN_I, N_ADDR_I, N_TOT_CYC_I, UPD_MEM_I, NEXT_CONFIG_I);
+        p_wait(10*clk_period);
+
+        EN_I <= '1';
+
+        ------------------------------
+        -- Config 1
+        ------------------------------
+        sim <= x"43_4F_4E_46_20_31";    -- CONF 1
+        
+        v_n_est         := 4;
+        v_n_tot         := 10;
+        v_mem           := (0 => 3, 1 => 1, 2 => 2, 3 => 4, others => 0);
+        N_ADDR_I        <= std_logic_vector(to_unsigned(v_n_est, N_ADDR_I'length));
+        N_TOT_CYC_I     <= std_logic_vector(to_unsigned(v_n_tot, N_TOT_CYC_I'length));
+        for i in 0 to (G_MEM_SIZE_MAX_N - 1) loop
+            NEXT_CONFIG_I(i) <= std_logic_vector(to_unsigned(v_mem(i), NEXT_CONFIG_I(i)'length));
+        end loop;
+
         p_wait(10*clk_period);
 
         ------------------------------
-        -- Test 1
-        --  4 estados: 4-5-2-3
-        --  Ciclo y medio
+        -- Update 1
         ------------------------------
-        sim         <= x"54_45_53_54_20_31";
-        N_ADDR_I    <= std_logic_vector(to_unsigned(4, N_ADDR_I'length));
-        EN_I        <= '1';
+        sim <= x"55_50_44_54_20_31";    -- UPDT 1
+        
+        pulso(UPD_MEM_I);
 
-        -- 1.1
-        v_estado    := 1;
-        v_duracion  := 4;
-        cnt_est(v_duracion, CNT_END_I);
-
-        -- 1.2
-        v_estado    := 2;
-        v_duracion  := 5;
-        cnt_est(v_duracion, CNT_END_I);
-
-        -- 1.3
-        v_estado    := 3;
-        v_duracion  := 2;
-        cnt_est(v_duracion, CNT_END_I);
-
-        -- 1.4
-        v_estado    := 4;
-        v_duracion  := 3;
-        cnt_est(v_duracion, CNT_END_I);
-
-        -- 2.1
-        v_estado    := 1;
-        v_duracion  := 4;
-        cnt_est(v_duracion, CNT_END_I);
-
-        -- 2.2
-        v_estado    := 2;
-        v_duracion  := 5;
-        cnt_est(v_duracion, CNT_END_I);
-
-        -- Desactiva
-        EN_I <= '0';
-
-        -- 2.3
-        v_estado    := 3;
-        v_duracion  := 2;
-        cnt_est(v_duracion, CNT_END_I);
-
-        -- 2.4
-        v_estado    := 4;
-        v_duracion  := 3;
-        cnt_est(v_duracion, CNT_END_I);
-
+        wait until (SWITCH_MEM_O = '1');
+        internal_n_addr     <= N_ADDR_I;
+        internal_n_tot_cyc  <= N_TOT_CYC_I;
+        internal_mem        <= v_mem;
+        
+        p_wait(60*clk_period);
+        
         ------------------------------
-        -- Test 2
-        --  3 estados: 7-1-3
-        --  1 ciclo y medio y entra SYNC
+        -- Config 2
         ------------------------------
-        sim         <= x"54_45_53_54_20_32";
-        N_ADDR_I    <= std_logic_vector(to_unsigned(3, N_ADDR_I'length));
-        EN_I        <= '1';
+        sim <= x"43_4F_4E_46_20_32";    -- CONF 2
+        
+        v_n_est     := 2;
+        v_n_tot     := 7;
+        v_mem       := (0 => 2, 1 => 5, others => 0);
+        N_ADDR_I    <= std_logic_vector(to_unsigned(v_n_est, N_ADDR_I'length));
+        N_TOT_CYC_I <= std_logic_vector(to_unsigned(v_n_tot, N_TOT_CYC_I'length));
+        for i in 0 to (G_MEM_SIZE_MAX_N - 1) loop
+            NEXT_CONFIG_I(i) <= std_logic_vector(to_unsigned(v_mem(i), NEXT_CONFIG_I(i)'length));
+        end loop;
 
-        -- 1.1
-        v_estado    := 1;
-        v_duracion  := 7;
-        cnt_est(v_duracion, CNT_END_I);
-
-        -- 1.2
-        v_estado    := 2;
-        v_duracion  := 1;
-        cnt_est(v_duracion, CNT_END_I);
-
-        -- 1.3
-        v_estado    := 3;
-        v_duracion  := 3;
-        cnt_est(v_duracion, CNT_END_I);
-
-        -- 2.1
-        v_estado    := 1;
-        v_duracion  := 7;
-        cnt_est(v_duracion, CNT_END_I);
-
-        -- 2.2
-        v_estado    := 2;
-        v_duracion  := 1;
-        cnt_est(v_duracion, CNT_END_I);
-
-        -- Actualiza memoria: 2-3-2
-        CYC_SYNC_I <= '1';
-        p_wait(clk_period);
-        CYC_SYNC_I <= '0';
-
-        -- 3.1
-        v_estado    := 1;
-        v_duracion  := 2;
-        cnt_est(v_duracion, CNT_END_I);
-
-        -- 3.2
-        v_estado    := 2;
-        v_duracion  := 3;
-        cnt_est(v_duracion, CNT_END_I);
-
-        -- 3.3
-        v_estado    := 3;
-        v_duracion  := 2;
-        cnt_est(v_duracion, CNT_END_I);
-
-        ------------------------------
-        -- Reset
-        --  4 estados: 4-5-2-3
-        ------------------------------
-        sim         <= x"52_45_53_45_54_20";
-        N_ADDR_I    <= std_logic_vector(to_unsigned(4, N_ADDR_I'length));
-        EN_I        <= '1';
-
-        -- 1.1
-        v_estado    := 1;
-        v_duracion  := 4;
-        cnt_est(v_duracion, CNT_END_I);
-
-        -- 1.2
-        v_estado    := 2;
-        v_duracion  := 5;
-        cnt_est(v_duracion, CNT_END_I);
-
-        -- Reset
-        reset(RST_I, EN_I, N_ADDR_I, CYC_SYNC_I, CNT_END_I);
         p_wait(10*clk_period);
+
+        ------------------------------
+        -- Update 2
+        ------------------------------
+        sim <= x"55_50_44_54_20_32";    -- UPDT 2
+        
+        pulso(UPD_MEM_I);
+
+        wait until (SWITCH_MEM_O = '1');
+        internal_n_addr     <= N_ADDR_I;
+        internal_n_tot_cyc  <= N_TOT_CYC_I;
+        internal_mem        <= v_mem;
+        
+        p_wait(60*clk_period);
+
+        ------------------------------
+        -- Config 3
+        ------------------------------
+        sim <= x"43_4F_4E_46_20_33";    -- CONF 3
+        
+        v_n_est     := 5;
+        v_n_tot     := 9;
+        v_mem       := (0 => 1, 1 => 1, 2 => 5, 3 => 1, 4 => 1, others => 0);
+        N_ADDR_I    <= std_logic_vector(to_unsigned(v_n_est, N_ADDR_I'length));
+        N_TOT_CYC_I <= std_logic_vector(to_unsigned(v_n_tot, N_TOT_CYC_I'length));
+        for i in 0 to (G_MEM_SIZE_MAX_N - 1) loop
+            NEXT_CONFIG_I(i) <= std_logic_vector(to_unsigned(v_mem(i), NEXT_CONFIG_I(i)'length));
+        end loop;
+
+        p_wait(10*clk_period);
+
+        ------------------------------
+        -- Update 3
+        ------------------------------
+        sim <= x"55_50_44_54_20_33";    -- UPDT 3
+        
+        pulso(UPD_MEM_I);
+
+        wait until (SWITCH_MEM_O = '1');
+        internal_n_addr     <= N_ADDR_I;
+        internal_n_tot_cyc  <= N_TOT_CYC_I;
+        internal_mem        <= v_mem;
+        
+        p_wait(60*clk_period);
 
         ------------------------------
         -- End

@@ -25,15 +25,17 @@ package my_pkg is
     constant G_RST_POL      : std_logic := '1';
 
     -- Tamaño de los parámetros
-    constant G_STATE_MAX_N      : integer := 10;                                            -- Número máximo de pulsos que dura un estado
+    constant G_STATE_MAX_N      : integer := 20;                                            -- Número máximo de pulsos que dura un estado
     constant G_STATE_MAX_L2     : integer := integer(ceil(log2(real(G_STATE_MAX_N))));      -- Tamaño del vector de número de pulsos de un estado
     constant G_MEM_SIZE_MAX_N   : integer := 8;                                             -- Número máximo de estados, tamaño máximo de la memoria
     constant G_MEM_SIZE_MAX_L2  : integer := integer(ceil(log2(real(G_MEM_SIZE_MAX_N))));   -- Tamaño del vector del número de estados
+    constant G_PERIOD_MAX_N     : integer := G_STATE_MAX_N*G_MEM_SIZE_MAX_N;                -- Número máximo de periodos de reloj que puede durar una configuración
+    constant G_PERIOD_MAX_L2    : integer := integer(ceil(log2(real(G_PERIOD_MAX_N))));    -- Tamaño del vector del número de periodos
 
     -------------------------------------------------
     -- Tipos
     -------------------------------------------------
-    -- n/a
+    type mem is array (0 to G_MEM_SIZE_MAX_N - 1) of std_logic_vector((G_STATE_MAX_L2 - 1) downto 0);
 
     -------------------------------------------------
     -- Constantes

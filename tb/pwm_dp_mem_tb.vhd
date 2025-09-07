@@ -36,14 +36,19 @@ architecture beh of pwm_dp_mem_tb is
             G_RST_POL   : std_logic := '1'
         );
         port (
-            CLK_I       : in std_logic;     
-            RST_I       : in std_logic;
-            WR_EN_I     : in std_logic;                                 -- Enable de escritura
-            WR_ADDR_I   : in std_logic_vector((G_ADDR_W - 1) downto 0); -- Dirección de escritura
-            WR_DATA_I   : in std_logic_vector((G_DATA_W - 1) downto 0); -- Dato de escritura
-            CYC_SYNC_I  : in std_logic;                                 -- Señal de actualización de memoria
-            RD_ADDR_I   : in std_logic_vector((G_ADDR_W - 1) downto 0); -- Dirección de lectura
-            RD_DATA_O   : out std_logic_vector((G_DATA_W - 1) downto 0) -- Dato de lectura
+            CLK_I           : in std_logic;     
+            RST_I           : in std_logic;
+            EN_WR_CONFIG_I  : in std_logic;                                     -- Bloqueo de escritura de configuración
+            WR_EN_I         : in std_logic;                                     -- Enable de escritura
+            WR_ADDR_I       : in std_logic_vector((G_ADDR_W - 1) downto 0);     -- Dirección de escritura
+            WR_DATA_I       : in std_logic_vector((G_DATA_W - 1) downto 0);     -- Dato de escritura
+            SWITCH_MEM_I    : in std_logic;                                     -- Señal de actualización de memoria
+            LAST_CYC_I      : in std_logic;                                     -- Indicador de último valor del último ciclo
+            N_ADDR_I        : in std_logic_vector((G_ADDR_W - 1) downto 0);     -- Número de estados del PWM
+            RD_ADDR_I       : in std_logic_vector((G_ADDR_W - 1) downto 0);     -- Dirección de lectura
+            RD_DATA_O       : out std_logic_vector((G_DATA_W - 1) downto 0);    -- Dato de lectura
+            RD_DATA_NEXT_O  : out std_logic_vector((G_DATA_W - 1) downto 0);    -- Siguiente dato de lectura
+            NEXT_CONFIG_O   : out mem                                           -- Siguiente configuración
         );
     end component pwm_dp_mem;
 
@@ -55,20 +60,31 @@ architecture beh of pwm_dp_mem_tb is
     signal sim          : std_logic_vector(47 downto 0) := (others => '0'); -- 6 caracteres ASCII
 
     -- Port map
-    signal CLK_I        : std_logic;     
-    signal RST_I        : std_logic;
-    signal WR_EN_I      : std_logic;                                
-    signal WR_ADDR_I    : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0);
-    signal WR_DATA_I    : std_logic_vector((G_STATE_MAX_L2 - 1) downto 0);
-    signal CYC_SYNC_I   : std_logic;                                
-    signal RD_ADDR_I    : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0) := (others => '0');
-    signal RD_DATA_O    : std_logic_vector((G_STATE_MAX_L2 - 1) downto 0);
+    signal CLK_I            : std_logic;     
+    signal RST_I            : std_logic;
+    signal EN_WR_CONFIG_I   : std_logic;                                
+    signal WR_EN_I          : std_logic;                                
+    signal WR_ADDR_I        : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0);
+    signal WR_DATA_I        : std_logic_vector((G_STATE_MAX_L2 - 1) downto 0);
+    signal SWITCH_MEM_I     : std_logic;                                
+    signal LAST_CYC_I       : std_logic;    
+    signal N_ADDR_I         : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0);                            
+    signal RD_ADDR_I        : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0) := (others => '0');
+    signal RD_DATA_O        : std_logic_vector((G_STATE_MAX_L2 - 1) downto 0);
+    signal RD_DATA_NEXT_O   : std_logic_vector((G_STATE_MAX_L2 - 1) downto 0);
+    signal NEXT_CONFIG_O    : mem;
 
     -- Soporte
-    type memory is array (0 to (G_MEM_SIZE_MAX_N - 1)) of integer;
-    signal mem          : memory := (others => 0);
-    signal s_n_est      : integer range 0 to (G_MEM_SIZE_MAX_N - 1) := 0;
-    signal s_wait_cnt   : integer range 0 to G_STATE_MAX_N;
+    type memory is array (0 to (G_MEM_SIZE_MAX_N - 1)) of integer range 0 to G_STATE_MAX_N;
+    signal act_mem              : memory := (others => 0);
+    signal act_mem_d1           : memory := (others => 0);
+    signal next_mem             : memory := (others => 0);
+    constant empty_mem          : memory := (others => 0);
+    shared variable v_load_mem  : std_logic := '0';
+    shared variable v_mem       : memory := (others => 0);
+    shared variable v_n_estados : integer := 0;
+    signal cnt                  : integer range 0 to G_STATE_MAX_N; -- Contador de RD_ADDR_I
+    signal cnt_out              : integer range 0 to G_STATE_MAX_N; -- Contador que debería seguir RD_DATA_O
 
     -------------------------------------------------
     -- Funciones y procedimientos
@@ -82,23 +98,43 @@ architecture beh of pwm_dp_mem_tb is
         wait until rising_edge(CLK_I);
     end procedure p_wait;
 
-    -- Reset
-    procedure reset (
-        signal rst      : out std_logic;
-        signal wr_en    : out std_logic;
-        signal wr_addr  : out std_logic_vector;
-        signal wr_data  : out std_logic_vector;
-        signal cyc_sync : out std_logic
+    -- Write mem
+    procedure write_mem (
+        variable mem    : in memory;
+        variable n_est  : in integer;  
+        signal en       : out std_logic;
+        signal addr     : out std_logic_vector;
+        signal data     : out std_logic_vector
     ) is
     begin
-        rst         <= '1';
-        wr_en       <= '0';
-        wr_addr     <= (others => '0');
-        wr_data     <= (others => '0');
-        cyc_sync    <= '0';
+        en <= '1';
+        for i in 0 to (n_est - 1) loop
+            addr <= std_logic_vector(to_unsigned(i, addr'length));
+            data <= std_logic_vector(to_unsigned(mem(i), data'length));
+            p_wait(clk_period);
+        end loop;
+        en <= '0';
+    end procedure write_mem;
+
+    -- Espera 1 estado
+    procedure wait_est (
+        constant addr   : in integer;
+        signal tiempo   : in integer;
+        variable last   : in boolean;
+        signal rd_addr  : out std_logic_vector;
+        signal switch   : out std_logic
+    ) is 
+    begin
+        rd_addr <= std_logic_vector(to_unsigned(addr, rd_addr'length));
+        if (tiempo > 1) then
+            p_wait((tiempo - 1)*clk_period);
+        end if;
+        if (last = true) then
+            switch  <= '1';
+        end if;
         p_wait(clk_period);
-        rst         <= '0';
-    end procedure reset;
+        switch <= '0';
+    end procedure wait_est;
 
 begin
 
@@ -114,14 +150,19 @@ begin
             G_RST_POL   => G_RST_POL
         )
         port map (
-            CLK_I       => CLK_I,
-            RST_I       => RST_I,
-            WR_EN_I     => WR_EN_I,
-            WR_ADDR_I   => WR_ADDR_I,
-            WR_DATA_I   => WR_DATA_I,
-            CYC_SYNC_I  => CYC_SYNC_I,
-            RD_ADDR_I   => RD_ADDR_I,
-            RD_DATA_O   => RD_DATA_O 
+            CLK_I           => CLK_I,
+            RST_I           => RST_I,
+            EN_WR_CONFIG_I  => EN_WR_CONFIG_I,
+            WR_EN_I         => WR_EN_I,
+            WR_ADDR_I       => WR_ADDR_I,
+            WR_DATA_I       => WR_DATA_I,
+            SWITCH_MEM_I    => SWITCH_MEM_I,
+            LAST_CYC_I      => LAST_CYC_I,
+            N_ADDR_I        => N_ADDR_I,
+            RD_ADDR_I       => RD_ADDR_I,
+            RD_DATA_O       => RD_DATA_O, 
+            RD_DATA_NEXT_O  => RD_DATA_NEXT_O,
+            NEXT_CONFIG_O   => NEXT_CONFIG_O 
         );
 
     -------------------------------------------------
@@ -136,38 +177,71 @@ begin
         wait for clk_period/2;
     end process;
 
-    -- Contador de estados
-    P_CNT : process (CLK_I, RST_I, CYC_SYNC_I)
+    -- Edge
+    P_EDGE : process (CLK_I)
+    begin
+        if rising_edge(CLK_I) then
+            act_mem_d1  <= act_mem;
+            cnt_out     <= cnt;
+        end if;
+    end process P_EDGE;
+
+    -- Carga de memoria
+    P_MEM : process
     begin
         if (RST_I = G_RST_POL) then
-            RD_ADDR_I <= (others => '0');
-            s_wait_cnt <= 0;
-        elsif rising_edge(CLK_I) then
-
-            if (CYC_SYNC_I = '1') then
-            -- if rising_edge(CYC_SYNC_I) then
-                RD_ADDR_I <= (others => '0');
-                s_wait_cnt <= 0;
-            -- end if;
-            elsif (s_wait_cnt < (mem(to_integer(unsigned(RD_ADDR_I))) - 1)) then
-            -- elsif (s_wait_cnt < (to_integer(unsigned(RD_DATA_O)) - 1)) then
-                s_wait_cnt <= s_wait_cnt + 1;
-            elsif (unsigned(RD_ADDR_I) < to_unsigned((s_n_est - 1), RD_ADDR_I'length)) then
-                s_wait_cnt <= 0;
-                RD_ADDR_I <= std_logic_vector(unsigned(RD_ADDR_I) + 1);
-            else
-                s_wait_cnt <= 0;
-                RD_ADDR_I <= (others => '0');
+            WR_EN_I     <= '0';
+            WR_ADDR_I   <= (others => '0');
+            WR_DATA_I   <= (others => '0');
+            N_ADDR_I    <= (others => '0');
+        elsif (v_load_mem = '1') then
+            if (EN_WR_CONFIG_I = '1') then
+                N_ADDR_I    <= std_logic_vector(to_unsigned(v_n_estados, N_ADDR_I'length));
+                write_mem(v_mem, v_n_estados, WR_EN_I, WR_ADDR_I, WR_DATA_I);
+                v_load_mem := '0';
             end if;
+        end if;
+        p_wait(clk_period);
+    end process P_MEM;
 
-
-        end if; 
+    -- Cambio de memoria
+    P_SWITCH : process (SWITCH_MEM_I)
+    begin
+        if (SWITCH_MEM_I = '1') then
+            act_mem <= next_mem;
+        end if;
     end process;
+
+    -- Contador RD_ADDR
+    P_CNT : process (RST_I, CLK_I, RD_ADDR_I)
+    begin
+        if (RST_I = G_RST_POL) then
+            cnt <= 0;
+        elsif (act_mem_d1 = empty_mem) then
+            cnt <= 0;
+        elsif falling_edge(RD_ADDR_I(0)) then
+            cnt <= 0;
+        elsif rising_edge(RD_ADDR_I(0)) then
+            cnt <= 0;
+        elsif falling_edge(RD_ADDR_I(1)) then
+            cnt <= 0;
+        elsif rising_edge(RD_ADDR_I(1)) then
+            cnt <= 0;
+        elsif falling_edge(RD_ADDR_I(2)) then
+            cnt <= 0;
+        elsif rising_edge(RD_ADDR_I(2)) then
+            cnt <= 0;
+        elsif rising_edge(CLK_I) then
+            cnt <= cnt + 1;
+        end if;
+    end process P_CNT;
 
     -------------------------------------------------
     -- Estímulos
     -------------------------------------------------
     P_STIM : process
+        variable v_last         : boolean := false;
+        variable v_acaba_en_1   : boolean := true;
     begin
 
         assert FALSE report "Start simulation" severity note;
@@ -175,119 +249,279 @@ begin
         ------------------------------
         -- Init
         ------------------------------
-        sim <= x"49_4E_49_54_20_20";
-        reset(RST_I, WR_EN_I, WR_ADDR_I, WR_DATA_I, CYC_SYNC_I);
+        sim <= x"49_4E_49_54_20_20";    -- INIT
+        RST_I           <= G_RST_POL;
+        EN_WR_CONFIG_I  <= '1';
+        SWITCH_MEM_I    <= '0';
+        LAST_CYC_I      <= '1';
+        next_mem        <= (others => 0);
+        p_wait(clk_period);
+        RST_I           <= not G_RST_POL;
         p_wait(10*clk_period);
 
         ------------------------------
         -- WRITE 1
-        --  6 estados, WR en A
+        --  4-1-2
         ------------------------------
-        sim <= x"57_52_20_31_20_20";
-        s_n_est <= 6;
-        p_wait(clk_period);
+        sim <= x"57_52_20_31_20_20";    -- WR 1
 
-        for i in 0 to (s_n_est - 1) loop
-            WR_EN_I     <= '1';
-            WR_ADDR_I   <= std_logic_vector(to_unsigned(i, WR_ADDR_I'length));
-            WR_DATA_I   <= std_logic_vector(to_unsigned((2*(i+1)), WR_DATA_I'length));
-            mem(i)      <= (2*(i+1));
-            p_wait(clk_period);
-        end loop;
+        if (v_acaba_en_1) then
+            v_mem   := (0 => 4, 1 => 2, 2 => 1, others => 0);
+        else
+            v_mem   := (0 => 4, 1 => 1, 2 => 2, others => 0);
+        end if;
+        next_mem    <= v_mem;
+        v_n_estados := 3;
+        v_load_mem  := '1';
 
-        WR_EN_I     <= '0';
+        wait until falling_edge(WR_EN_I);
+        p_wait(10*clk_period);
+
+        SWITCH_MEM_I    <= '1';
         p_wait(clk_period);
+        SWITCH_MEM_I    <= '0';
+        LAST_CYC_I      <= '0';
 
         ------------------------------
         -- READ 1
-        --  6 estados, RD de A
+        --  4-1-2
         ------------------------------
-        sim <= x"52_44_20_31_20_20";
-        
-        CYC_SYNC_I  <= '1';
-        p_wait(clk_period);
-        CYC_SYNC_I  <= '0';
-        
-        p_wait(150*clk_period);
+        sim <= x"52_44_20_31_20_20";    -- RD 1
+
+        -- Ciclo 1-1
+        wait_est(0, act_mem(0), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(1, act_mem(1), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(2, act_mem(2), v_last, RD_ADDR_I, SWITCH_MEM_I);
+
+        -- Ciclo 2-1
+        wait_est(0, act_mem(0), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(1, act_mem(1), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(2, act_mem(2), v_last, RD_ADDR_I, SWITCH_MEM_I);
+
+        -- Ciclo 3-1
+        wait_est(0, act_mem(0), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(1, act_mem(1), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(2, act_mem(2), v_last, RD_ADDR_I, SWITCH_MEM_I);
 
         ------------------------------
         -- WRITE 2
-        --  4 estados, WR en B
+        --  1-4-1-3
         ------------------------------
-        sim <= x"57_52_20_32_20_20";
-        s_n_est <= 4;
-        p_wait(clk_period);
+        sim <= x"57_52_20_32_20_20";    -- WR 2
 
-        for i in 0 to (s_n_est - 1) loop
-            WR_EN_I     <= '1';
-            WR_ADDR_I   <= std_logic_vector(to_unsigned(i, WR_ADDR_I'length));
-            WR_DATA_I   <= std_logic_vector(to_unsigned((10 - 3*i), WR_DATA_I'length));
-            mem(i)      <= (10 - 3*i);
-            p_wait(clk_period);
-        end loop;
+        if (v_acaba_en_1) then
+            v_mem   := (0 => 1, 1 => 4, 2 => 3, 3 => 1, others => 0);
+        else
+            v_mem   := (0 => 1, 1 => 4, 2 => 1, 3 => 3, others => 0);
+        end if;
+        next_mem    <= v_mem;
+        v_n_estados := 4;
+        v_load_mem  := '1';
 
-        WR_EN_I     <= '0';
-        p_wait(clk_period);
+        ------------------------------
+        -- READ 1
+        --  4-1-2
+        ------------------------------
+        sim <= x"52_44_20_31_20_20";    -- RD 1
+
+        -- Ciclo 4-1
+        wait_est(0, act_mem(0), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(1, act_mem(1), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(2, act_mem(2), v_last, RD_ADDR_I, SWITCH_MEM_I);
+
+        -- Ciclo 5-1
+        wait_est(0, act_mem(0), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(1, act_mem(1), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        LAST_CYC_I      <= '1';
+        v_last          := true;
+        wait_est(2, act_mem(2), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        LAST_CYC_I      <= '0';
+        v_last          := false;
 
         ------------------------------
         -- READ 2
-        --  4 estados, RD de B
+        --  1-4-1-3
         ------------------------------
-        sim <= x"52_44_20_32_20_20";
-        
-        CYC_SYNC_I  <= '1';
-        p_wait(clk_period);
-        CYC_SYNC_I  <= '0';
-        
-        p_wait(150*clk_period);
+        sim <= x"52_44_20_32_20_20";    -- RD 2
+
+        -- Ciclo 1-2
+        wait_est(0, act_mem(0), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(1, act_mem(1), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(2, act_mem(2), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(3, act_mem(3), v_last, RD_ADDR_I, SWITCH_MEM_I);
+
+        -- Ciclo 2-2
+        wait_est(0, act_mem(0), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(1, act_mem(1), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(2, act_mem(2), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(3, act_mem(3), v_last, RD_ADDR_I, SWITCH_MEM_I);
 
         ------------------------------
         -- WRITE 3
-        --  8 estados, WR en A
+        --  1-1-2
         ------------------------------
-        sim <= x"57_52_20_33_20_20";
-        s_n_est <= 8;
-        p_wait(clk_period);
+        sim <= x"57_52_20_33_20_20";    -- WR 3
+        
+        if (v_acaba_en_1) then
+            v_mem   := (0 => 1, 1 => 2, 2 => 1, others => 0);
+        else
+            v_mem   := (0 => 1, 1 => 1, 2 => 2, others => 0);
+        end if;
+        next_mem    <= v_mem;
+        v_n_estados := 3;
+        v_load_mem  := '1';
 
-        for i in 0 to (s_n_est - 1) loop
-            WR_EN_I     <= '1';
-            WR_ADDR_I   <= std_logic_vector(to_unsigned(i, WR_ADDR_I'length));
-            WR_DATA_I   <= std_logic_vector(to_unsigned((i mod 3), WR_DATA_I'length));
-            mem(i)      <= (i mod 3);
-            p_wait(clk_period);
-        end loop;
+        ------------------------------
+        -- READ 2
+        --  1-4-1-3
+        ------------------------------
+        sim <= x"52_44_20_32_20_20";    -- RD 2
 
-        WR_EN_I     <= '0';
-        p_wait(clk_period);
+        -- Ciclo 3-2
+        wait_est(0, act_mem(0), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(1, act_mem(1), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(2, act_mem(2), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(3, act_mem(3), v_last, RD_ADDR_I, SWITCH_MEM_I);
+
+        -- Ciclo 4-2
+        wait_est(0, act_mem(0), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(1, act_mem(1), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(2, act_mem(2), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        LAST_CYC_I      <= '1';
+        v_last          := true;
+        wait_est(3, act_mem(3), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        LAST_CYC_I      <= '0';
+        v_last          := false;
 
         ------------------------------
         -- READ 3
-        --  8 estados, RD de A
+        --  1-1-2
         ------------------------------
-        sim <= x"52_44_20_33_20_20";
-        
-        CYC_SYNC_I  <= '1';
-        p_wait(clk_period);
-        CYC_SYNC_I  <= '0';
-        
-        p_wait(150*clk_period);
+        sim <= x"52_44_20_33_20_20";    -- RD 3
+
+        -- Ciclo 1-3
+        wait_est(0, act_mem(0), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(1, act_mem(1), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(2, act_mem(2), v_last, RD_ADDR_I, SWITCH_MEM_I);
+
+        -- Ciclo 2-3
+        wait_est(0, act_mem(0), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(1, act_mem(1), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(2, act_mem(2), v_last, RD_ADDR_I, SWITCH_MEM_I);
+
+        -- Ciclo 3-3
+        wait_est(0, act_mem(0), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(1, act_mem(1), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(2, act_mem(2), v_last, RD_ADDR_I, SWITCH_MEM_I);
 
         ------------------------------
-        -- RESET
+        -- WRITE 4
+        --  5-3-1-6
         ------------------------------
-        sim <= x"52_45_53_45_54_20";
+        sim <= x"57_52_20_34_20_20";    -- WR 4
         
-        RST_I <= '1';
-        p_wait(clk_period);
-        RST_I <= '0';
+        if (v_acaba_en_1) then
+            v_mem   := (0 => 5, 1 => 3, 2 => 6, 3 => 1, others => 0);
+        else
+            v_mem   := (0 => 5, 1 => 3, 2 => 1, 3 => 6, others => 0);
+        end if;
+        next_mem    <= v_mem;
+        v_n_estados := 4;
+        v_load_mem  := '1';
+
+        ------------------------------
+        -- READ 3
+        --  1-1-2
+        ------------------------------
+        sim <= x"52_44_20_33_20_20";    -- RD 3
+
+        -- Ciclo 4-3
+        wait_est(0, act_mem(0), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(1, act_mem(1), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(2, act_mem(2), v_last, RD_ADDR_I, SWITCH_MEM_I);
+
+        -- Ciclo 4-3
+        wait_est(0, act_mem(0), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(1, act_mem(1), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        LAST_CYC_I      <= '1';
+        v_last          := true;
+        wait_est(2, act_mem(2), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        LAST_CYC_I      <= '0';
+        v_last          := false;
+
+        ------------------------------
+        -- READ 4
+        --  5-3-1-6
+        ------------------------------
+        sim <= x"52_44_20_34_20_20";    -- RD 4
+
+        -- Ciclo 1-4
+        wait_est(0, act_mem(0), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(1, act_mem(1), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(2, act_mem(2), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(3, act_mem(3), v_last, RD_ADDR_I, SWITCH_MEM_I);
+
+        -- Ciclo 2-4
+        wait_est(0, act_mem(0), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(1, act_mem(1), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(2, act_mem(2), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(3, act_mem(3), v_last, RD_ADDR_I, SWITCH_MEM_I);
+
+        ------------------------------
+        -- WRITE 5: No se carga
+        --  1-2-1-2-1
+        ------------------------------
+        sim <= x"57_52_20_35_20_20";    -- WR 5
+
+        EN_WR_CONFIG_I <= '0';
         
-        p_wait(10*clk_period);
-               
+        if (v_acaba_en_1) then
+            v_mem   := (0 => 1, 1 => 2, 2 => 1, 3 => 2, 4 => 1, others => 0);
+        else
+            v_mem   := (0 => 1, 1 => 2, 2 => 1, 3 => 1, 4 => 2, others => 0);
+        end if;
+        next_mem    <= v_mem;
+        v_n_estados := 5;
+        v_load_mem  := '1';
+
+        ------------------------------
+        -- READ 4
+        --  5-3-1-6
+        ------------------------------
+        sim <= x"52_44_20_34_20_20";    -- RD 4
+
+        -- Ciclo 3-4
+        wait_est(0, act_mem(0), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(1, act_mem(1), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(2, act_mem(2), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(3, act_mem(3), v_last, RD_ADDR_I, SWITCH_MEM_I);
+
+        -- Ciclo 4-4
+        wait_est(0, act_mem(0), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(1, act_mem(1), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        wait_est(2, act_mem(2), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        LAST_CYC_I      <= '1';
+        v_last          := true;
+        wait_est(3, act_mem(3), v_last, RD_ADDR_I, SWITCH_MEM_I);
+        LAST_CYC_I      <= '0';
+        v_last          := false;
+
+        -- ------------------------------
+        -- -- Reset
+        -- ------------------------------
+        -- sim <= x"52_45_53_45_54_20";    -- RESET
+        -- RST_I           <= G_RST_POL;
+        -- SWITCH_MEM_I    <= '0';
+        -- LAST_CYC_I      <= '1';
+        -- next_mem        <= (others => 0);
+        -- p_wait(clk_period);
+        -- RST_I           <= not G_RST_POL;
+
         ------------------------------
         -- End
         ------------------------------
         sim <= x"45_4E_44_49_4E_47";
-        p_wait(10*clk_period);
+        p_wait(20*clk_period);
 
         assert FALSE report "End simulation" severity failure;
 

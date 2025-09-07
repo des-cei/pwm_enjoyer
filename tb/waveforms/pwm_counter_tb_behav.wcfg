@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="pwm_counter_tb_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="my_pkg" />
+            <top_module name="pwm_counter_tb" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="375667fs"></ZoomStartTime>
+      <ZoomEndTime time="1176668fs"></ZoomEndTime>
+      <Cursor1Time time="580667fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="172"></NameColumnWidth>
+      <ValueColumnWidth column_width="58"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="10" />
+   <wvobject fp_name="/pwm_counter_tb/CLK_I" type="logic">
+      <obj_property name="ElementShortName">CLK_I</obj_property>
+      <obj_property name="ObjectShortName">CLK_I</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_counter_tb/RST_I" type="logic">
+      <obj_property name="ElementShortName">RST_I</obj_property>
+      <obj_property name="ObjectShortName">RST_I</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_counter_tb/sim" type="array">
+      <obj_property name="ElementShortName">sim[47:0]</obj_property>
+      <obj_property name="ObjectShortName">sim[47:0]</obj_property>
+      <obj_property name="Radix">ASCIIRADIX</obj_property>
+      <obj_property name="CustomSignalColor">#DCDCDC</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_counter_tb/EN_I" type="logic">
+      <obj_property name="ElementShortName">EN_I</obj_property>
+      <obj_property name="ObjectShortName">EN_I</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_counter_tb/CNT_LEN_I" type="array">
+      <obj_property name="ElementShortName">CNT_LEN_I[4:0]</obj_property>
+      <obj_property name="ObjectShortName">CNT_LEN_I[4:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_counter_tb/CNT_LEN_NEXT_I" type="array">
+      <obj_property name="ElementShortName">CNT_LEN_NEXT_I[4:0]</obj_property>
+      <obj_property name="ObjectShortName">CNT_LEN_NEXT_I[4:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_counter_tb/LAST_CYC_I" type="logic">
+      <obj_property name="ElementShortName">LAST_CYC_I</obj_property>
+      <obj_property name="ObjectShortName">LAST_CYC_I</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_counter_tb/PWM_INIT_I" type="logic">
+      <obj_property name="ElementShortName">PWM_INIT_I</obj_property>
+      <obj_property name="ObjectShortName">PWM_INIT_I</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_counter_tb/PWM_O" type="logic">
+      <obj_property name="ElementShortName">PWM_O</obj_property>
+      <obj_property name="ObjectShortName">PWM_O</obj_property>
+      <obj_property name="CustomSignalColor">#FFFF00</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_counter_tb/CNT_END_O" type="logic">
+      <obj_property name="ElementShortName">CNT_END_O</obj_property>
+      <obj_property name="ObjectShortName">CNT_END_O</obj_property>
+      <obj_property name="CustomSignalColor">#FFFF00</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+</wave_config>

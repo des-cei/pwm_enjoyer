@@ -223,10 +223,13 @@ begin
         
         pulso(UPD_MEM_I);
 
-        wait until (SWITCH_MEM_O = '1');
-        internal_n_addr     <= N_ADDR_I;
+        -- wait until (SWITCH_MEM_O = '1');
+        wait until falling_edge(SWITCH_MEM_O);
+        -- internal_n_addr     <= N_ADDR_I;
         internal_n_tot_cyc  <= N_TOT_CYC_I;
         internal_mem        <= v_mem;
+        p_wait(clk_period);
+        internal_n_addr     <= N_ADDR_I;
         
         p_wait(60*clk_period);
         
@@ -253,10 +256,13 @@ begin
         
         pulso(UPD_MEM_I);
 
-        wait until (SWITCH_MEM_O = '1');
-        internal_n_addr     <= N_ADDR_I;
+        -- wait until (SWITCH_MEM_O = '1');
+        wait until falling_edge(SWITCH_MEM_O);
+        -- internal_n_addr     <= N_ADDR_I;
         internal_n_tot_cyc  <= N_TOT_CYC_I;
         internal_mem        <= v_mem;
+        p_wait(clk_period);
+        internal_n_addr     <= N_ADDR_I;
         
         p_wait(60*clk_period);
 
@@ -283,12 +289,22 @@ begin
         
         pulso(UPD_MEM_I);
 
-        wait until (SWITCH_MEM_O = '1');
-        internal_n_addr     <= N_ADDR_I;
+        -- wait until (SWITCH_MEM_O = '1');
+        wait until falling_edge(SWITCH_MEM_O);
+        -- internal_n_addr     <= N_ADDR_I;
         internal_n_tot_cyc  <= N_TOT_CYC_I;
         internal_mem        <= v_mem;
+        p_wait(clk_period);
+        internal_n_addr     <= N_ADDR_I;
         
         p_wait(60*clk_period);
+
+        ------------------------------
+        -- Disenable
+        ------------------------------
+        sim <= x"44_49_53_45_4E_41";    -- DISENA
+        EN_I <= '0';
+        p_wait(30*clk_period);
 
         ------------------------------
         -- End

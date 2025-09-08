@@ -192,98 +192,190 @@ begin
                         r_en_cnt                <= '0';
                     end if;
 
+                -- -- Estado normal, itera entre la configuración actual
+                -- when S_NEXT_CYC =>
+                --     r_en_wr_config              <= '1';
+                --     if (EN_I = '1') then
+                --         r_last_cyc              <= '0';
+                --         r_switch_mem            <= '0';
+                --         if (s_cnt_end = '1') then
+                --             -- Normal
+                --             if (r_rd_addr < (r_n_addr - 1)) then
+                --                 r_rd_addr       <= r_rd_addr + 1;
+                --             else
+                --                 r_rd_addr       <= (others => '0');
+                --                 -- Hay petición de update
+                --                 if (r_update_flag = '1') then
+                --                     r_state     <= S_LAST_CYC;
+                --                     r_last_cyc  <= '1';
+                --                 end if;
+                --             end if;
+                --         end if;
+                --     else
+                --         r_state                 <= S_IDLE;
+                --         r_last_cyc              <= '0';
+                --         r_switch_mem            <= '0';
+                --         r_rd_addr               <= (others => '0');
+                --         r_en_cnt                <= '0';
+                --     end if;
+
                 -- Estado normal, itera entre la configuración actual
                 when S_NEXT_CYC =>
                     r_en_wr_config              <= '1';
-                    if (EN_I = '1') then
-                        r_last_cyc              <= '0';
-                        r_switch_mem            <= '0';
-                        if (s_cnt_end = '1') then
-                            -- Normal
-                            if (r_rd_addr < (r_n_addr - 1)) then
-                                r_rd_addr       <= r_rd_addr + 1;
-                            else
+                    r_last_cyc                  <= '0';
+                    r_switch_mem                <= '0';
+                    if (s_cnt_end = '1') then
+                        -- Normal
+                        if (r_rd_addr < (r_n_addr - 1)) then
+                            r_rd_addr           <= r_rd_addr + 1;
+                        else
+                            r_rd_addr           <= (others => '0');
+                            -- Desactivación
+                            if (EN_I = '0') then
+                                r_state         <= S_IDLE;
+                                r_last_cyc      <= '0';
+                                r_switch_mem    <= '0';
                                 r_rd_addr       <= (others => '0');
-                                -- Hay petición de update
-                                if (r_update_flag = '1') then
-                                    r_state     <= S_LAST_CYC;
-                                    r_last_cyc  <= '1';
-                                end if;
+                                r_en_cnt        <= '0';
+                            -- Hay petición de update
+                            elsif (r_update_flag = '1') then
+                                r_state         <= S_LAST_CYC;
+                                r_last_cyc      <= '1';
                             end if;
                         end if;
-                    else
-                        r_state                 <= S_IDLE;
-                        r_last_cyc              <= '0';
-                        r_switch_mem            <= '0';
-                        r_rd_addr               <= (others => '0');
-                        r_en_cnt                <= '0';
                     end if;
+
+                -- -- Último estado antes de cambiar la memoria
+                -- when S_LAST_CYC =>
+                --     r_en_wr_config              <= '0';
+                --     if (EN_I = '1') then
+                --         r_last_cyc              <= '1';
+                --         -- Normal
+                --         if (s_cnt_end = '1') then
+                --             if (r_rd_addr < (r_n_addr - 1)) then
+                --                 r_rd_addr       <= r_rd_addr + 1;
+                --             else
+                --                 r_rd_addr       <= (others => '0');
+                --             end if;
+                --         end if;
+                --         -- Switch activado
+                --         if (r_switch_mem = '1') then
+                --             r_state             <= S_FIRST_CYC;
+                --             r_last_cyc          <= '0';
+                --             r_switch_mem        <= '0';
+                --             r_rd_addr           <= (others => '0');
+                --         -- Activa el switch
+                --         elsif (s_cnt_end_sw = '1') then
+                --             -- Si el último estado dura 1 ciclo
+                --             if ((r_rd_addr = (r_n_addr - 2)) and (s_cnt_end = '1')) then
+                --                 r_switch_mem    <= '1';
+                --             -- Si el último estado dura más de un ciclo
+                --             elsif (r_rd_addr = (r_n_addr - 1)) then
+                --                 r_switch_mem    <= '1';
+                --             else
+                --                 r_switch_mem    <= '0';
+                --             end if;
+                --         end if;
+                --     else
+                --         r_state                 <= S_IDLE;
+                --         r_last_cyc              <= '0';
+                --         r_switch_mem            <= '0';
+                --         r_rd_addr               <= (others => '0');
+                --         r_en_cnt                <= '0';
+                --     end if;
 
                 -- Último estado antes de cambiar la memoria
                 when S_LAST_CYC =>
                     r_en_wr_config              <= '0';
-                    if (EN_I = '1') then
-                        r_last_cyc              <= '1';
-                        -- Normal
-                        if (s_cnt_end = '1') then
-                            if (r_rd_addr < (r_n_addr - 1)) then
-                                r_rd_addr       <= r_rd_addr + 1;
-                            else
-                                r_rd_addr       <= (others => '0');
-                            end if;
-                        end if;
-                        -- Switch activado
-                        if (r_switch_mem = '1') then
-                            r_state             <= S_FIRST_CYC;
-                            r_last_cyc          <= '0';
-                            r_switch_mem        <= '0';
+                    r_last_cyc                  <= '1';
+                    -- Normal
+                    if (s_cnt_end = '1') then
+                        if (r_rd_addr < (r_n_addr - 1)) then
+                            r_rd_addr           <= r_rd_addr + 1;
+                        else
                             r_rd_addr           <= (others => '0');
-                        -- Activa el switch
-                        elsif (s_cnt_end_sw = '1') then
-                            -- Si el último estado dura 1 ciclo
-                            if ((r_rd_addr = (r_n_addr - 2)) and (s_cnt_end = '1')) then
-                                r_switch_mem    <= '1';
-                            -- Si el último estado dura más de un ciclo
-                            elsif (r_rd_addr = (r_n_addr - 1)) then
-                                r_switch_mem    <= '1';
-                            else
+                            -- Desactivación
+                            if (EN_I = '0') then
+                                r_state         <= S_IDLE;
+                                r_last_cyc      <= '0';
                                 r_switch_mem    <= '0';
+                                r_rd_addr       <= (others => '0');
+                                r_en_cnt        <= '0';
                             end if;
                         end if;
-                    else
-                        r_state                 <= S_IDLE;
+                    end if;
+                    -- Switch activado
+                    if (r_switch_mem = '1') then
+                        r_state                 <= S_FIRST_CYC;
                         r_last_cyc              <= '0';
                         r_switch_mem            <= '0';
                         r_rd_addr               <= (others => '0');
-                        r_en_cnt                <= '0';
+                    -- Activa el switch
+                    elsif (s_cnt_end_sw = '1') then
+                        -- Si el último estado dura 1 ciclo
+                        if ((r_rd_addr = (r_n_addr - 2)) and (s_cnt_end = '1')) then
+                            r_switch_mem        <= '1';
+                        -- Si el último estado dura más de un ciclo
+                        elsif (r_rd_addr = (r_n_addr - 1)) then
+                            r_switch_mem        <= '1';
+                        else
+                            r_switch_mem        <= '0';
+                        end if;
                     end if;
+
+                -- -- Primer estado tras cambiar la memoria. Necesita modificar RD_ADDR independientemte de CNT_END_I dado el desfase de r_cnt_end.
+                -- -- Durante este ciclo no debe entrar ninguna nueva escritura de programación
+                -- when S_FIRST_CYC =>
+                --     r_en_wr_config          <= '0';
+                --     if (EN_I = '1') then
+                --         r_last_cyc          <= '0';
+                --         r_switch_mem        <= '0';
+                --         if (r_cnt_fc_pulse < (unsigned(r_next_config(to_integer(r_rd_addr))) - 1)) then
+                --             r_cnt_fc_pulse  <= r_cnt_fc_pulse + 1;
+                --         else
+                --             r_cnt_fc_pulse  <= (others => '0');
+                --             if (r_rd_addr < (r_n_addr - 1)) then
+                --                 r_rd_addr   <= r_rd_addr + 1;
+                --             else
+                --                 r_rd_addr   <= (others => '0');
+                --                 r_state     <= S_NEXT_CYC;
+                --             end if;
+                --         end if;
+                --     else
+                --         r_state             <= S_IDLE;
+                --         r_last_cyc          <= '0';
+                --         r_switch_mem        <= '0';
+                --         r_rd_addr           <= (others => '0');
+                --         r_en_cnt            <= '0';
+                --     end if;
 
                 -- Primer estado tras cambiar la memoria. Necesita modificar RD_ADDR independientemte de CNT_END_I dado el desfase de r_cnt_end.
                 -- Durante este ciclo no debe entrar ninguna nueva escritura de programación
                 when S_FIRST_CYC =>
-                    r_en_wr_config          <= '0';
-                    if (EN_I = '1') then
-                        r_last_cyc          <= '0';
-                        r_switch_mem        <= '0';
-                        if (r_cnt_fc_pulse < (unsigned(r_next_config(to_integer(r_rd_addr))) - 1)) then
-                            r_cnt_fc_pulse  <= r_cnt_fc_pulse + 1;
+                    r_en_wr_config              <= '0';
+                    r_last_cyc                  <= '0';
+                    r_switch_mem                <= '0';
+                    if (r_cnt_fc_pulse < (unsigned(r_next_config(to_integer(r_rd_addr))) - 1)) then
+                        r_cnt_fc_pulse          <= r_cnt_fc_pulse + 1;
+                    else
+                        r_cnt_fc_pulse          <= (others => '0');
+                        if (r_rd_addr < (r_n_addr - 1)) then
+                            r_rd_addr           <= r_rd_addr + 1;
                         else
-                            r_cnt_fc_pulse  <= (others => '0');
-                            if (r_rd_addr < (r_n_addr - 1)) then
-                                r_rd_addr   <= r_rd_addr + 1;
+                            r_rd_addr   <= (others => '0');
+                            if (EN_I = '1') then
+                                r_state         <= S_NEXT_CYC;
+                            -- Desactivación
                             else
-                                r_rd_addr   <= (others => '0');
-                                r_state     <= S_NEXT_CYC;
+                                r_state         <= S_IDLE;
+                                r_last_cyc      <= '0';
+                                r_switch_mem    <= '0';
+                                r_rd_addr       <= (others => '0');
+                                r_en_cnt        <= '0';
                             end if;
                         end if;
-                    else
-                        r_state             <= S_IDLE;
-                        r_last_cyc          <= '0';
-                        r_switch_mem        <= '0';
-                        r_rd_addr           <= (others => '0');
-                        r_en_cnt            <= '0';
                     end if;
-
+                        
                 when others =>
                     r_state         <= S_IDLE;
                     r_last_cyc      <= '0';

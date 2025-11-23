@@ -76,11 +76,7 @@ package my_pkg is
     -------------------------------------------------
     -- Funciones y procedimientos
     -------------------------------------------------
-    -- Ampliar la longitud de un slv y le añade un offset
-    function resize_offset (
-        vect    : in std_logic_vector;
-        offset  : in integer
-    ) return std_logic_vector;
+    -- n/a
 
 end package my_pkg;
 
@@ -92,15 +88,6 @@ package body my_pkg is
     -------------------------------------------------
     -- Funciones y procedimientos
     -------------------------------------------------
-    -- Ampliar la longitud de un slv y le añade un offset
-    function resize_offset (
-        vect    : in std_logic_vector;
-        offset  : in integer
-    ) return std_logic_vector is
-        variable v_res : std_logic_vector(vect'length downto 0);
-    begin
-        v_res := std_logic_vector(to_unsigned((to_integer(unsigned(vect)) + offset), vect'length + 1));
-        return v_res;
-    end function resize_offset;
+    -- n/a
 
 end package body my_pkg;

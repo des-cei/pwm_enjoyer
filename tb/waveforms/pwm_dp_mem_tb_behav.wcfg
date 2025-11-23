@@ -11,15 +11,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="95000fs"></ZoomStartTime>
-      <ZoomEndTime time="3920001fs"></ZoomEndTime>
-      <Cursor1Time time="1625000fs"></Cursor1Time>
+      <ZoomStartTime time="2,362.182 ns"></ZoomStartTime>
+      <ZoomEndTime time="3,924.183 ns"></ZoomEndTime>
+      <Cursor1Time time="1,344.182 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="205"></NameColumnWidth>
-      <ValueColumnWidth column_width="61"></ValueColumnWidth>
+      <NameColumnWidth column_width="192"></NameColumnWidth>
+      <ValueColumnWidth column_width="58"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="17" />
+   <WVObjectSize size="23" />
    <wvobject fp_name="/pwm_dp_mem_tb/CLK_I" type="logic">
       <obj_property name="ElementShortName">CLK_I</obj_property>
       <obj_property name="ObjectShortName">CLK_I</obj_property>
@@ -32,14 +32,12 @@
       <obj_property name="ElementShortName">sim[47:0]</obj_property>
       <obj_property name="ObjectShortName">sim[47:0]</obj_property>
       <obj_property name="Radix">ASCIIRADIX</obj_property>
-      <obj_property name="CustomSignalColor">#A0A0A4</obj_property>
+      <obj_property name="CustomSignalColor">#DCDCDC</obj_property>
       <obj_property name="UseCustomSignalColor">true</obj_property>
    </wvobject>
    <wvobject fp_name="/pwm_dp_mem_tb/EN_WR_CONFIG_I" type="logic">
       <obj_property name="ElementShortName">EN_WR_CONFIG_I</obj_property>
       <obj_property name="ObjectShortName">EN_WR_CONFIG_I</obj_property>
-      <obj_property name="CustomSignalColor">#F0E68C</obj_property>
-      <obj_property name="UseCustomSignalColor">true</obj_property>
    </wvobject>
    <wvobject fp_name="/pwm_dp_mem_tb/WR_EN_I" type="logic">
       <obj_property name="ElementShortName">WR_EN_I</obj_property>
@@ -65,26 +63,33 @@
       <obj_property name="ElementShortName">N_ADDR_I[2:0]</obj_property>
       <obj_property name="ObjectShortName">N_ADDR_I[2:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      <obj_property name="CustomSignalColor">#00FF7F</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
    </wvobject>
-   <wvobject fp_name="/pwm_dp_mem_tb/uut/r_n_addr" type="array">
-      <obj_property name="ElementShortName">r_n_addr[2:0]</obj_property>
-      <obj_property name="ObjectShortName">r_n_addr[2:0]</obj_property>
+   <wvobject fp_name="/pwm_dp_mem_tb/NEXT_CONFIG_O" type="array">
+      <obj_property name="ElementShortName">NEXT_CONFIG_O[0:7][4:0]</obj_property>
+      <obj_property name="ObjectShortName">NEXT_CONFIG_O[0:7][4:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_dp_mem_tb/uut/r_prev_last_state" type="array">
+      <obj_property name="ElementShortName">r_prev_last_state[4:0]</obj_property>
+      <obj_property name="ObjectShortName">r_prev_last_state[4:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       <obj_property name="CustomSignalColor">#008000</obj_property>
       <obj_property name="UseCustomSignalColor">true</obj_property>
-      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
-   <wvobject fp_name="/pwm_dp_mem_tb/next_mem" type="array">
-      <obj_property name="ElementShortName">next_mem[0:7]</obj_property>
-      <obj_property name="ObjectShortName">next_mem[0:7]</obj_property>
+   <wvobject fp_name="/pwm_dp_mem_tb/uut/r_prev_last2_state" type="array">
+      <obj_property name="ElementShortName">r_prev_last2_state[4:0]</obj_property>
+      <obj_property name="ObjectShortName">r_prev_last2_state[4:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-      <obj_property name="CustomSignalColor">#00FFFF</obj_property>
+      <obj_property name="CustomSignalColor">#008000</obj_property>
       <obj_property name="UseCustomSignalColor">true</obj_property>
    </wvobject>
-   <wvobject fp_name="/pwm_dp_mem_tb/act_mem" type="array">
-      <obj_property name="ElementShortName">act_mem[0:7]</obj_property>
-      <obj_property name="ObjectShortName">act_mem[0:7]</obj_property>
+   <wvobject fp_name="/pwm_dp_mem_tb/uut/r_next_first_state" type="array">
+      <obj_property name="ElementShortName">r_next_first_state[4:0]</obj_property>
+      <obj_property name="ObjectShortName">r_next_first_state[4:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-      <obj_property name="CustomSignalColor">#00FFFF</obj_property>
+      <obj_property name="CustomSignalColor">#008000</obj_property>
       <obj_property name="UseCustomSignalColor">true</obj_property>
    </wvobject>
    <wvobject fp_name="/pwm_dp_mem_tb/LAST_CYC_I" type="logic">
@@ -99,23 +104,62 @@
       <obj_property name="ElementShortName">RD_ADDR_I[2:0]</obj_property>
       <obj_property name="ObjectShortName">RD_ADDR_I[2:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      <obj_property name="CustomSignalColor">#FFFF00</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_dp_mem_tb/addr_cnt" type="other">
+      <obj_property name="ElementShortName">addr_cnt</obj_property>
+      <obj_property name="ObjectShortName">addr_cnt</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      <obj_property name="CustomSignalColor">#F0E68C</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_dp_mem_tb/uut/r_wr_port" type="logic">
+      <obj_property name="ElementShortName">r_wr_port</obj_property>
+      <obj_property name="ObjectShortName">r_wr_port</obj_property>
+      <obj_property name="CustomSignalColor">#FF0080</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_dp_mem_tb/uut/s_dout_a" type="array">
+      <obj_property name="ElementShortName">s_dout_a[4:0]</obj_property>
+      <obj_property name="ObjectShortName">s_dout_a[4:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      <obj_property name="CustomSignalColor">#FF00FF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_dp_mem_tb/uut/s_dout_b" type="array">
+      <obj_property name="ElementShortName">s_dout_b[4:0]</obj_property>
+      <obj_property name="ObjectShortName">s_dout_b[4:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      <obj_property name="CustomSignalColor">#FF00FF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
    </wvobject>
    <wvobject fp_name="/pwm_dp_mem_tb/RD_DATA_O" type="array">
       <obj_property name="ElementShortName">RD_DATA_O[4:0]</obj_property>
       <obj_property name="ObjectShortName">RD_DATA_O[4:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-      <obj_property name="CustomSignalColor">#FF00FF</obj_property>
+      <obj_property name="CustomSignalColor">#00FFFF</obj_property>
       <obj_property name="UseCustomSignalColor">true</obj_property>
    </wvobject>
    <wvobject fp_name="/pwm_dp_mem_tb/RD_DATA_NEXT_O" type="array">
       <obj_property name="ElementShortName">RD_DATA_NEXT_O[4:0]</obj_property>
       <obj_property name="ObjectShortName">RD_DATA_NEXT_O[4:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-      <obj_property name="CustomSignalColor">#FF00FF</obj_property>
+      <obj_property name="CustomSignalColor">#008080</obj_property>
       <obj_property name="UseCustomSignalColor">true</obj_property>
    </wvobject>
-   <wvobject fp_name="/pwm_dp_mem_tb/NEXT_CONFIG_O" type="array">
-      <obj_property name="ElementShortName">NEXT_CONFIG_O[0:7][4:0]</obj_property>
-      <obj_property name="ObjectShortName">NEXT_CONFIG_O[0:7][4:0]</obj_property>
+   <wvobject fp_name="/pwm_dp_mem_tb/uut/s_dout_a_next" type="array">
+      <obj_property name="ElementShortName">s_dout_a_next[4:0]</obj_property>
+      <obj_property name="ObjectShortName">s_dout_a_next[4:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_dp_mem_tb/uut/s_dout_b_next" type="array">
+      <obj_property name="ElementShortName">s_dout_b_next[4:0]</obj_property>
+      <obj_property name="ObjectShortName">s_dout_b_next[4:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
    </wvobject>
 </wave_config>

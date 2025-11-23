@@ -1,0 +1,29 @@
+Portada
+Agradecimientos
+
+1. Resumen
+		Propósito y trabajo realizado. Códigos UNESCO y palabras clave.
+2. Introducción
+		Descripción del problema, objetivos y alcance del proyecto. Motivación. Convertidores de potencia.
+3. Estado del arte
+		Flujo de trabajo en entornos FPGA. Tipos de FPGA, comunicaciones y entornos de desarrollo. 
+4. Normativa aplicable
+5. Descripción del proyecto
+		Requisitos y especificaciones. 
+6. Diseño
+		Metodología de trabajo. Módulos y arquitectura. Diagramas relevantes. Simulaciones VHDL.
+7. Integración HW y validación
+		Integración. Pruebas en HW.
+8. Resultados
+		Funcionamiento. Uso de recursos.
+9. Conclusiones
+10. Posibles mejores y líneas futuras
+11. Presupuesto y planificación
+12. Bibliografía
+
+Glosario y abreviaturas
+Anexos
+		Códigos y formas de onda.
+		
+ODS.
+60 páginas.

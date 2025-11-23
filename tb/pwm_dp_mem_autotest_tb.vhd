@@ -22,12 +22,12 @@ entity pwm_dp_mem_autotest_tb is
         C_N_INPUTS          : integer := 7; -- Número de entradas (columnas)
         C_N_OUTPUTS         : integer := 2; -- Número de salidas (columnas)
         C_WIDTH             : integer := 8; -- Número de bits de las señales
-        C_INPUTS_PATH       : string := "\\AMS_NAS\home\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_dp_mem_inputs.txt";
-        C_OUTPUTS_REF_PATH  : string := "\\AMS_NAS\home\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_dp_mem_outputs_ref.txt";
-        C_OUTPUTS_PATH      : string := "\\AMS_NAS\home\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_dp_mem_outputs.txt";
-        -- C_INPUTS_PATH       : string := "C:\Users\ajmsalgado\SynologyDrive\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_dp_mem_inputs.txt";
-        -- C_OUTPUTS_REF_PATH  : string := "C:\Users\ajmsalgado\SynologyDrive\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_dp_mem_outputs_ref.txt";
-        -- C_OUTPUTS_PATH      : string := "C:\Users\ajmsalgado\SynologyDrive\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_dp_mem_outputs.txt";
+        -- C_INPUTS_PATH       : string := "\\AMS_NAS\home\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_dp_mem_inputs.txt";
+        -- C_OUTPUTS_REF_PATH  : string := "\\AMS_NAS\home\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_dp_mem_outputs_ref.txt";
+        -- C_OUTPUTS_PATH      : string := "\\AMS_NAS\home\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_dp_mem_outputs.txt";
+        C_INPUTS_PATH       : string := "C:\Users\ajmsalgado\SynologyDrive\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_dp_mem_inputs.txt";
+        C_OUTPUTS_REF_PATH  : string := "C:\Users\ajmsalgado\SynologyDrive\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_dp_mem_outputs_ref.txt";
+        C_OUTPUTS_PATH      : string := "C:\Users\ajmsalgado\SynologyDrive\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_dp_mem_outputs.txt";
         -- Genéricos del componente
         C_DATA_W    : integer   := G_STATE_MAX_L2;
         C_ADDR_W    : integer   := G_MEM_SIZE_MAX_L2;
@@ -79,7 +79,7 @@ architecture beh of pwm_dp_mem_autotest_tb is
     -- Port map
     signal CLK_I            : std_logic;     
     signal RST_I            : std_logic := '1';
-    signal EN_WR_CONFIG_I   : std_logic := '0';                                
+    signal EN_WR_CONFIG_I   : std_logic := '1';                                
     signal WR_EN_I          : std_logic := '0';                                
     signal WR_ADDR_I        : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0) := (others => '0');
     signal WR_DATA_I        : std_logic_vector((G_STATE_MAX_L2 - 1) downto 0) := (others => '0');

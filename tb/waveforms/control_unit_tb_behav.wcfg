@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="control_unit_tb_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="control_unit_tb" />
+            <top_module name="my_pkg" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="2483824fs"></ZoomStartTime>
+      <ZoomEndTime time="3292825fs"></ZoomEndTime>
+      <Cursor1Time time="2751824fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="164"></NameColumnWidth>
+      <ValueColumnWidth column_width="58"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="25" />
+   <wvobject fp_name="/control_unit_tb/CLK_I" type="logic">
+      <obj_property name="ElementShortName">CLK_I</obj_property>
+      <obj_property name="ObjectShortName">CLK_I</obj_property>
+   </wvobject>
+   <wvobject fp_name="/control_unit_tb/RST_I" type="logic">
+      <obj_property name="ElementShortName">RST_I</obj_property>
+      <obj_property name="ObjectShortName">RST_I</obj_property>
+   </wvobject>
+   <wvobject fp_name="/control_unit_tb/sim" type="array">
+      <obj_property name="ElementShortName">sim[47:0]</obj_property>
+      <obj_property name="ObjectShortName">sim[47:0]</obj_property>
+      <obj_property name="CustomSignalColor">#A0A0A4</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="Radix">ASCIIRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/control_unit_tb/REG_DIRECCIONES_I" type="array">
+      <obj_property name="ElementShortName">REG_DIRECCIONES_I[31:0]</obj_property>
+      <obj_property name="ObjectShortName">REG_DIRECCIONES_I[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/control_unit_tb/REG_CONTROL_I" type="array">
+      <obj_property name="ElementShortName">REG_CONTROL_I[31:0]</obj_property>
+      <obj_property name="ObjectShortName">REG_CONTROL_I[31:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/control_unit_tb/REG_WR_DATA_I" type="array">
+      <obj_property name="ElementShortName">REG_WR_DATA_I[31:0]</obj_property>
+      <obj_property name="ObjectShortName">REG_WR_DATA_I[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/control_unit_tb/REG_WR_DATA_VALID_I" type="array">
+      <obj_property name="ElementShortName">REG_WR_DATA_VALID_I[31:0]</obj_property>
+      <obj_property name="ObjectShortName">REG_WR_DATA_VALID_I[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/control_unit_tb/REG_N_ADDR_I" type="array">
+      <obj_property name="ElementShortName">REG_N_ADDR_I[31:0]</obj_property>
+      <obj_property name="ObjectShortName">REG_N_ADDR_I[31:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/control_unit_tb/REG_N_TOT_CYC_I" type="array">
+      <obj_property name="ElementShortName">REG_N_TOT_CYC_I[31:0]</obj_property>
+      <obj_property name="ObjectShortName">REG_N_TOT_CYC_I[31:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/control_unit_tb/REG_PWM_INIT_I" type="array">
+      <obj_property name="ElementShortName">REG_PWM_INIT_I[31:0]</obj_property>
+      <obj_property name="ObjectShortName">REG_PWM_INIT_I[31:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/control_unit_tb/uut/REG_STATUS_O" type="array">
+      <obj_property name="ElementShortName">REG_STATUS_O[31:0]</obj_property>
+      <obj_property name="ObjectShortName">REG_STATUS_O[31:0]</obj_property>
+      <obj_property name="CustomSignalColor">#00FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/control_unit_tb/REG_REDUNDANCIAS_O" type="array">
+      <obj_property name="ElementShortName">REG_REDUNDANCIAS_O[31:0]</obj_property>
+      <obj_property name="ObjectShortName">REG_REDUNDANCIAS_O[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/control_unit_tb/REG_ERRORES_O" type="array">
+      <obj_property name="ElementShortName">REG_ERRORES_O[31:0]</obj_property>
+      <obj_property name="ObjectShortName">REG_ERRORES_O[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/control_unit_tb/uut/s_estado" type="other">
+      <obj_property name="ElementShortName">s_estado</obj_property>
+      <obj_property name="ObjectShortName">s_estado</obj_property>
+      <obj_property name="CustomSignalColor">#FFFF00</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/control_unit_tb/uut/r_wr_data_valid" type="logic">
+      <obj_property name="ElementShortName">r_wr_data_valid</obj_property>
+      <obj_property name="ObjectShortName">r_wr_data_valid</obj_property>
+      <obj_property name="CustomSignalColor">#FF00FF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/control_unit_tb/uut/r_n_addr" type="array">
+      <obj_property name="ElementShortName">r_n_addr[31:0]</obj_property>
+      <obj_property name="ObjectShortName">r_n_addr[31:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/control_unit_tb/uut/r_wr_addr" type="array">
+      <obj_property name="ElementShortName">r_wr_addr[2:0]</obj_property>
+      <obj_property name="ObjectShortName">r_wr_addr[2:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O" type="array">
+      <obj_property name="ElementShortName">PWM_TOP_INPUTS_O[0:31]</obj_property>
+      <obj_property name="ObjectShortName">PWM_TOP_INPUTS_O[0:31]</obj_property>
+      <obj_property name="CustomSignalColor">#008000</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[0]" type="array">
+         <obj_property name="ElementShortName">[0]</obj_property>
+         <obj_property name="ObjectShortName">[0]</obj_property>
+         <obj_property name="isExpanded"></obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[1]" type="array">
+         <obj_property name="ElementShortName">[1]</obj_property>
+         <obj_property name="ObjectShortName">[1]</obj_property>
+         <obj_property name="isExpanded"></obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[2]" type="array">
+         <obj_property name="ElementShortName">[2]</obj_property>
+         <obj_property name="ObjectShortName">[2]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[3]" type="array">
+         <obj_property name="ElementShortName">[3]</obj_property>
+         <obj_property name="ObjectShortName">[3]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[4]" type="array">
+         <obj_property name="ElementShortName">[4]</obj_property>
+         <obj_property name="ObjectShortName">[4]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[5]" type="array">
+         <obj_property name="ElementShortName">[5]</obj_property>
+         <obj_property name="ObjectShortName">[5]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[6]" type="array">
+         <obj_property name="ElementShortName">[6]</obj_property>
+         <obj_property name="ObjectShortName">[6]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[7]" type="array">
+         <obj_property name="ElementShortName">[7]</obj_property>
+         <obj_property name="ObjectShortName">[7]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[8]" type="array">
+         <obj_property name="ElementShortName">[8]</obj_property>
+         <obj_property name="ObjectShortName">[8]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[9]" type="array">
+         <obj_property name="ElementShortName">[9]</obj_property>
+         <obj_property name="ObjectShortName">[9]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[10]" type="array">
+         <obj_property name="ElementShortName">[10]</obj_property>
+         <obj_property name="ObjectShortName">[10]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[11]" type="array">
+         <obj_property name="ElementShortName">[11]</obj_property>
+         <obj_property name="ObjectShortName">[11]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[12]" type="array">
+         <obj_property name="ElementShortName">[12]</obj_property>
+         <obj_property name="ObjectShortName">[12]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[13]" type="array">
+         <obj_property name="ElementShortName">[13]</obj_property>
+         <obj_property name="ObjectShortName">[13]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[14]" type="array">
+         <obj_property name="ElementShortName">[14]</obj_property>
+         <obj_property name="ObjectShortName">[14]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[15]" type="array">
+         <obj_property name="ElementShortName">[15]</obj_property>
+         <obj_property name="ObjectShortName">[15]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[16]" type="array">
+         <obj_property name="ElementShortName">[16]</obj_property>
+         <obj_property name="ObjectShortName">[16]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[17]" type="array">
+         <obj_property name="ElementShortName">[17]</obj_property>
+         <obj_property name="ObjectShortName">[17]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[18]" type="array">
+         <obj_property name="ElementShortName">[18]</obj_property>
+         <obj_property name="ObjectShortName">[18]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[19]" type="array">
+         <obj_property name="ElementShortName">[19]</obj_property>
+         <obj_property name="ObjectShortName">[19]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[20]" type="array">
+         <obj_property name="ElementShortName">[20]</obj_property>
+         <obj_property name="ObjectShortName">[20]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[21]" type="array">
+         <obj_property name="ElementShortName">[21]</obj_property>
+         <obj_property name="ObjectShortName">[21]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[22]" type="array">
+         <obj_property name="ElementShortName">[22]</obj_property>
+         <obj_property name="ObjectShortName">[22]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[23]" type="array">
+         <obj_property name="ElementShortName">[23]</obj_property>
+         <obj_property name="ObjectShortName">[23]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[24]" type="array">
+         <obj_property name="ElementShortName">[24]</obj_property>
+         <obj_property name="ObjectShortName">[24]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[25]" type="array">
+         <obj_property name="ElementShortName">[25]</obj_property>
+         <obj_property name="ObjectShortName">[25]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[26]" type="array">
+         <obj_property name="ElementShortName">[26]</obj_property>
+         <obj_property name="ObjectShortName">[26]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[27]" type="array">
+         <obj_property name="ElementShortName">[27]</obj_property>
+         <obj_property name="ObjectShortName">[27]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[28]" type="array">
+         <obj_property name="ElementShortName">[28]</obj_property>
+         <obj_property name="ObjectShortName">[28]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[29]" type="array">
+         <obj_property name="ElementShortName">[29]</obj_property>
+         <obj_property name="ObjectShortName">[29]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[30]" type="array">
+         <obj_property name="ElementShortName">[30]</obj_property>
+         <obj_property name="ObjectShortName">[30]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/control_unit_tb/PWM_TOP_INPUTS_O[31]" type="array">
+         <obj_property name="ElementShortName">[31]</obj_property>
+         <obj_property name="ObjectShortName">[31]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="/control_unit_tb/PWM_TOP_OUTPUTS_I" type="array">
+      <obj_property name="ElementShortName">PWM_TOP_OUTPUTS_I[0:31]</obj_property>
+      <obj_property name="ObjectShortName">PWM_TOP_OUTPUTS_I[0:31]</obj_property>
+      <obj_property name="CustomSignalColor">#008000</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/control_unit_tb/uut/s_config_error" type="array">
+      <obj_property name="ElementShortName">s_config_error[31:0]</obj_property>
+      <obj_property name="ObjectShortName">s_config_error[31:0]</obj_property>
+      <obj_property name="CustomSignalColor">#FF0080</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="Radix">BINARYRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/control_unit_tb/uut/\gen_config_err(0)\/config_err_i/PWM_TOP_INPUTS_I" type="array">
+      <obj_property name="ElementShortName">PWM_TOP_INPUTS_I</obj_property>
+      <obj_property name="ObjectShortName">PWM_TOP_INPUTS_I</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+   </wvobject>
+   <wvobject fp_name="/control_unit_tb/uut/\gen_config_err(0)\/config_err_i/CONFIG_ERROR_O" type="logic">
+      <obj_property name="ElementShortName">CONFIG_ERROR_O</obj_property>
+      <obj_property name="ObjectShortName">CONFIG_ERROR_O</obj_property>
+      <obj_property name="CustomSignalColor">#800080</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/control_unit_tb/uut/\gen_config_err(1)\/config_err_i/PWM_TOP_INPUTS_I" type="array">
+      <obj_property name="ElementShortName">PWM_TOP_INPUTS_I</obj_property>
+      <obj_property name="ObjectShortName">PWM_TOP_INPUTS_I</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+   </wvobject>
+   <wvobject fp_name="/control_unit_tb/uut/\gen_config_err(1)\/config_err_i/CONFIG_ERROR_O" type="logic">
+      <obj_property name="ElementShortName">CONFIG_ERROR_O</obj_property>
+      <obj_property name="ObjectShortName">CONFIG_ERROR_O</obj_property>
+      <obj_property name="CustomSignalColor">#800080</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/control_unit_tb/uut/\gen_config_err(2)\/config_err_i/CONFIG_ERROR_O" type="logic">
+      <obj_property name="ElementShortName">CONFIG_ERROR_O</obj_property>
+      <obj_property name="ObjectShortName">CONFIG_ERROR_O</obj_property>
+      <obj_property name="CustomSignalColor">#800080</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+</wave_config>

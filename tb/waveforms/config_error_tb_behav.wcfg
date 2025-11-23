@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="config_error_tb_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="config_error_tb" />
+            <top_module name="my_pkg" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="3,686.000 ns"></ZoomStartTime>
+      <ZoomEndTime time="4,206.001 ns"></ZoomEndTime>
+      <Cursor1Time time="3,940.500 ns"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="160"></NameColumnWidth>
+      <ValueColumnWidth column_width="58"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="10" />
+   <wvobject fp_name="/config_error_tb/CLK_I" type="logic">
+      <obj_property name="ElementShortName">CLK_I</obj_property>
+      <obj_property name="ObjectShortName">CLK_I</obj_property>
+   </wvobject>
+   <wvobject fp_name="/config_error_tb/RST_I" type="logic">
+      <obj_property name="ElementShortName">RST_I</obj_property>
+      <obj_property name="ObjectShortName">RST_I</obj_property>
+   </wvobject>
+   <wvobject fp_name="/config_error_tb/sim" type="array">
+      <obj_property name="ElementShortName">sim[47:0]</obj_property>
+      <obj_property name="ObjectShortName">sim[47:0]</obj_property>
+      <obj_property name="Radix">ASCIIRADIX</obj_property>
+      <obj_property name="CustomSignalColor">#DCDCDC</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/config_error_tb/PWM_TOP_INPUTS_I" type="array">
+      <obj_property name="ElementShortName">PWM_TOP_INPUTS_I</obj_property>
+      <obj_property name="ObjectShortName">PWM_TOP_INPUTS_I</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/config_error_tb/PWM_TOP_INPUTS_I.en" type="logic">
+         <obj_property name="ElementShortName">.en</obj_property>
+         <obj_property name="ObjectShortName">.en</obj_property>
+      </wvobject>
+      <wvobject fp_name="/config_error_tb/PWM_TOP_INPUTS_I.upd_mem" type="logic">
+         <obj_property name="ElementShortName">.upd_mem</obj_property>
+         <obj_property name="ObjectShortName">.upd_mem</obj_property>
+      </wvobject>
+      <wvobject fp_name="/config_error_tb/PWM_TOP_INPUTS_I.wr_en" type="logic">
+         <obj_property name="ElementShortName">.wr_en</obj_property>
+         <obj_property name="ObjectShortName">.wr_en</obj_property>
+      </wvobject>
+      <wvobject fp_name="/config_error_tb/PWM_TOP_INPUTS_I.wr_addr" type="array">
+         <obj_property name="ElementShortName">.wr_addr[2:0]</obj_property>
+         <obj_property name="ObjectShortName">.wr_addr[2:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/config_error_tb/PWM_TOP_INPUTS_I.wr_data" type="array">
+         <obj_property name="ElementShortName">.wr_data[4:0]</obj_property>
+         <obj_property name="ObjectShortName">.wr_data[4:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/config_error_tb/PWM_TOP_INPUTS_I.n_addr" type="array">
+         <obj_property name="ElementShortName">.n_addr[2:0]</obj_property>
+         <obj_property name="ObjectShortName">.n_addr[2:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/config_error_tb/PWM_TOP_INPUTS_I.n_tot_cyc" type="array">
+         <obj_property name="ElementShortName">.n_tot_cyc[7:0]</obj_property>
+         <obj_property name="ObjectShortName">.n_tot_cyc[7:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/config_error_tb/PWM_TOP_INPUTS_I.pwm_init" type="logic">
+         <obj_property name="ElementShortName">.pwm_init</obj_property>
+         <obj_property name="ObjectShortName">.pwm_init</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="/config_error_tb/uut/r_cnt_n_addr" type="array">
+      <obj_property name="ElementShortName">r_cnt_n_addr[2:0]</obj_property>
+      <obj_property name="ObjectShortName">r_cnt_n_addr[2:0]</obj_property>
+      <obj_property name="CustomSignalColor">#FFFF00</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/config_error_tb/uut/r_cnt_n_tot" type="array">
+      <obj_property name="ElementShortName">r_cnt_n_tot[7:0]</obj_property>
+      <obj_property name="ObjectShortName">r_cnt_n_tot[7:0]</obj_property>
+      <obj_property name="CustomSignalColor">#FFFF00</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/config_error_tb/CONFIG_ERROR_O" type="logic">
+      <obj_property name="ElementShortName">CONFIG_ERROR_O</obj_property>
+      <obj_property name="ObjectShortName">CONFIG_ERROR_O</obj_property>
+      <obj_property name="CustomSignalColor">#FF00FF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/config_error_tb/uut/s_error" type="logic">
+      <obj_property name="ElementShortName">s_error</obj_property>
+      <obj_property name="ObjectShortName">s_error</obj_property>
+   </wvobject>
+   <wvobject fp_name="/config_error_tb/uut/s_err_n_addr" type="logic">
+      <obj_property name="ElementShortName">s_err_n_addr</obj_property>
+      <obj_property name="ObjectShortName">s_err_n_addr</obj_property>
+      <obj_property name="CustomSignalColor">#FF0080</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/config_error_tb/uut/s_err_n_tot" type="logic">
+      <obj_property name="ElementShortName">s_err_n_tot</obj_property>
+      <obj_property name="ObjectShortName">s_err_n_tot</obj_property>
+      <obj_property name="CustomSignalColor">#FF0080</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+</wave_config>

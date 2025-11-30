@@ -17,7 +17,8 @@ use work.my_pkg.all;
 -----------------------------------------------------------
 entity pwm_counter is
     generic (
-        G_RST_POL   : std_logic := '1'
+        G_RST_POL       : std_logic := '1';
+        G_STATE_MAX_L2  : natural := 32     -- Tamaño del vector de número de pulsos de un estado
     );
     port (
         CLK_I           : in std_logic;

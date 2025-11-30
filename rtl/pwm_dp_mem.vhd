@@ -18,15 +18,16 @@ use work.my_pkg.all;
 -----------------------------------------------------------
 entity pwm_dp_mem is
     generic (
-        G_DATA_W    : integer   := 32;    -- Ancho de datos en bits (G_STATE_MAX_L2)
-        G_ADDR_W    : integer   := 32;    -- Ancho de direcciones en bits (G_MEM_SIZE_MAX_L2)
-        G_MEM_DEPTH : integer   := 4096;  -- Profundidad de memoria (G_MEM_SIZE_MAX_N)
+        G_DATA_W    : natural   := 32;    -- Ancho de datos en bits (G_STATE_MAX_L2)
+        G_ADDR_W    : natural   := 32;    -- Ancho de direcciones en bits (G_MEM_SIZE_MAX_L2)
+        G_MEM_DEPTH : natural   := 4096;  -- Profundidad de memoria (G_MEM_SIZE_MAX_N)
         G_MEM_MODE  : string    := "LOW_LATENCY";   -- Modo de funcionamiento de la memoria ("HIGH_PERFORMANCE"/"LOW_LATENCY")
         G_RST_POL   : std_logic := '1'
     );
     port (
         CLK_I           : in std_logic;     
         RST_I           : in std_logic;
+        EN_I            : in std_logic; -- Mismo enable que el contador
         ---------
         EN_WR_CONFIG_I  : in std_logic;                                     -- Bloqueo de escritura de configuración
         WR_EN_I         : in std_logic;                                     -- Enable de escritura
@@ -93,8 +94,8 @@ architecture beh of pwm_dp_mem is
     -------------------------------------------------
     -- Constantes
     -------------------------------------------------
-    constant C_CEROS    : std_logic_vector((WR_ADDR_I'length - 1) downto 0) := (others => '0');
-    constant C_UNO      : std_logic_vector((WR_DATA_I'length - 1) downto 0) := (0 => '1', others => '0');
+    constant C_CEROS_ADDR   : std_logic_vector((WR_ADDR_I'length - 1) downto 0) := (others => '0');
+    constant C_UNO          : std_logic_vector((WR_DATA_I'length - 1) downto 0) := (0 => '1', others => '0');
 
     -------------------------------------------------
     -- Señales
@@ -139,6 +140,10 @@ architecture beh of pwm_dp_mem is
     signal s_switch_mem_d1  : std_logic;
     signal s_last_cyc_d1    : std_logic;
 
+    -- Enable del contador
+    signal s_en_cnt     : std_logic;
+    signal s_en_cnt_d1  : std_logic;
+
 begin
 
     -------------------------------------------------
@@ -149,7 +154,7 @@ begin
             C_DATA_WIDTH    => G_DATA_W,
             C_ADDR_WIDTH    => G_ADDR_W + 1,   -- (*) Un bit más para doblar la profundidad de memoria
             C_MEM_DEPTH     => 2*G_MEM_DEPTH,  -- (**) El doble de la profundidad, para aprovechar el dual port 
-            C_MEM_MODE      => "LOW_LATENCY"
+            C_MEM_MODE      => G_MEM_MODE
         )
         port map (
             N_ADDR      => r_n_addr,
@@ -177,6 +182,7 @@ begin
     -- Combinacionales
     -------------------------------------------------
     -- Entradas y salidas
+    s_en_cnt        <= EN_I;
     s_switch_mem    <= SWITCH_MEM_I;
     s_last_cyc      <= LAST_CYC_I;
     s_wr_en         <= WR_EN_I      when (EN_WR_CONFIG_I = '1') else '0';
@@ -252,6 +258,7 @@ begin
             s_rd_addr_d1    <= (others => '0');
             s_switch_mem_d1 <= '0';
             s_last_cyc_d1   <= '0';
+            s_en_cnt_d1     <= '0';
         elsif rising_edge(CLK_I) then
             if (s_wr_en = '1') then
                 s_wr_addr_d1    <= s_wr_addr;
@@ -259,6 +266,7 @@ begin
             s_rd_addr_d1    <= s_rd_addr;
             s_switch_mem_d1 <= s_switch_mem;
             s_last_cyc_d1   <= s_last_cyc;
+            s_en_cnt_d1     <= s_en_cnt;
         end if;
     end process P_EDGE;
 
@@ -271,8 +279,13 @@ begin
             r_prev_last2_state  <= (others => '0');
             r_next_first_state  <= (others => '0');
         elsif rising_edge(CLK_I) then
-            if (s_wr_en = '1') then
-                if (s_wr_addr = C_CEROS) then
+            if ((s_en_cnt = '0') and (s_en_cnt_d1 = '1')) then
+                r_next_config       <= (others => (others => '0'));
+                r_prev_last_state   <= (others => '0');
+                r_prev_last2_state  <= (others => '0');
+                r_next_first_state  <= (others => '0');
+            elsif (s_wr_en = '1') then
+                if (s_wr_addr = C_CEROS_ADDR) then
                     r_next_config       <= (0 => s_wr_data, others => (others => '0'));
                     r_prev_last_state   <= r_next_config(to_integer(unsigned(r_n_addr) - 1));
                     r_prev_last2_state  <= r_next_config(to_integer(unsigned(r_n_addr) - 2));

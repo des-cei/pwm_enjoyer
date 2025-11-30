@@ -28,7 +28,8 @@ architecture beh of pwm_counter_tb is
     -------------------------------------------------
     component pwm_counter is
         generic (
-            G_RST_POL   : std_logic := '1'
+            G_RST_POL       : std_logic := '1';
+            G_STATE_MAX_L2  : natural := 32     -- Tamaño del vector de número de pulsos de un estado
         );
         port (
             CLK_I           : in std_logic;
@@ -47,22 +48,22 @@ architecture beh of pwm_counter_tb is
     -- Señales
     -------------------------------------------------
     -- Simulación
-    constant clk_period : time := (10**9/G_SYS_CLK_HZ) * 1 ns;
+    constant clk_period : time := (10**9/C_SYS_CLK_HZ) * 1 ns;
     signal sim          : std_logic_vector(47 downto 0) := (others => '0'); -- 6 caracteres ASCII
 
     -- Port map
     signal CLK_I           : std_logic;
     signal RST_I           : std_logic;
     signal EN_I            : std_logic;                                      
-    signal CNT_LEN_I       : std_logic_vector((G_STATE_MAX_L2 - 1) downto 0);
-    signal CNT_LEN_NEXT_I  : std_logic_vector((G_STATE_MAX_L2 - 1) downto 0);
+    signal CNT_LEN_I       : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0);
+    signal CNT_LEN_NEXT_I  : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0);
     signal SWITCH_MEM_I    : std_logic;                                      
     signal PWM_INIT_I      : std_logic;                                      
     signal PWM_O           : std_logic;                                     
     signal CNT_END_O       : std_logic;
     
     -- Array de memoria
-    type memory is array (0 to (G_MEM_SIZE_MAX_N - 1)) of integer range 0 to G_STATE_MAX_N;
+    type memory is array (0 to (C_MEM_SIZE_MAX_N - 1)) of integer range 0 to C_STATE_MAX_N;
 
     -------------------------------------------------
     -- Funciones y procedimientos
@@ -86,14 +87,14 @@ architecture beh of pwm_counter_tb is
         signal pwm_init     : out std_logic
     ) is
     begin
-        rst             <= '1';
+        rst             <= C_RST_POL;
         en              <= '0';
         cnt_len         <= (others => '0');
         cnt_len_next    <= (others => '0');
         last_cyc        <= '1';
         pwm_init        <= '0';
         p_wait(clk_period);
-        rst             <= '0';
+        rst             <= not C_RST_POL;
     end procedure reset;
 
     procedure cnt_cyc (
@@ -137,7 +138,8 @@ begin
     -------------------------------------------------
     uut : component pwm_counter
         generic map (
-            G_RST_POL   => G_RST_POL
+            G_RST_POL       => C_RST_POL,
+            G_STATE_MAX_L2  => C_STATE_MAX_L2
         )
         port map (
             CLK_I           => CLK_I,

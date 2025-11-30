@@ -3,34 +3,44 @@ import os
 import math
 
 
-def generar_config(index):
+def generar_config(index, n_max_estados, n_max_dato):
     """Crear los datos iniciales."""
 
-    # N_ADDR
-    n_addr = random.randint(2, 7)
+    n_tot_cyc = 0     # (*)
+    iter = 0
+    while n_tot_cyc not in range(3, 2**32):
+        # N_ADDR
+        n_addr = random.randint(2, n_max_estados)
 
-    # WR_DATA
-    data = [random.randint(1, 20) for _ in range(n_addr)]
+        # WR_DATA
+        data = [random.randint(1, n_max_dato) for _ in range(n_addr)]
 
-    # Probabilidad de empezar en 1
-    if random.random() < 0.25:
-        data[0] = 1
+        # Probabilidad de empezar en 1
+        if random.random() < 0.25:
+            data[0] = 1
 
-    # Probabilidad de acabar en 1
-    if random.random() < 0.25:
-        data[-1] = 1
+        # Probabilidad de acabar en 1
+        if random.random() < 0.25:
+            data[-1] = 1
 
-    # Evita configuraciones prohibidas
-    datos_no_validos = [[1,1], [1,1,1], [1,2], [2,1]]
+        # Evita configuraciones prohibidas
+        datos_no_validos = [[1,1], [1,1,1], [1,2], [2,1]]
 
-    while data in datos_no_validos:
-        data = [random.randint(1, 20) for _ in range(n_addr)]
+        while data in datos_no_validos:
+            data = [random.randint(1, 20) for _ in range(n_addr)]
+
+        # Número de pulsos por ciclo (N_TOT_CYC)
+        n_tot_cyc = sum(data)
+
+        print(  f"CONFIG: {index}\n" +
+                f"TRY: {iter}\n" +
+                f"ESTADOS: {n_addr}\n" +
+                f"DATOS: {data}\n" +
+                f"SUMA: {n_tot_cyc} => {int(math.log2(n_tot_cyc)) + 1} bits \n")
+        iter += 1
 
     # WR_ADDR
     addr = list(range(n_addr))
-
-    # Número de pulsos por ciclo (N_TOT_CYC)
-    n_tot_cyc = sum(data)
 
     # PWM_INIT
     init = random.choice([0, 1])
@@ -41,7 +51,8 @@ def generar_config(index):
 
     # Update de la primera configuración
     if index == 0:
-        first_upd = random.randint(n_addr + 1, 15)
+        # first_upd = random.randint(n_addr + 1, 15)
+        first_upd = random.randint(n_addr + 1, n_addr + 15)
     else:
         first_upd = 0
 
@@ -107,16 +118,14 @@ def generar_entradas (config_dic, index, dic_salidas, long_ent_prev, config_dic_
                     "upd_mem": []
                 }
 
-    # longitud = config_dic["n_tot_cyc"] * config_dic["ciclos"]
-
     # Longitud del vector de entradas
     lon_start = 0
     lon_end = 0
     for i in range(len(dic_salidas["pwm"])):
         if (int(dic_salidas["n_config_out"][i], 2) == (index + 1)) and (int(dic_salidas["ciclo"][i], 2) == 3) and (int(dic_salidas["steps"][i], 2) == 2):
-            lon_start = i   # TODO REVISAR
+            lon_start = i
         elif (int(dic_salidas["n_config_out"][i], 2) == (index + 1)) and (int(dic_salidas["ciclo"][i], 2) == (config_dic["ciclos"] - 1)) and (int(dic_salidas["steps"][i], 2) == (config_dic["n_tot_cyc"] - 1)):
-            lon_end = i - config_dic_next["n_addr"] - 1     # TODO REVISAR
+            lon_end = i - config_dic_next["n_addr"] - 1
     longitud = random.randint(lon_start, lon_end) - long_ent_prev
 
     # Posición del update
@@ -126,9 +135,9 @@ def generar_entradas (config_dic, index, dic_salidas, long_ent_prev, config_dic_
     if index > 0:
         for i in range(len(dic_salidas["pwm"])):
             if (int(dic_salidas["n_config_out"][i], 2) == index) and (int(dic_salidas["ciclo"][i], 2) == (config_dic_prev["ciclos"] - 2)) and (int(dic_salidas["steps"][i], 2) == (config_dic_prev["n_tot_cyc"] - 1)):
-                upd_start = i   # TODO REVISAR
+                upd_start = i
             elif (int(dic_salidas["n_config_out"][i], 2) == index) and (int(dic_salidas["ciclo"][i], 2) == (config_dic_prev["ciclos"] - 1)) and (int(dic_salidas["steps"][i], 2) == (config_dic_prev["n_tot_cyc"] - 3)):
-                upd_end = i     # TODO REVISAR
+                upd_end = i
 
     upd_pos = random.randint(max(upd_start, long_ent_prev), upd_end) - long_ent_prev
     while (upd_pos < config_dic["n_addr"] + 1):
@@ -140,7 +149,7 @@ def generar_entradas (config_dic, index, dic_salidas, long_ent_prev, config_dic_
     # print(f"N: {index}\t Longitud entradas: {long_ent_prev}\t UPD pos: {upd_pos}\t Longitud: {longitud}")
     # print()
 
-    print(f'N: {index}\t N_ADDR: {config_dic["n_addr"]}\t UPD pos: {upd_pos}')
+    # print(f'N: {index}\t N_ADDR: {config_dic["n_addr"]}\t UPD pos: {upd_pos}')
 
     for n, i in enumerate(range(longitud)):
         dic_entradas["n_config"].append(index + 1)
@@ -198,7 +207,16 @@ if __name__ == "__main__":
 
     ruta = os.path.dirname(os.path.abspath(__file__))
 
-    n_config = 20
+    # * CONFIGURACIÓN DE USUARIO -------------------------------
+    # Hay que tener en cuenta que los registros son de 32 bits.
+    #   Si bien el requisto máximo es de 128 estados de 32 bits, el valor de
+    #   N_TOT_CYC = SUM(dato_i) no puede superar (2*32 - 1) (*)
+
+    n_config = 20           # Número de secuencias
+    n_max_estados = 128     # Número máximo de estados
+    n_max_dato = 1000;      # Valor máximo de un dato (2**32 - 1 = 4.294.967.295, pero para que sea coherente con TOT_CYC tiene que ser 1FF_FFFF = 33.554.431
+
+    # * --------------------------------------------------------
 
     config_list = []
     offset = 0
@@ -239,7 +257,7 @@ if __name__ == "__main__":
 
     # Generar configuraciones automáticamente
     for i in range(n_config):
-        config_list.append(generar_config(i))
+        config_list.append(generar_config(i, n_max_estados, n_max_dato))
         # print(config_list[i])
 
     # Generar configuraciones manualmente

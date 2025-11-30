@@ -24,17 +24,10 @@ entity state_ctrlr_autotest_tb is
         C_WIDTH             : integer := 8; -- Número de bits de las señales
         -- C_INPUTS_PATH       : string := "\\AMS_NAS\home\Universidad\TFM\pwm_enjoyer\tb\autotest\state_ctrlr_inputs.txt";
         -- C_OUTPUTS_REF_PATH  : string := "\\AMS_NAS\home\Universidad\TFM\pwm_enjoyer\tb\autotest\state_ctrlr_outputs_ref.txt";
-        -- C_OUTPUTS_PATH      : string := "\\AMS_NAS\home\Universidad\TFM\pwm_enjoyer\tb\autotest\state_ctrlr_outputs.txt";
+        -- C_OUTPUTS_PATH      : string := "\\AMS_NAS\home\Universidad\TFM\pwm_enjoyer\tb\autotest\state_ctrlr_outputs.txt"
         C_INPUTS_PATH       : string := "C:\Users\ajmsalgado\SynologyDrive\Universidad\TFM\pwm_enjoyer\tb\autotest\state_ctrlr_inputs.txt";
         C_OUTPUTS_REF_PATH  : string := "C:\Users\ajmsalgado\SynologyDrive\Universidad\TFM\pwm_enjoyer\tb\autotest\state_ctrlr_outputs_ref.txt";
-        C_OUTPUTS_PATH      : string := "C:\Users\ajmsalgado\SynologyDrive\Universidad\TFM\pwm_enjoyer\tb\autotest\state_ctrlr_outputs.txt";
-        -- Genéricos del componente
-        C_DATA_W    : integer   := G_STATE_MAX_L2;
-        C_ADDR_W    : integer   := G_MEM_SIZE_MAX_L2;
-        C_MAX_PUL_W : integer   := G_PERIOD_MAX_L2;
-        C_MEM_DEPTH : integer   := G_MEM_SIZE_MAX_N;
-        C_MEM_MODE  : string    := "LOW_LATENCY";
-        C_RST_POL   : std_logic := G_RST_POL
+        C_OUTPUTS_PATH      : string := "C:\Users\ajmsalgado\SynologyDrive\Universidad\TFM\pwm_enjoyer\tb\autotest\state_ctrlr_outputs.txt"
     );
 end entity state_ctrlr_autotest_tb;
 
@@ -48,7 +41,11 @@ architecture beh of state_ctrlr_autotest_tb is
     -------------------------------------------------
     component state_ctrlr is
         generic (
-            G_RST_POL   : std_logic := '1'
+            G_RST_POL           : std_logic := '1';
+            G_STATE_MAX_L2      : natural := 32;        -- Tamaño del vector de número de pulsos de un estado
+            G_MEM_SIZE_MAX_L2   : natural := 32;        -- Tamaño del vector del número máximo de estados
+            G_PERIOD_MAX_N      : natural := 2**32 - 1; -- Número máximo de periodos de reloj de una configuración
+            G_PERIOD_MAX_L2     : natural := 32         -- Tamaño del vector del número máximo de periodos de reloj de una configuración
         );
         port (
             CLK_I           : in std_logic;
@@ -77,12 +74,12 @@ architecture beh of state_ctrlr_autotest_tb is
     signal CLK_I           : std_logic;
     signal RST_I           : std_logic;                                             -- Reset asíncrono
     signal EN_I            : std_logic;                                             -- Señal de habilitación
-    signal N_ADDR_I        : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0);    -- Número de estados del PWM
-    signal N_TOT_CYC_I     : std_logic_vector((G_PERIOD_MAX_L2 - 1) downto 0);      -- Número total de ciclos que dura la configuración
+    signal N_ADDR_I        : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0);    -- Número de estados del PWM
+    signal N_TOT_CYC_I     : std_logic_vector((C_PERIOD_MAX_L2 - 1) downto 0);      -- Número total de ciclos que dura la configuración
     signal UPD_MEM_I       : std_logic;                                             -- Señal de actualización de memoria
     signal CNT_END_I       : std_logic;                                             -- Fin de estado
     signal NEXT_CONFIG_I   : mem  := (others => (others => '0'));                   -- Siguiente configuración
-    signal RD_ADDR_O       : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0);    -- Dirección de memoria (estado) a leer
+    signal RD_ADDR_O       : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0);    -- Dirección de memoria (estado) a leer
     signal EN_CNT_O        : std_logic;                                             -- Habiltador del contador
     signal SWITCH_MEM_O    : std_logic;                                             -- Cambio de memoria
     signal LAST_CYC_O      : std_logic;                                             -- Inidicador de último ciclo
@@ -104,7 +101,11 @@ begin
     -------------------------------------------------
     uut : component state_ctrlr
         generic map (
-            G_RST_POL   => G_RST_POL
+            G_RST_POL           => C_RST_POL,
+            G_STATE_MAX_L2      => C_STATE_MAX_L2,
+            G_MEM_SIZE_MAX_L2   => C_MEM_SIZE_MAX_L2,
+            G_PERIOD_MAX_N      => C_PERIOD_MAX_N,
+            G_PERIOD_MAX_L2     => C_PERIOD_MAX_L2
         )
         port map (
             CLK_I           => CLK_I,
@@ -137,9 +138,9 @@ begin
     -- Reset
     P_RST : process
     begin
-        RST_I <= G_RST_POL;
+        RST_I <= C_RST_POL;
         wait for clk_period;
-        RST_I <= not G_RST_POL;
+        RST_I <= not C_RST_POL;
         wait;
     end process;
 
@@ -163,17 +164,18 @@ begin
             end loop;
             -- User TODO: Asignación de entradas
             EN_I                <= to_stdlogicvector(data_in(0))(0);
-            N_ADDR_I            <= to_stdlogicvector(data_in(1))((C_ADDR_W - 1 ) downto 0);
-            N_TOT_CYC_I         <= to_stdlogicvector(data_in(2))((C_MAX_PUL_W - 1 ) downto 0);
+            N_ADDR_I            <= to_stdlogicvector(data_in(1))((N_ADDR_I'length - 1) downto 0);
+            N_TOT_CYC_I         <= to_stdlogicvector(data_in(2))((N_TOT_CYC_I'length - 1) downto 0);
+            -- N_TOT_CYC_I((C_WIDTH - 1) downto 0) <= to_stdlogicvector(data_in(2));
             UPD_MEM_I           <= to_stdlogicvector(data_in(3))(0);
             CNT_END_I           <= to_stdlogicvector(data_in(4))(0);
-            NEXT_CONFIG_I(0)    <= to_stdlogicvector(data_in(5))((C_DATA_W - 1 ) downto 0);
-            NEXT_CONFIG_I(1)    <= to_stdlogicvector(data_in(6))((C_DATA_W - 1 ) downto 0);
-            NEXT_CONFIG_I(2)    <= to_stdlogicvector(data_in(7))((C_DATA_W - 1 ) downto 0);
-            NEXT_CONFIG_I(3)    <= to_stdlogicvector(data_in(8))((C_DATA_W - 1 ) downto 0);
-            NEXT_CONFIG_I(4)    <= to_stdlogicvector(data_in(9))((C_DATA_W - 1 ) downto 0);
-            NEXT_CONFIG_I(5)    <= to_stdlogicvector(data_in(10))((C_DATA_W - 1 ) downto 0);
-            NEXT_CONFIG_I(6)    <= to_stdlogicvector(data_in(11))((C_DATA_W - 1 ) downto 0);
+            NEXT_CONFIG_I(0)    <= to_stdlogicvector(data_in(5))((C_STATE_MAX_L2 - 1) downto 0);
+            NEXT_CONFIG_I(1)    <= to_stdlogicvector(data_in(6))((C_STATE_MAX_L2 - 1) downto 0);
+            NEXT_CONFIG_I(2)    <= to_stdlogicvector(data_in(7))((C_STATE_MAX_L2 - 1) downto 0);
+            NEXT_CONFIG_I(3)    <= to_stdlogicvector(data_in(8))((C_STATE_MAX_L2 - 1) downto 0);
+            NEXT_CONFIG_I(4)    <= to_stdlogicvector(data_in(9))((C_STATE_MAX_L2 - 1) downto 0);
+            NEXT_CONFIG_I(5)    <= to_stdlogicvector(data_in(10))((C_STATE_MAX_L2 - 1) downto 0);
+            NEXT_CONFIG_I(6)    <= to_stdlogicvector(data_in(11))((C_STATE_MAX_L2 - 1) downto 0);
             ---------------------------------------
         end loop;
         -- wait until rising_edge(CLK_I);

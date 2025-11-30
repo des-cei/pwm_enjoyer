@@ -32,4 +32,10 @@ set_property -dict { PACKAGE_PIN B20 IOSTANDARD LVCMOS33}  [get_ports {PWMS[29]}
 set_property -dict { PACKAGE_PIN W8  IOSTANDARD LVCMOS33}  [get_ports {PWMS[30]}]; 	# RASPY33
 set_property -dict { PACKAGE_PIN Y8  IOSTANDARD LVCMOS33}  [get_ports {PWMS[31]}]; 	# RASPY35
 
-#Añadir puertos de comunicación
+# LEDS STATUS
+set_property -dict { PACKAGE_PIN N15 IOSTANDARD LVCMOS33}  [get_ports {RGB_1[0]}]; 	# LD4 RED
+set_property -dict { PACKAGE_PIN G17 IOSTANDARD LVCMOS33}  [get_ports {RGB_1[1]}]; 	# LD4 GREEN
+set_property -dict { PACKAGE_PIN L15 IOSTANDARD LVCMOS33}  [get_ports {RGB_1[2]}]; 	# LD4 BLUE
+set_property -dict { PACKAGE_PIN M15 IOSTANDARD LVCMOS33}  [get_ports {RGB_2[0]}]; 	# LD5 RED
+set_property -dict { PACKAGE_PIN L14 IOSTANDARD LVCMOS33}  [get_ports {RGB_2[1]}]; 	# LD5 GREEN
+set_property -dict { PACKAGE_PIN G14 IOSTANDARD LVCMOS33}  [get_ports {RGB_2[2]}]; 	# LD5 BLUE

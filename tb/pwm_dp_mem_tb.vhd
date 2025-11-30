@@ -29,9 +29,9 @@ architecture beh of pwm_dp_mem_tb is
     -------------------------------------------------
     component pwm_dp_mem is
         generic (
-            G_DATA_W    : integer   := 32;    -- Ancho de datos en bits (G_STATE_MAX_L2)
-            G_ADDR_W    : integer   := 32;    -- Ancho de direcciones en bits (G_MEM_SIZE_MAX_L2)
-            G_MEM_DEPTH : integer   := 4096;  -- Profundidad de memoria (G_MEM_SIZE_MAX_N)
+            G_DATA_W    : natural   := 32;    -- Ancho de datos en bits (G_STATE_MAX_L2)
+            G_ADDR_W    : natural   := 32;    -- Ancho de direcciones en bits (G_MEM_SIZE_MAX_L2)
+            G_MEM_DEPTH : natural   := 4096;  -- Profundidad de memoria (G_MEM_SIZE_MAX_N)
             G_MEM_MODE  : string    := "LOW_LATENCY";   -- Modo de funcionamiento de la memoria ("HIGH_PERFORMANCE"/"LOW_LATENCY")
             G_RST_POL   : std_logic := '1'
         );
@@ -56,7 +56,7 @@ architecture beh of pwm_dp_mem_tb is
     -- Señales
     -------------------------------------------------
     -- Simulación
-    constant clk_period : time := (10**9/G_SYS_CLK_HZ) * 1 ns;
+    constant clk_period : time := (10**9/C_SYS_CLK_HZ) * 1 ns;
     signal sim          : std_logic_vector(47 downto 0) := (others => '0'); -- 6 caracteres ASCII
 
     -- Port map
@@ -64,26 +64,26 @@ architecture beh of pwm_dp_mem_tb is
     signal RST_I            : std_logic;
     signal EN_WR_CONFIG_I   : std_logic;                                
     signal WR_EN_I          : std_logic;                                
-    signal WR_ADDR_I        : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0);
-    signal WR_DATA_I        : std_logic_vector((G_STATE_MAX_L2 - 1) downto 0);
+    signal WR_ADDR_I        : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0);
+    signal WR_DATA_I        : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0);
     signal SWITCH_MEM_I     : std_logic;                                
     signal LAST_CYC_I       : std_logic;    
-    signal N_ADDR_I         : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0);                            
-    signal RD_ADDR_I        : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0) := (others => '0');
-    signal RD_DATA_O        : std_logic_vector((G_STATE_MAX_L2 - 1) downto 0);
-    signal RD_DATA_NEXT_O   : std_logic_vector((G_STATE_MAX_L2 - 1) downto 0);
+    signal N_ADDR_I         : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0);                            
+    signal RD_ADDR_I        : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0) := (others => '0');
+    signal RD_DATA_O        : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0);
+    signal RD_DATA_NEXT_O   : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0);
     signal NEXT_CONFIG_O    : mem;
 
     -- Constantes
     constant C_CEROS    : std_logic_vector((RD_ADDR_I'length - 1) downto 0) := (others => '0');
 
     -- Soporte
-    type memory is array (0 to (G_MEM_SIZE_MAX_N - 1)) of integer range 0 to G_STATE_MAX_N;
+    type memory is array (0 to (C_MEM_SIZE_MAX_N - 1)) of integer range 0 to C_STATE_MAX_N;
     shared variable v_mem       : memory := (others => 0);
     shared variable v_mem_len   : integer := 0;
     shared variable v_mem_int       : memory := (others => 0);
     shared variable v_mem_len_int   : integer := 0;
-    signal addr_cnt             : integer range 0 to G_STATE_MAX_N;
+    signal addr_cnt             : integer range 0 to C_STATE_MAX_N;
     signal req_switch_1         : std_logic := '0';
     signal req_switch_2         : std_logic := '0';
     signal init                 : std_logic := '1';
@@ -111,7 +111,7 @@ architecture beh of pwm_dp_mem_tb is
         signal n_addr       : out std_logic_vector
     ) is 
     begin
-        rst             <= G_RST_POL;
+        rst             <= C_RST_POL;
         en_wr_config    <= '1';
         wr_en           <= '0';
         wr_addr         <= (others => '0');
@@ -119,7 +119,7 @@ architecture beh of pwm_dp_mem_tb is
         switch          <= '0';
         n_addr          <= (others => '0');
         p_wait(clk_period);
-        rst             <= not G_RST_POL;
+        rst             <= not C_RST_POL;
     end procedure reset;
 
     -- Pulso
@@ -164,11 +164,11 @@ begin
     -------------------------------------------------
     uut : component pwm_dp_mem
         generic map (
-            G_DATA_W    => G_STATE_MAX_L2,
-            G_ADDR_W    => G_MEM_SIZE_MAX_L2,
-            G_MEM_DEPTH => G_MEM_SIZE_MAX_N,
+            G_DATA_W    => C_STATE_MAX_L2,
+            G_ADDR_W    => C_MEM_SIZE_MAX_L2,
+            G_MEM_DEPTH => C_MEM_SIZE_MAX_N,
             G_MEM_MODE  => "LOW_LATENCY",
-            G_RST_POL   => G_RST_POL
+            G_RST_POL   => C_RST_POL
         )
         port map (
             CLK_I           => CLK_I,
@@ -201,7 +201,7 @@ begin
     -- Simulación RD_ADDR
     P_RD_ADDR : process (CLK_I, RST_I)
     begin
-        if (RST_I = G_RST_POL) then
+        if (RST_I = C_RST_POL) then
             v_mem_int       := (others => 0);
             v_mem_len_int   := 0;
             RD_ADDR_I       <= (others => '0');
@@ -231,7 +231,7 @@ begin
     P_SWITCH : process (RST_I, CLK_I)
         variable v_last : integer := 0;
     begin
-        if (RST_I = G_RST_POL) then
+        if (RST_I = C_RST_POL) then
             req_switch_2    <= '0';
             LAST_CYC_I      <= '0';
             SWITCH_MEM_I    <= '0';

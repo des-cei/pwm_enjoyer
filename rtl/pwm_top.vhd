@@ -40,29 +40,30 @@ use work.my_pkg.all;
 -----------------------------------------------------------
 entity pwm_top is
     generic (
-        G_DATA_W    : integer   := G_STATE_MAX_L2;      -- Ancho de datos en bits (G_STATE_MAX_L2)
-        G_ADDR_W    : integer   := G_MEM_SIZE_MAX_L2;   -- Ancho de direcciones en bits (G_MEM_SIZE_MAX_L2)
-        G_MAX_PUL_W : integer   := G_PERIOD_MAX_L2;     -- Número máximo de pulsos de una configuración (G_PERIOD_MAX_L2)
-        G_MEM_DEPTH : integer   := G_MEM_SIZE_MAX_N;    -- Profundidad de memoria (G_MEM_SIZE_MAX_N)
-        G_MEM_MODE  : string    := "LOW_LATENCY";       -- Modo de funcionamiento de la memoria ("HIGH_PERFORMANCE"/"LOW_LATENCY")
-        G_RST_POL   : std_logic := '1'
+        G_STATE_MAX_L2      : natural   := 32;              -- Ancho de datos en bits
+        G_MEM_SIZE_MAX_L2   : natural   := 32;              -- Ancho de direcciones en bits
+        G_PERIOD_MAX_N      : natural   := 2**32 - 1;       -- Número máximo de periodos de reloj
+        G_PERIOD_MAX_L2     : natural   := 32;              -- Tamaño del vector del número máximo de pulsos de una configuración
+        G_MEM_SIZE_MAX_N    : natural   := 128;             -- Profundidad de memoria
+        G_MEM_MODE          : string    := "LOW_LATENCY";   -- Modo de funcionamiento de la memoria
+        G_RST_POL           : std_logic := '1'
     );
     port (
         CLK_I           : in std_logic;     
         RST_I           : in std_logic;
         -- Activación de memoria
-        EN_I            : in std_logic;                                     -- Señal de habilitación del PWM
-        UPD_MEM_I       : in std_logic;                                     -- Pulso de actualización de memoria
+        EN_I            : in std_logic;                                             -- Señal de habilitación del PWM
+        UPD_MEM_I       : in std_logic;                                             -- Pulso de actualización de memoria
         -- Configuración de la memoria
-        WR_EN_I         : in std_logic;                                     -- Enable de escritura
-        WR_ADDR_I       : in std_logic_vector((G_ADDR_W - 1) downto 0);     -- Dirección de escritura
-        WR_DATA_I       : in std_logic_vector((G_DATA_W - 1) downto 0);     -- Dato de escritura
-        N_ADDR_I        : in std_logic_vector((G_ADDR_W - 1) downto 0);     -- Número de estados
-        N_TOT_CYC_I     : in std_logic_vector((G_MAX_PUL_W - 1) downto 0);  -- Número total de ciclos que dura la configuración
-        PWM_INIT_I      : in std_logic;                                     -- Valor inicial de salida
+        WR_EN_I         : in std_logic;                                             -- Enable de escritura
+        WR_ADDR_I       : in std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0);    -- Dirección de escritura
+        WR_DATA_I       : in std_logic_vector((G_STATE_MAX_L2 - 1) downto 0);       -- Dato de escritura
+        N_ADDR_I        : in std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0);    -- Número de estados
+        N_TOT_CYC_I     : in std_logic_vector((G_PERIOD_MAX_L2 - 1) downto 0);      -- Número total de ciclos que dura la configuración
+        PWM_INIT_I      : in std_logic;                                             -- Valor inicial de salida
         -- Salidas
-        PWM_O           : out std_logic;                                    -- Salida del PWM
-        EN_WR_CONFIG_O  : out std_logic                                     -- Habilitación de configuración de memoria
+        PWM_O           : out std_logic;                                            -- Salida del PWM
+        EN_WR_CONFIG_O  : out std_logic                                             -- Habilitación de configuración de memoria
     );
 end entity pwm_top;
 
@@ -92,22 +93,22 @@ architecture str of pwm_top is
     -- Interconexiones
     signal s_cnt_end        : std_logic := '0';
     signal s_next_config    : mem := (others => (others => '0'));
-    signal s_rd_addr        : std_logic_vector((G_ADDR_W - 1) downto 0) := (others => '0');
+    signal s_rd_addr        : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0) := (others => '0');
     signal s_en_cnt         : std_logic := '0';
     signal s_switch_mem     : std_logic := '0';
     signal s_last_cyc       : std_logic := '0';
     signal s_en_wr_config   : std_logic := '0';
-    signal s_rd_data        : std_logic_vector((G_DATA_W - 1) downto 0) := (others => '0');
-    signal s_rd_data_next   : std_logic_vector((G_DATA_W - 1) downto 0) := (others => '0');
+    signal s_rd_data        : std_logic_vector((G_STATE_MAX_L2 - 1) downto 0) := (others => '0');
+    signal s_rd_data_next   : std_logic_vector((G_STATE_MAX_L2 - 1) downto 0) := (others => '0');
 
-    -------------------------------------------------
-    -- ILA
-    -------------------------------------------------
-    attribute MARK_DEBUG : string;
-    attribute MARK_DEBUG of EN_I            : signal is "true";
-    attribute MARK_DEBUG of UPD_MEM_I       : signal is "true";
-    attribute MARK_DEBUG of PWM_O           : signal is "true";
-    attribute MARK_DEBUG of EN_WR_CONFIG_O  : signal is "true";
+    -- -------------------------------------------------
+    -- -- ILA
+    -- -------------------------------------------------
+    -- attribute MARK_DEBUG : string;
+    -- attribute MARK_DEBUG of EN_I            : signal is "true";
+    -- attribute MARK_DEBUG of UPD_MEM_I       : signal is "true";
+    -- attribute MARK_DEBUG of PWM_O           : signal is "true";
+    -- attribute MARK_DEBUG of EN_WR_CONFIG_O  : signal is "true";
 
 begin
 
@@ -117,7 +118,11 @@ begin
     -- Máquina de estados
     fsm_i : entity work.state_ctrlr
         generic map (
-            G_RST_POL       => G_RST_POL
+            G_RST_POL           => G_RST_POL,
+            G_STATE_MAX_L2      => G_STATE_MAX_L2,
+            G_MEM_SIZE_MAX_L2   => G_MEM_SIZE_MAX_L2,
+            G_PERIOD_MAX_N      => G_PERIOD_MAX_N,
+            G_PERIOD_MAX_L2     => G_PERIOD_MAX_L2
         )
         port map (
             CLK_I           => CLK_I,
@@ -138,15 +143,16 @@ begin
     -- Memoria
     mem_i : entity work.pwm_dp_mem
         generic map (
-            G_DATA_W        => G_DATA_W,
-            G_ADDR_W        => G_ADDR_W,
-            G_MEM_DEPTH     => G_MEM_DEPTH,
+            G_DATA_W        => G_STATE_MAX_L2,
+            G_ADDR_W        => G_MEM_SIZE_MAX_L2,
+            G_MEM_DEPTH     => G_MEM_SIZE_MAX_N,
             G_MEM_MODE      => G_MEM_MODE,
             G_RST_POL       => G_RST_POL
         )
         port map (
             CLK_I           => CLK_I,
             RST_I           => RST_I,
+            EN_I            => s_en_cnt,
             EN_WR_CONFIG_I  => s_en_wr_config,
             WR_EN_I         => WR_EN_I,
             WR_ADDR_I       => WR_ADDR_I,
@@ -163,7 +169,8 @@ begin
     -- Contador
     cnt_i : entity work.pwm_counter
         generic map (
-            G_RST_POL       => G_RST_POL
+            G_RST_POL       => G_RST_POL,
+            G_STATE_MAX_L2  => G_STATE_MAX_L2
         )
         port map (
             CLK_I           => CLK_I,

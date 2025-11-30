@@ -31,19 +31,19 @@ architecture beh of pwm_enjoyer_tb is
             -- Valor activo del reset
             G_RST_POL           : std_logic := '1';
             -- Número máximo de pulsos que dura un estado
-            G_STATE_MAX_N       : integer := 20;
+            G_STATE_MAX_N       : natural := 2**32 - 1;
             -- Tamaño del vector de número de pulsos de un estado {integer(ceil(log2(real(G_STATE_MAX_N))))}
-            G_STATE_MAX_L2      : integer := 5;
+            G_STATE_MAX_L2      : natural := 32;
             -- Número máximo de estados, tamaño máximo de la memoria
-            G_MEM_SIZE_MAX_N    : integer := 8;
+            G_MEM_SIZE_MAX_N    : natural := 128;
             -- Tamaño del vector del número de estados {integer(ceil(log2(real(G_MEM_SIZE_MAX_N))))}
-            G_MEM_SIZE_MAX_L2   : integer := 3;
+            G_MEM_SIZE_MAX_L2   : natural := 32;
             -- Número máximo de ciclos de reloj que puede durar una configuración {G_STATE_MAX_N*G_MEM_SIZE_MAX_N}
-            G_PERIOD_MAX_N      : integer := 160;
+            G_PERIOD_MAX_N      : natural := 2**32 - 1;
             -- Tamaño del vector del número máximo de ciclos de reloj {integer(ceil(log2(real(G_PERIOD_MAX_N))))}
-            G_PERIOD_MAX_L2     : integer := 8;
+            G_PERIOD_MAX_L2     : natural := 32;
             -- Número de PWMS
-            G_PWM_N             : integer := 32
+            G_PWM_N             : natural := 32
         );
         port (
             CLK_I               : in std_logic;
@@ -68,7 +68,7 @@ architecture beh of pwm_enjoyer_tb is
     -- Señales
     -------------------------------------------------
     -- Simulación
-    constant clk_period : time := (10**9/G_SYS_CLK_HZ) * 1 ns;
+    constant clk_period : time := (10**9/C_SYS_CLK_HZ) * 1 ns;
     signal sim          : std_logic_vector(47 downto 0) := (others => '0'); -- 6 caracteres ASCII
 
     -- Port map
@@ -84,7 +84,7 @@ architecture beh of pwm_enjoyer_tb is
     signal REG_REDUNDANCIAS_O   : std_logic_vector(31 downto 0);
     signal REG_ERRORES_O        : std_logic_vector(31 downto 0);
     signal REG_STATUS_O         : std_logic_vector(31 downto 0);
-    signal PWMS_O               : std_logic_vector((G_PWM_N - 1) downto 0);
+    signal PWMS_O               : std_logic_vector((C_PWM_N - 1) downto 0);
 
     -------------------------------------------------
     -- Funciones y procedimientos
@@ -110,7 +110,7 @@ architecture beh of pwm_enjoyer_tb is
         signal reg_init     : out std_logic_vector
     ) is
     begin
-        rst         <= G_RST_POL;
+        rst         <= C_RST_POL;
         reg_dir     <= (others => '0');
         reg_con     <= (others => '0');
         reg_wr_d    <= (others => '0');
@@ -119,7 +119,7 @@ architecture beh of pwm_enjoyer_tb is
         reg_n_to    <= (others => '0');
         reg_init    <= (others => '0');
         p_wait(clk_period);
-        rst         <= not G_RST_POL;
+        rst         <= not C_RST_POL;
     end procedure reset;
 
     -- Registos write data
@@ -143,14 +143,14 @@ begin
     -------------------------------------------------
     uut : component pwm_enjoyer
         generic map (
-            G_RST_POL           => G_RST_POL,
-            G_STATE_MAX_N       => G_STATE_MAX_N,
-            G_STATE_MAX_L2      => G_STATE_MAX_L2,
-            G_MEM_SIZE_MAX_N    => G_MEM_SIZE_MAX_N,
-            G_MEM_SIZE_MAX_L2   => G_MEM_SIZE_MAX_L2,
-            G_PERIOD_MAX_N      => G_PERIOD_MAX_N,
-            G_PERIOD_MAX_L2     => G_PERIOD_MAX_L2,
-            G_PWM_N             => G_PWM_N
+            G_RST_POL           => C_RST_POL,
+            G_STATE_MAX_N       => C_STATE_MAX_N,
+            G_STATE_MAX_L2      => C_STATE_MAX_L2,
+            G_MEM_SIZE_MAX_N    => C_MEM_SIZE_MAX_N,
+            G_MEM_SIZE_MAX_L2   => C_MEM_SIZE_MAX_L2,
+            G_PERIOD_MAX_N      => C_PERIOD_MAX_N,
+            G_PERIOD_MAX_L2     => C_PERIOD_MAX_L2,
+            G_PWM_N             => C_PWM_N
         )
         port map (
             CLK_I               => CLK_I,
@@ -308,7 +308,7 @@ begin
         p_wait(10*clk_period);
         REG_DIRECCIONES_I   <= x"FFFFFFFF";
         REG_CONTROL_I       <= x"00000004";
-        p_wait(10*clk_period);
+        p_wait(30*clk_period);
 
         ------------------------------
         -- Apagar todos

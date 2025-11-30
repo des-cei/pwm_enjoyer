@@ -28,7 +28,9 @@ architecture beh of config_error_tb is
     -------------------------------------------------
     component config_error is
         generic (
-            G_RST_POL   : std_logic := '1'
+            G_RST_POL           : std_logic := '1';
+            G_MEM_SIZE_MAX_L2   : natural := 32;    -- Tamaño del vector del número máximo de estados
+            G_PERIOD_MAX_L2     : natural := 32     -- Tamaño del vector del número máximo de periodos de reloj de una configuración
         );
         port (
             CLK_I               : in std_logic;
@@ -42,7 +44,7 @@ architecture beh of config_error_tb is
     -- Señales
     -------------------------------------------------
     -- Simulación
-    constant clk_period : time := (10**9/G_SYS_CLK_HZ) * 1 ns;
+    constant clk_period : time := (10**9/C_SYS_CLK_HZ) * 1 ns;
     signal sim          : std_logic_vector(47 downto 0) := (others => '0'); -- 6 caracteres ASCII
 
     -- Port map
@@ -69,7 +71,7 @@ architecture beh of config_error_tb is
         signal pwm_in   : out pwm_top_in
     ) is
     begin
-        rst                 <= G_RST_POL;
+        rst                 <= C_RST_POL;
         pwm_in.en           <= '0';
         pwm_in.upd_mem      <= '0';
         pwm_in.wr_en        <= '0';
@@ -79,7 +81,7 @@ architecture beh of config_error_tb is
         pwm_in.n_tot_cyc    <= (others => '0');
         pwm_in.pwm_init     <= '0';
         p_wait(clk_period);
-        rst         <= not G_RST_POL;
+        rst         <= not C_RST_POL;
     end procedure reset;
 
 begin
@@ -89,7 +91,9 @@ begin
     -------------------------------------------------
     uut : component config_error
         generic map (
-            G_RST_POL   => G_RST_POL
+            G_RST_POL           => C_RST_POL,
+            G_MEM_SIZE_MAX_L2   => C_MEM_SIZE_MAX_L2,
+            G_PERIOD_MAX_L2     => C_PERIOD_MAX_L2
         )
         port map (
             CLK_I               => CLK_I,
@@ -124,15 +128,6 @@ begin
         sim <= x"49_4E_49_54_20_20";    -- INIT
         reset(RST_I, PWM_TOP_INPUTS_I);
         p_wait(10*clk_period);
-
-        -- TODO: CASOS A COMPROBAR
-
-        -- Configuración correcta
-        -- Se programan más estados que N_ADDR
-        -- Se programan menos estados que N_ADDR
-        -- Se programan más ciclos que N_TOT_CYC
-        -- Se programan menos ciclos que N_TOT_CYC
-        -- Combinaciones y secuencias de estos
 
         ------------------------------
         -- CONFIG 1 OK

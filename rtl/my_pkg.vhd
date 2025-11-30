@@ -19,37 +19,45 @@ package my_pkg is
     -- Genéricos
     -------------------------------------------------
     -- Relojes
-    constant G_SYS_CLK_HZ   : integer := 125_000_000;    -- Reloj del sistema
+    constant C_SYS_CLK_HZ   : natural := 125_000_000;    -- Reloj del sistema
 
     -- Nivel activo del reset
-    constant G_RST_POL      : std_logic := '1';
+    constant C_RST_POL      : std_logic := '1';
 
-    -- Tamaño de los parámetros
-    constant G_STATE_MAX_N      : integer := 20;                                            -- Número máximo de pulsos que dura un estado
-    constant G_STATE_MAX_L2     : integer := integer(ceil(log2(real(G_STATE_MAX_N))));      -- Tamaño del vector de número de pulsos de un estado
-    constant G_MEM_SIZE_MAX_N   : integer := 8;                                             -- Número máximo de estados, tamaño máximo de la memoria
-    constant G_MEM_SIZE_MAX_L2  : integer := integer(ceil(log2(real(G_MEM_SIZE_MAX_N))));   -- Tamaño del vector del número de estados
-    constant G_PERIOD_MAX_N     : integer := G_STATE_MAX_N*G_MEM_SIZE_MAX_N;                -- Número máximo de periodos de reloj que puede durar una configuración
-    constant G_PERIOD_MAX_L2    : integer := integer(ceil(log2(real(G_PERIOD_MAX_N))));     -- Tamaño del vector del número de periodos
+    -- Profunidad de la memoria
+    -- constant C_MEM_SIZE_MAX_N   : natural := 8;                                             -- Número máximo de estados
+    constant C_MEM_SIZE_MAX_N   : natural := 128;                                           -- Número máximo de estados
+    constant C_MEM_SIZE_MAX_L2  : natural := integer(ceil(log2(real(C_MEM_SIZE_MAX_N))));   -- Tamaño del vector
+
+    -- Ancho de la memoria
+    constant C_STATE_MAX_N      : natural := 20;                                            -- Número máximo de pulsos que dura un estado
+    -- constant C_STATE_MAX_N      : natural := 33_554_431;                                    -- Número máximo de pulsos que dura un estado
+    constant C_STATE_MAX_L2     : natural := integer(ceil(log2(real(C_STATE_MAX_N))));      -- Tamaño del vector
+    -- NOTE : Como el acceso a los registros es de 32 bits, para poder tener N_TOT_CYC = FFFF_FFFF, en el peor caso posible (que se 
+    --      configuren C_MEM_SIZE_MAX_N estados, el valor máximo de los estados queda limitado a FFFF_FFFF / 128 = 1FF_FFFF = 33_554_431)
+
+    -- Suma de todos los estados de la configuración
+    constant C_PERIOD_MAX_N     : natural := C_STATE_MAX_N*C_MEM_SIZE_MAX_N;                -- Número máximo de periodos de reloj
+    constant C_PERIOD_MAX_L2    : natural := integer(ceil(log2(real(C_PERIOD_MAX_N))));     -- Tamaño del vector
 
     -- Número máximo de módulos PWM
-    constant G_PWM_N    : integer := 32;
+    constant C_PWM_N    : natural := 32;
 
     -------------------------------------------------
     -- Tipos
     -------------------------------------------------
     -- Memoria de estados
-    type mem is array (0 to G_MEM_SIZE_MAX_N - 1) of std_logic_vector((G_STATE_MAX_L2 - 1) downto 0);
+    type mem is array (0 to C_MEM_SIZE_MAX_N - 1) of std_logic_vector((C_STATE_MAX_L2 - 1) downto 0);
 
     -- Interfaces UC - PWM_TOP
     type pwm_top_in is record
         en              : std_logic;
         upd_mem         : std_logic;
         wr_en           : std_logic;
-        wr_addr         : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0);
-        wr_data         : std_logic_vector((G_STATE_MAX_L2 - 1) downto 0);
-        n_addr          : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0);
-        n_tot_cyc       : std_logic_vector((G_PERIOD_MAX_L2 - 1) downto 0);
+        wr_addr         : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0);
+        wr_data         : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0);
+        n_addr          : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0);
+        n_tot_cyc       : std_logic_vector((C_PERIOD_MAX_L2 - 1) downto 0);
         pwm_init        : std_logic;
     end record pwm_top_in;
 
@@ -65,8 +73,8 @@ package my_pkg is
         en_wr_config_red_2  : std_logic;
     end record pwm_top_out;
 
-    type modulo_pwm_in is array (0 to (G_PWM_N - 1)) of pwm_top_in;
-    type modulo_pwm_out is array (0 to (G_PWM_N - 1)) of pwm_top_out;
+    type modulo_pwm_in is array (0 to (C_PWM_N - 1)) of pwm_top_in;
+    type modulo_pwm_out is array (0 to (C_PWM_N - 1)) of pwm_top_out;
 
     -------------------------------------------------
     -- Constantes

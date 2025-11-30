@@ -11,23 +11,23 @@ entity pwm_enjoyer_axi is
         -- Valor activo del reset
         G_RST_POL           : std_logic := '1';
         -- Número máximo de pulsos que dura un estado
-        G_STATE_MAX_N       : integer := 20;
+        G_STATE_MAX_N       : natural := 20;
         -- Tamaño del vector de número de pulsos de un estado {integer(ceil(log2(real(G_STATE_MAX_N))))}
-        G_STATE_MAX_L2      : integer := 5;
+        G_STATE_MAX_L2      : natural := 5;
         -- Número máximo de estados, tamaño máximo de la memoria
-        G_MEM_SIZE_MAX_N    : integer := 8;
+        G_MEM_SIZE_MAX_N    : natural := 8;
         -- Tamaño del vector del número de estados {integer(ceil(log2(real(G_MEM_SIZE_MAX_N))))}
-        G_MEM_SIZE_MAX_L2   : integer := 3;
+        G_MEM_SIZE_MAX_L2   : natural := 3;
         -- Número máximo de ciclos de reloj que puede durar una configuración {G_STATE_MAX_N*G_MEM_SIZE_MAX_N}
-        G_PERIOD_MAX_N      : integer := 160;
+        G_PERIOD_MAX_N      : natural := 160;
         -- Tamaño del vector del número máximo de ciclos de reloj {integer(ceil(log2(real(G_PERIOD_MAX_N))))}
-        G_PERIOD_MAX_L2     : integer := 8;
+        G_PERIOD_MAX_L2     : natural := 8;
         -- Número de PWMS
-        G_PWM_N             : integer := 32;
+        G_PWM_N             : natural := 32;
 		-- Width of S_AXI data bus
-		C_S_AXI_DATA_WIDTH	: integer := 32;
+		C_S_AXI_DATA_WIDTH	: natural := 32;
 		-- Width of S_AXI address bus
-		C_S_AXI_ADDR_WIDTH	: integer := 6
+		C_S_AXI_ADDR_WIDTH	: natural := 6
 	);
 	port (
 		-- Users to add ports here

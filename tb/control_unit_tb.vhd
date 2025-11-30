@@ -29,7 +29,7 @@ architecture beh of control_unit_tb is
     component control_unit is
         generic (
             G_RST_POL   : std_logic := '1';
-            G_PWM_N     : integer := 32     -- Número máximo de módulos PWM. Si hay más de 32 hay que añadir más registros (*)
+            G_PWM_N     : natural := 32     -- Número máximo de módulos PWM. Si hay más de 32 hay que añadir más registros (*)
         );
         port (
             CLK_I               : in std_logic;
@@ -55,7 +55,7 @@ architecture beh of control_unit_tb is
     -- Señales
     -------------------------------------------------
     -- Simulación
-    constant clk_period : time := (10**9/G_SYS_CLK_HZ) * 1 ns;
+    constant clk_period : time := (10**9/C_SYS_CLK_HZ) * 1 ns;
     signal sim          : std_logic_vector(47 downto 0) := (others => '0'); -- 6 caracteres ASCII
 
     -- Port map
@@ -99,7 +99,7 @@ architecture beh of control_unit_tb is
         signal pwm_out      : out modulo_pwm_out
     ) is
     begin
-        rst         <= G_RST_POL;
+        rst         <= C_RST_POL;
         reg_dir     <= (others => '0');
         reg_con     <= (others => '0');
         reg_wr_d    <= (others => '0');
@@ -107,7 +107,7 @@ architecture beh of control_unit_tb is
         reg_n_ad    <= (others => '0');
         reg_n_to    <= (others => '0');
         reg_init    <= (others => '0');
-        for i in 0 to (G_PWM_N - 1) loop
+        for i in 0 to (C_PWM_N - 1) loop
             pwm_out(i).pwm                  <= '0';
             pwm_out(i).en_wr_config         <= '1';
             pwm_out(i).pwm_red_1            <= '0';
@@ -116,7 +116,7 @@ architecture beh of control_unit_tb is
             pwm_out(i).en_wr_config_red_2   <= '1';
         end loop;
         p_wait(clk_period);
-        rst         <= not G_RST_POL;
+        rst         <= not C_RST_POL;
     end procedure reset;
 
     -- Registos write data
@@ -158,8 +158,8 @@ begin
     -------------------------------------------------
     uut : component control_unit
         generic map (
-            G_RST_POL   => G_RST_POL,
-            G_PWM_N     => G_PWM_N  
+            G_RST_POL   => C_RST_POL,
+            G_PWM_N     => C_PWM_N  
         )
         port map (
             CLK_I               => CLK_I,

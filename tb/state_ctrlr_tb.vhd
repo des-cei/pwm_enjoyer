@@ -28,7 +28,11 @@ architecture beh of state_ctrlr_tb is
     -------------------------------------------------
     component state_ctrlr is
         generic (
-            G_RST_POL   : std_logic := '1'
+            G_RST_POL           : std_logic := '1';
+            G_STATE_MAX_L2      : natural := 32;        -- Tamaño del vector de número de pulsos de un estado
+            G_MEM_SIZE_MAX_L2   : natural := 32;        -- Tamaño del vector del número máximo de estados
+            G_PERIOD_MAX_N      : natural := 2**32 - 1; -- Número máximo de periodos de reloj de una configuración
+            G_PERIOD_MAX_L2     : natural := 32         -- Tamaño del vector del número máximo de periodos de reloj de una configuración
         );
         port (
             CLK_I           : in std_logic;
@@ -51,31 +55,31 @@ architecture beh of state_ctrlr_tb is
     -- Señales
     -------------------------------------------------
     -- Simulación
-    constant clk_period : time := (10**9/G_SYS_CLK_HZ) * 1 ns;
+    constant clk_period : time := (10**9/C_SYS_CLK_HZ) * 1 ns;
     signal sim          : std_logic_vector(47 downto 0) := (others => '0'); -- 6 caracteres ASCII
 
     -- Port map
     signal CLK_I            : std_logic;
     signal RST_I            : std_logic;                                         
     signal EN_I             : std_logic;                                         
-    signal N_ADDR_I         : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0);
-    signal N_TOT_CYC_I      : std_logic_vector((G_PERIOD_MAX_L2 - 1) downto 0);
+    signal N_ADDR_I         : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0);
+    signal N_TOT_CYC_I      : std_logic_vector((C_PERIOD_MAX_L2 - 1) downto 0);
     signal UPD_MEM_I        : std_logic;
     signal NEXT_CONFIG_I    : mem;                                         
     signal CNT_END_I        : std_logic;                                         
-    signal RD_ADDR_O        : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0);
+    signal RD_ADDR_O        : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0);
     signal EN_CNT_O         : std_logic;                                         
     signal SWITCH_MEM_O     : std_logic;
     signal LAST_CYC_O       : std_logic;
     signal EN_WR_CONFIG_O   : std_logic;
 
     -- Soporte
-    type memory is array (0 to (G_MEM_SIZE_MAX_N - 1)) of integer range 0 to G_STATE_MAX_N;
+    type memory is array (0 to (C_MEM_SIZE_MAX_N - 1)) of integer range 0 to C_STATE_MAX_N;
     shared variable v_mem       : memory := (others => 0);
-    signal cnt_data_sim         : integer range 0 to G_STATE_MAX_N := 0;
-    signal data_sim             : integer range 0 to G_MEM_SIZE_MAX_N := 0;
-    signal internal_n_addr      : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0) := (others => '0');  
-    signal internal_n_tot_cyc   : std_logic_vector((G_PERIOD_MAX_L2 - 1) downto 0) := (others => '0'); 
+    signal cnt_data_sim         : integer range 0 to C_STATE_MAX_N := 0;
+    signal data_sim             : integer range 0 to C_MEM_SIZE_MAX_N := 0;
+    signal internal_n_addr      : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0) := (others => '0');  
+    signal internal_n_tot_cyc   : std_logic_vector((C_PERIOD_MAX_L2 - 1) downto 0) := (others => '0'); 
     signal internal_mem         : memory := (others => 0);
 
     -------------------------------------------------
@@ -100,14 +104,14 @@ architecture beh of state_ctrlr_tb is
         signal config   : out mem
     ) is
     begin
-        rst     <= G_RST_POL;
+        rst     <= C_RST_POL;
         en      <= '0';
         n_addr  <= (others => '0');
         n_tot   <= (others => '0');
         upd     <= '0';
         config  <= (others => (others => '0'));
         p_wait(clk_period);
-        rst     <= not G_RST_POL;
+        rst     <= not C_RST_POL;
     end procedure reset;
 
     -- Pulso
@@ -127,7 +131,12 @@ begin
     -------------------------------------------------
     uut : component state_ctrlr
         generic map (
-            G_RST_POL   => G_RST_POL
+            G_RST_POL           => C_RST_POL,
+            G_STATE_MAX_L2      => C_STATE_MAX_L2,
+            G_MEM_SIZE_MAX_L2   => C_MEM_SIZE_MAX_L2,
+            -- G_PERIOD_MAX_N      => C_PERIOD_MAX_N,
+            G_PERIOD_MAX_N      => 1000,
+            G_PERIOD_MAX_L2     => C_PERIOD_MAX_L2
         )
         port map (
             CLK_I           => CLK_I,
@@ -160,7 +169,7 @@ begin
     -- Emulador del contador y señal de END
     P_CNT : process (CLK_I, RST_I)
     begin
-        if (RST_I = G_RST_POL) then
+        if (RST_I = C_RST_POL) then
             cnt_data_sim     <= 0;
             data_sim      <= 0;
         elsif rising_edge(CLK_I) then
@@ -210,7 +219,7 @@ begin
         v_mem           := (0 => 3, 1 => 1, 2 => 2, 3 => 4, others => 0);
         N_ADDR_I        <= std_logic_vector(to_unsigned(v_n_est, N_ADDR_I'length));
         N_TOT_CYC_I     <= std_logic_vector(to_unsigned(v_n_tot, N_TOT_CYC_I'length));
-        for i in 0 to (G_MEM_SIZE_MAX_N - 1) loop
+        for i in 0 to (C_MEM_SIZE_MAX_N - 1) loop
             NEXT_CONFIG_I(i) <= std_logic_vector(to_unsigned(v_mem(i), NEXT_CONFIG_I(i)'length));
         end loop;
 
@@ -243,7 +252,7 @@ begin
         v_mem       := (0 => 2, 1 => 5, others => 0);
         N_ADDR_I    <= std_logic_vector(to_unsigned(v_n_est, N_ADDR_I'length));
         N_TOT_CYC_I <= std_logic_vector(to_unsigned(v_n_tot, N_TOT_CYC_I'length));
-        for i in 0 to (G_MEM_SIZE_MAX_N - 1) loop
+        for i in 0 to (C_MEM_SIZE_MAX_N - 1) loop
             NEXT_CONFIG_I(i) <= std_logic_vector(to_unsigned(v_mem(i), NEXT_CONFIG_I(i)'length));
         end loop;
 
@@ -276,7 +285,7 @@ begin
         v_mem       := (0 => 1, 1 => 1, 2 => 5, 3 => 1, 4 => 1, others => 0);
         N_ADDR_I    <= std_logic_vector(to_unsigned(v_n_est, N_ADDR_I'length));
         N_TOT_CYC_I <= std_logic_vector(to_unsigned(v_n_tot, N_TOT_CYC_I'length));
-        for i in 0 to (G_MEM_SIZE_MAX_N - 1) loop
+        for i in 0 to (C_MEM_SIZE_MAX_N - 1) loop
             NEXT_CONFIG_I(i) <= std_logic_vector(to_unsigned(v_mem(i), NEXT_CONFIG_I(i)'length));
         end loop;
 

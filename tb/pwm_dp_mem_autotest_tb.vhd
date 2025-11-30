@@ -24,16 +24,10 @@ entity pwm_dp_mem_autotest_tb is
         C_WIDTH             : integer := 8; -- Número de bits de las señales
         -- C_INPUTS_PATH       : string := "\\AMS_NAS\home\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_dp_mem_inputs.txt";
         -- C_OUTPUTS_REF_PATH  : string := "\\AMS_NAS\home\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_dp_mem_outputs_ref.txt";
-        -- C_OUTPUTS_PATH      : string := "\\AMS_NAS\home\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_dp_mem_outputs.txt";
+        -- C_OUTPUTS_PATH      : string := "\\AMS_NAS\home\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_dp_mem_outputs.txt"
         C_INPUTS_PATH       : string := "C:\Users\ajmsalgado\SynologyDrive\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_dp_mem_inputs.txt";
         C_OUTPUTS_REF_PATH  : string := "C:\Users\ajmsalgado\SynologyDrive\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_dp_mem_outputs_ref.txt";
-        C_OUTPUTS_PATH      : string := "C:\Users\ajmsalgado\SynologyDrive\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_dp_mem_outputs.txt";
-        -- Genéricos del componente
-        C_DATA_W    : integer   := G_STATE_MAX_L2;
-        C_ADDR_W    : integer   := G_MEM_SIZE_MAX_L2;
-        C_MEM_DEPTH : integer   := G_MEM_SIZE_MAX_N;
-        C_MEM_MODE  : string    := "LOW_LATENCY";
-        C_RST_POL   : std_logic := G_RST_POL
+        C_OUTPUTS_PATH      : string := "C:\Users\ajmsalgado\SynologyDrive\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_dp_mem_outputs.txt"
     );
 end entity pwm_dp_mem_autotest_tb;
 
@@ -47,9 +41,9 @@ architecture beh of pwm_dp_mem_autotest_tb is
     -------------------------------------------------
     component pwm_dp_mem is
         generic (
-            G_DATA_W    : integer   := 32;    -- Ancho de datos en bits (G_STATE_MAX_L2)
-            G_ADDR_W    : integer   := 32;    -- Ancho de direcciones en bits (G_MEM_SIZE_MAX_L2)
-            G_MEM_DEPTH : integer   := 4096;  -- Profundidad de memoria (G_MEM_SIZE_MAX_N)
+            G_DATA_W    : natural   := 32;    -- Ancho de datos en bits (G_STATE_MAX_L2)
+            G_ADDR_W    : natural   := 32;    -- Ancho de direcciones en bits (G_MEM_SIZE_MAX_L2)
+            G_MEM_DEPTH : natural   := 4096;  -- Profundidad de memoria (G_MEM_SIZE_MAX_N)
             G_MEM_MODE  : string    := "LOW_LATENCY";   -- Modo de funcionamiento de la memoria ("HIGH_PERFORMANCE"/"LOW_LATENCY")
             G_RST_POL   : std_logic := '1'
         );
@@ -81,14 +75,14 @@ architecture beh of pwm_dp_mem_autotest_tb is
     signal RST_I            : std_logic := '1';
     signal EN_WR_CONFIG_I   : std_logic := '1';                                
     signal WR_EN_I          : std_logic := '0';                                
-    signal WR_ADDR_I        : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0) := (others => '0');
-    signal WR_DATA_I        : std_logic_vector((G_STATE_MAX_L2 - 1) downto 0) := (others => '0');
+    signal WR_ADDR_I        : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0) := (others => '0');
+    signal WR_DATA_I        : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0) := (others => '0');
     signal SWITCH_MEM_I     : std_logic := '0';                                
     signal LAST_CYC_I       : std_logic := '0';    
-    signal N_ADDR_I         : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0) := (others => '0');                            
-    signal RD_ADDR_I        : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0) := (others => '0');
-    signal RD_DATA_O        : std_logic_vector((G_STATE_MAX_L2 - 1) downto 0) := (others => '0');
-    signal RD_DATA_NEXT_O   : std_logic_vector((G_STATE_MAX_L2 - 1) downto 0) := (others => '0');
+    signal N_ADDR_I         : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0) := (others => '0');                            
+    signal RD_ADDR_I        : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0) := (others => '0');
+    signal RD_DATA_O        : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0) := (others => '0');
+    signal RD_DATA_NEXT_O   : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0) := (others => '0');
     signal NEXT_CONFIG_O    : mem;
 
     -- Vectores de datos
@@ -107,10 +101,10 @@ begin
     -------------------------------------------------
     uut : component pwm_dp_mem
         generic map (
-            G_DATA_W    => C_DATA_W,   
-            G_ADDR_W    => C_ADDR_W,   
-            G_MEM_DEPTH => C_MEM_DEPTH,
-            G_MEM_MODE  => C_MEM_MODE, 
+            G_DATA_W    => C_STATE_MAX_L2,   
+            G_ADDR_W    => C_MEM_SIZE_MAX_L2,   
+            G_MEM_DEPTH => C_MEM_SIZE_MAX_N,
+            G_MEM_MODE  => "LOW_LATENCY", 
             G_RST_POL   => C_RST_POL  
         )
         port map (
@@ -144,9 +138,9 @@ begin
     -- Reset
     P_RST : process
     begin
-        RST_I <= G_RST_POL;
+        RST_I <= C_RST_POL;
         wait for clk_period;
-        RST_I <= not G_RST_POL;
+        RST_I <= not C_RST_POL;
         wait;
     end process;
 
@@ -170,12 +164,12 @@ begin
             end loop;
             -- User TODO: Asignación de entradas
             WR_EN_I         <= to_stdlogicvector(data_in(0))(0);
-            WR_ADDR_I       <= to_stdlogicvector(data_in(1))((C_ADDR_W - 1 ) downto 0);
-            WR_DATA_I       <= to_stdlogicvector(data_in(2))((C_DATA_W - 1 ) downto 0);
+            WR_ADDR_I       <= to_stdlogicvector(data_in(1))((WR_ADDR_I'length - 1) downto 0);
+            WR_DATA_I       <= to_stdlogicvector(data_in(2))((WR_DATA_I'length - 1) downto 0);
             SWITCH_MEM_I    <= to_stdlogicvector(data_in(3))(0);
             LAST_CYC_I      <= to_stdlogicvector(data_in(4))(0);
-            N_ADDR_I        <= to_stdlogicvector(data_in(5))((C_ADDR_W - 1 ) downto 0);
-            RD_ADDR_I       <= to_stdlogicvector(data_in(6))((C_ADDR_W - 1 ) downto 0);
+            N_ADDR_I        <= to_stdlogicvector(data_in(5))((N_ADDR_I'length - 1) downto 0);
+            RD_ADDR_I       <= to_stdlogicvector(data_in(6))((RD_ADDR_I'length - 1) downto 0);
             ---------------------------------------
         end loop;
         -- wait until rising_edge(CLK_I);

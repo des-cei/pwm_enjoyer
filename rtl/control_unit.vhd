@@ -18,7 +18,7 @@ use work.my_pkg.all;
 entity control_unit is
     generic (
         G_RST_POL   : std_logic := '1';
-        G_PWM_N     : integer := 32     -- Número máximo de módulos PWM. Si hay más de 32 hay que añadir más registros (*)
+        G_PWM_N     : natural := 32     -- Número máximo de módulos PWM. Si hay más de 32 hay que añadir más registros (*)
     );
     port (
         CLK_I               : in std_logic;
@@ -50,7 +50,9 @@ architecture beh of control_unit is
     -------------------------------------------------
     component config_error is
         generic (
-            G_RST_POL   : std_logic := '1'
+            G_RST_POL           : std_logic := '1';
+            G_MEM_SIZE_MAX_L2   : natural := 32;    -- Tamaño del vector del número máximo de estados
+            G_PERIOD_MAX_L2     : natural := 32     -- Tamaño del vector del número máximo de periodos de reloj de una configuración
         );
         port (
             CLK_I               : in std_logic;
@@ -108,7 +110,9 @@ begin
     gen_config_err : for i in 0 to (G_PWM_N - 1) generate
         config_err_i : component config_error
             generic map (
-                G_RST_POL   => G_RST_POL
+                G_RST_POL           => C_RST_POL,
+                G_MEM_SIZE_MAX_L2   => C_MEM_SIZE_MAX_L2,
+                G_PERIOD_MAX_L2     => C_PERIOD_MAX_L2
             )
             port map (
                 CLK_I               => CLK_I,

@@ -18,7 +18,7 @@ use work.my_pkg.all;
 entity control_unit is
     generic (
         G_RST_POL   : std_logic := '1';
-        G_PWM_N     : integer := 32     -- Número máximo de módulos PWM. Si hay más de 32 hay que añadir más registros (*)
+        G_PWM_N     : natural := 32     -- Número máximo de módulos PWM. Si hay más de 32 hay que añadir más registros (*)
     );
     port (
         CLK_I               : in std_logic;
@@ -50,7 +50,9 @@ architecture beh of control_unit is
     -------------------------------------------------
     component config_error is
         generic (
-            G_RST_POL   : std_logic := '1'
+            G_RST_POL           : std_logic := '1';
+            G_MEM_SIZE_MAX_L2   : natural := 32;    -- Tamaño del vector del número máximo de estados
+            G_PERIOD_MAX_L2     : natural := 32     -- Tamaño del vector del número máximo de periodos de reloj de una configuración
         );
         port (
             CLK_I               : in std_logic;
@@ -108,7 +110,9 @@ begin
     gen_config_err : for i in 0 to (G_PWM_N - 1) generate
         config_err_i : component config_error
             generic map (
-                G_RST_POL   => G_RST_POL
+                G_RST_POL           => C_RST_POL,
+                G_MEM_SIZE_MAX_L2   => C_MEM_SIZE_MAX_L2,
+                G_PERIOD_MAX_L2     => C_PERIOD_MAX_L2
             )
             port map (
                 CLK_I               => CLK_I,
@@ -173,7 +177,7 @@ begin
                 else
                     r_redundancias(i)   <= '1'; -- Las salidas no coinciden
                 end if;
-                r_errores(i)        <= s_config_error(i);
+                r_errores(i)        <= s_config_error(i) or (not s_en_wr_config(i));
             end loop;
             r_status(1 downto 0)    <= s_status;
         end if;
@@ -242,9 +246,9 @@ begin
                             if (s_estado_d1 /= S_ACTUALIZAR) then
                                 if ((r_errores = C_CEROS) and (r_redundancias = C_CEROS)) then
                                     r_pwm_top_inputs(i).upd_mem <= '1';
-                                    s_status <= "10";
+                                    s_status    <= "10";
                                 else
-                                    s_status <= "11";
+                                    s_status    <= "11";
                                 end if;
                             else
                                 r_pwm_top_inputs(i).upd_mem <= '0';
@@ -285,11 +289,9 @@ begin
     end process P_FSM;
 
     -- Habilitación de configuraciones (combinacional)
-    P_EN_WR_CONFIG : process
+    gen_pwm_outputs : for i in 0 to (G_PWM_N - 1) generate
     begin
-        for i in 0 to (G_PWM_N - 1) loop
-            s_en_wr_config(i) <= PWM_TOP_OUTPUTS_I(i).en_wr_config and PWM_TOP_OUTPUTS_I(i).en_wr_config_red_1 and PWM_TOP_OUTPUTS_I(i).en_wr_config_red_2;
-        end loop;
-    end process P_EN_WR_CONFIG;
+        s_en_wr_config(i) <= PWM_TOP_OUTPUTS_I(i).en_wr_config and PWM_TOP_OUTPUTS_I(i).en_wr_config_red_1 and PWM_TOP_OUTPUTS_I(i).en_wr_config_red_2;
+    end generate gen_pwm_outputs;
 
 end architecture beh;

@@ -10,18 +10,14 @@ entity pwm_enjoyer_axi is
 	generic (
         -- Valor activo del reset
         G_RST_POL           : std_logic := '1';
-        -- Número máximo de pulsos que dura un estado
-        G_STATE_MAX_N       : natural := 20;
         -- Tamaño del vector de número de pulsos de un estado {integer(ceil(log2(real(G_STATE_MAX_N))))}
-        G_STATE_MAX_L2      : natural := 5;
+        G_STATE_MAX_L2      : natural := 32;
         -- Número máximo de estados, tamaño máximo de la memoria
-        G_MEM_SIZE_MAX_N    : natural := 8;
+        G_MEM_SIZE_MAX_N    : natural := 128;
         -- Tamaño del vector del número de estados {integer(ceil(log2(real(G_MEM_SIZE_MAX_N))))}
-        G_MEM_SIZE_MAX_L2   : natural := 3;
-        -- Número máximo de ciclos de reloj que puede durar una configuración {G_STATE_MAX_N*G_MEM_SIZE_MAX_N}
-        G_PERIOD_MAX_N      : natural := 160;
+        G_MEM_SIZE_MAX_L2   : natural := 32;
         -- Tamaño del vector del número máximo de ciclos de reloj {integer(ceil(log2(real(G_PERIOD_MAX_N))))}
-        G_PERIOD_MAX_L2     : natural := 8;
+        G_PERIOD_MAX_L2     : natural := 32;
         -- Número de PWMS
         G_PWM_N             : natural := 32;
 		-- Width of S_AXI data bus
@@ -31,7 +27,9 @@ entity pwm_enjoyer_axi is
 	);
 	port (
 		-- Users to add ports here
-		PWMS_O	: out std_logic_vector((G_PWM_N - 1) downto 0);
+		PWMS_O		: out std_logic_vector((G_PWM_N - 1) downto 0);
+		STATUS_O 	: out std_logic_vector(1 downto 0);
+		-- User ------------------
 		-- Global Clock Signal
 		S_AXI_ACLK	: in std_logic;
 		-- Global Reset Signal. This Signal is Active LOW
@@ -404,11 +402,9 @@ begin
 	pwm_enjoyer_i : entity work.pwm_enjoyer
 		generic map (
 			G_RST_POL           => G_RST_POL,
-			G_STATE_MAX_N       => G_STATE_MAX_N,
 			G_STATE_MAX_L2      => G_STATE_MAX_L2,
 			G_MEM_SIZE_MAX_N    => G_MEM_SIZE_MAX_N,
 			G_MEM_SIZE_MAX_L2   => G_MEM_SIZE_MAX_L2,
-			G_PERIOD_MAX_N      => G_PERIOD_MAX_N,
 			G_PERIOD_MAX_L2     => G_PERIOD_MAX_L2,
 			G_PWM_N             => G_PWM_N
 		)
@@ -429,5 +425,7 @@ begin
 			-- PWMs
 			PWMS_O              => PWMS_O
 		);
+
+	STATUS_O <= slv_reg9(STATUS_O'high downto 0);
 
 end arch_imp;

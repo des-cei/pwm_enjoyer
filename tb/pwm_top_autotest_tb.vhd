@@ -19,15 +19,15 @@ use work.my_pkg.all;
 entity pwm_top_autotest_tb is
     generic (
         -- Ficheros .txt
-        C_N_INPUTS          : integer := 8; -- Número de entradas (columnas)
-        C_N_OUTPUTS         : integer := 5; -- Número de salidas (columnas)
-        C_WIDTH             : integer := 8; -- Número de bits de las señales
-        C_INPUTS_PATH       : string := "\\AMS_NAS\home\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_top_inputs.txt";
-        C_OUTPUTS_REF_PATH  : string := "\\AMS_NAS\home\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_top_outputs_ref.txt";
-        C_OUTPUTS_PATH      : string := "\\AMS_NAS\home\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_top_outputs.txt"
-        -- C_INPUTS_PATH       : string := "C:\Users\ajmsalgado\SynologyDrive\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_top_inputs.txt";
-        -- C_OUTPUTS_REF_PATH  : string := "C:\Users\ajmsalgado\SynologyDrive\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_top_outputs_ref.txt";
-        -- C_OUTPUTS_PATH      : string := "C:\Users\ajmsalgado\SynologyDrive\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_top_outputs.txt"
+        C_N_INPUTS          : integer := 8;     -- Número de entradas (columnas)
+        C_N_OUTPUTS         : integer := 5;     -- Número de salidas (columnas)
+        C_WIDTH             : integer := 32;    -- Número de bits de las señales
+        -- C_INPUTS_PATH       : string := "\\AMS_NAS\home\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_top_inputs.txt";
+        -- C_OUTPUTS_REF_PATH  : string := "\\AMS_NAS\home\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_top_outputs_ref.txt";
+        -- C_OUTPUTS_PATH      : string := "\\AMS_NAS\home\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_top_outputs.txt"
+        C_INPUTS_PATH       : string := "C:\Users\ajmsalgado\SynologyDrive\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_top_inputs.txt";
+        C_OUTPUTS_REF_PATH  : string := "C:\Users\ajmsalgado\SynologyDrive\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_top_outputs_ref.txt";
+        C_OUTPUTS_PATH      : string := "C:\Users\ajmsalgado\SynologyDrive\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_top_outputs.txt"
     );
 end entity pwm_top_autotest_tb;
 
@@ -43,7 +43,6 @@ architecture beh of pwm_top_autotest_tb is
         generic (
             G_STATE_MAX_L2      : natural   := 32;              -- Ancho de datos en bits
             G_MEM_SIZE_MAX_L2   : natural   := 32;              -- Ancho de direcciones en bits
-            G_PERIOD_MAX_N      : natural   := 2**32 - 1;       -- Número máximo de periodos de reloj
             G_PERIOD_MAX_L2     : natural   := 32;              -- Tamaño del vector del número máximo de pulsos de una configuración
             G_MEM_SIZE_MAX_N    : natural   := 128;             -- Profundidad de memoria
             G_MEM_MODE          : string    := "LOW_LATENCY";   -- Modo de funcionamiento de la memoria
@@ -64,7 +63,7 @@ architecture beh of pwm_top_autotest_tb is
             PWM_INIT_I      : in std_logic;                                             -- Valor inicial de salida
             -- Salidas
             PWM_O           : out std_logic;                                            -- Salida del PWM
-            EN_WR_CONFIG_O  : out std_logic                                             -- Habilitación de configuración de memoria
+            UNLOCKED_O      : out std_logic                                             -- Habilitación de configuración de memoria
         );
     end component pwm_top;
 
@@ -75,18 +74,18 @@ architecture beh of pwm_top_autotest_tb is
     constant clk_period : time := (10**9/C_SYS_CLK_HZ) * 1 ns;
 
     -- Port map
-    signal CLK_I            : std_logic;     
-    signal RST_I            : std_logic;
-    signal EN_I             : std_logic;                                            -- Señal de habilitación del PWM
-    signal UPD_MEM_I        : std_logic;                                            -- Pulso de actualización de memoria
-    signal WR_EN_I          : std_logic;                                            -- Enable de escritura
-    signal WR_ADDR_I        : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0);   -- Dirección de escritura
-    signal WR_DATA_I        : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0);      -- Dato de escritura
-    signal N_ADDR_I         : std_logic_vector((C_MEM_SIZE_MAX_L2 -1) downto 0);    -- Número de estados
-    signal N_TOT_CYC_I      : std_logic_vector((C_PERIOD_MAX_L2 - 1) downto 0);     -- Número total de ciclos que dura la configuración
-    signal PWM_INIT_I       : std_logic;                                            -- Valor inicial de salida
-    signal PWM_O            : std_logic;                                            -- Salida del PWM
-    signal EN_WR_CONFIG_O   : std_logic;                                            -- Habilitación de configuración de memoria
+    signal CLK_I        : std_logic;     
+    signal RST_I        : std_logic;
+    signal EN_I         : std_logic;                                            -- Señal de habilitación del PWM
+    signal UPD_MEM_I    : std_logic;                                            -- Pulso de actualización de memoria
+    signal WR_EN_I      : std_logic;                                            -- Enable de escritura
+    signal WR_ADDR_I    : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0);   -- Dirección de escritura
+    signal WR_DATA_I    : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0);      -- Dato de escritura
+    signal N_ADDR_I     : std_logic_vector((C_MEM_SIZE_MAX_L2 -1) downto 0);    -- Número de estados
+    signal N_TOT_CYC_I  : std_logic_vector((C_PERIOD_MAX_L2 - 1) downto 0);     -- Número total de ciclos que dura la configuración
+    signal PWM_INIT_I   : std_logic;                                            -- Valor inicial de salida
+    signal PWM_O        : std_logic;                                            -- Salida del PWM
+    signal UNLOCKED_O   : std_logic;                                            -- Habilitación de configuración de memoria
 
     -- Vectores de datos
     type vec_input is array (0 to (C_N_INPUTS - 1)) of bit_vector((C_WIDTH - 1) downto 0);
@@ -109,25 +108,24 @@ begin
         generic map (
             G_STATE_MAX_L2      => C_STATE_MAX_L2,
             G_MEM_SIZE_MAX_L2   => C_MEM_SIZE_MAX_L2,
-            G_PERIOD_MAX_N      => C_PERIOD_MAX_N,
             G_PERIOD_MAX_L2     => C_PERIOD_MAX_L2,
             G_MEM_SIZE_MAX_N    => C_MEM_SIZE_MAX_N,
             G_MEM_MODE          => "LOW_LATENCY",
             G_RST_POL           => C_RST_POL  
         )
         port map (
-            CLK_I           => CLK_I,
-            RST_I           => RST_I,
-            EN_I            => EN_I,
-            UPD_MEM_I       => UPD_MEM_I,
-            WR_EN_I         => WR_EN_I,
-            WR_ADDR_I       => WR_ADDR_I,
-            WR_DATA_I       => WR_DATA_I,
-            N_ADDR_I        => N_ADDR_I,
-            N_TOT_CYC_I     => N_TOT_CYC_I,
-            PWM_INIT_I      => PWM_INIT_I,
-            PWM_O           => PWM_O,
-            EN_WR_CONFIG_O  => EN_WR_CONFIG_O
+            CLK_I       => CLK_I,
+            RST_I       => RST_I,
+            EN_I        => EN_I,
+            UPD_MEM_I   => UPD_MEM_I,
+            WR_EN_I     => WR_EN_I,
+            WR_ADDR_I   => WR_ADDR_I,
+            WR_DATA_I   => WR_DATA_I,
+            N_ADDR_I    => N_ADDR_I,
+            N_TOT_CYC_I => N_TOT_CYC_I,
+            PWM_INIT_I  => PWM_INIT_I,
+            PWM_O       => PWM_O,
+            UNLOCKED_O  => UNLOCKED_O
         );
 
     -------------------------------------------------
@@ -171,16 +169,16 @@ begin
             for i in 0 to (C_N_INPUTS - 1) loop
                 read(line_in, data_in(i));              -- Lee dato a dato, separados por espacios
             end loop;
-            -- User TODO: Asignación de entradas
-            CONFIG_N            <= to_integer(unsigned(to_stdlogicvector(data_in(0))));
-            N_ADDR_I            <= to_stdlogicvector(data_in(1))((N_ADDR_I'length - 1) downto 0);
-            N_TOT_CYC_I         <= to_stdlogicvector(data_in(2))((N_TOT_CYC_I'length - 1) downto 0);
-            PWM_INIT_I          <= to_stdlogicvector(data_in(3))(0);
-            WR_EN_I             <= to_stdlogicvector(data_in(4))(0);
-            WR_ADDR_I           <= to_stdlogicvector(data_in(5))((WR_ADDR_I'length - 1) downto 0);
-            WR_DATA_I           <= to_stdlogicvector(data_in(6))((WR_DATA_I'length - 1) downto 0);
-            UPD_MEM_I           <= to_stdlogicvector(data_in(7))(0);
-            ---------------------------------------
+            -- USER: Asignación de entradas
+            CONFIG_N    <= to_integer(unsigned(to_stdlogicvector(data_in(0))));
+            N_ADDR_I    <= to_stdlogicvector(data_in(1))((N_ADDR_I'length - 1) downto 0);
+            N_TOT_CYC_I <= to_stdlogicvector(data_in(2))((N_TOT_CYC_I'length - 1) downto 0);
+            PWM_INIT_I  <= to_stdlogicvector(data_in(3))(0);
+            WR_EN_I     <= to_stdlogicvector(data_in(4))(0);
+            WR_ADDR_I   <= to_stdlogicvector(data_in(5))((WR_ADDR_I'length - 1) downto 0);
+            WR_DATA_I   <= to_stdlogicvector(data_in(6))((WR_DATA_I'length - 1) downto 0);
+            UPD_MEM_I   <= to_stdlogicvector(data_in(7))(0);
+            -- USER -----------------------
         end loop;
         -- wait until rising_edge(CLK_I);
         wait until CLK_I'event and (CLK_I = '1');
@@ -209,28 +207,28 @@ begin
             wait until rising_edge(CLK_I);
             readline(read_file, line_in);                       -- Lee fila a fila
             index := index + 1;
-            -- User TODO: Asignación de salidas
-            data_out(0)(0) := '0';                      -- STEPS (DEBUG)
-            data_out(1)(0) := to_bit(PWM_O);            -- PWM
-            data_out(2)(0) := to_bit(EN_WR_CONFIG_O);   -- EN_WR_CONFIG
-            data_out(3)(0) := '0';                      -- N_CONFIG (DEBUG)
-            data_out(4)(0) := '0';                      -- CICLO (DEBUG)
-            ----------------------------------------
+            -- USER: Asignación de salidas
+            data_out(0)(0) := '0';                  -- STEPS (DEBUG)
+            data_out(1)(0) := to_bit(PWM_O);        -- PWM
+            data_out(2)(0) := to_bit(UNLOCKED_O);   -- UNLOCKED
+            data_out(3)(0) := '0';                  -- N_CONFIG (DEBUG)
+            data_out(4)(0) := '0';                  -- CICLO (DEBUG)
+            -- USER ----------------------
             for i in 0 to (C_N_OUTPUTS - 1) loop
                 read(line_in, data_in(i));                          -- Lee dato a dato, separados por espacios
                 write(line_out, data_out(i), left, (C_WIDTH + 1));  -- Escribe dato a dato, separados por espacios
             end loop;
             writeline(write_file, line_out);                        -- Escribe fila a fila
-            -- User TODO: Comparación de salidas
+            -- USER: Comparación de salidas
             assert data_out(1) = data_in(1)
-                report ":( Wrong PWM output. Obtained: " & integer'image(to_integer(unsigned(to_stdlogicvector(data_out(0))))) &
-                    " Expected: " & integer'image(to_integer(unsigned(to_stdlogicvector(data_in(0))))) & " at step: " & integer'image(index)
-                severity note;
+                report ":( Wrong PWM output. Obtained: " & integer'image(to_integer(unsigned(to_stdlogicvector(data_out(1))))) &
+                    " Expected: " & integer'image(to_integer(unsigned(to_stdlogicvector(data_in(1))))) & " at step: " & integer'image(index)
+                severity failure;
             -- assert data_out(2) = data_in(2)
-            --     report ":( Wrong EN_WR_CONFIG output. Obtained: " & integer'image(to_integer(unsigned(to_stdlogicvector(data_out(1))))) &
-            --         " Expected: " & integer'image(to_integer(unsigned(to_stdlogicvector(data_in(1))))) & " at step: " & integer'image(index)
+            --     report ":( Wrong UNLOCKED output. Obtained: " & integer'image(to_integer(unsigned(to_stdlogicvector(data_out(2))))) &
+            --         " Expected: " & integer'image(to_integer(unsigned(to_stdlogicvector(data_in(2))))) & " at step: " & integer'image(index)
             --     severity failure;
-            ---------------------------------------
+            -- USER -----------------------
         end loop;
         wait until rising_edge(CLK_I);
         file_close(read_file);

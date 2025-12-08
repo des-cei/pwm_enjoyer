@@ -17,7 +17,9 @@ use work.my_pkg.all;
 -----------------------------------------------------------
 entity config_error is
     generic (
-        G_RST_POL   : std_logic := '1'
+        G_RST_POL           : std_logic := '1';
+        G_MEM_SIZE_MAX_L2   : natural := 32;    -- Tamaño del vector del número máximo de estados
+        G_PERIOD_MAX_L2     : natural := 32     -- Tamaño del vector del número máximo de periodos de reloj de una configuración
     );
     port (
         CLK_I               : in std_logic;

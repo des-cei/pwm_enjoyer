@@ -50,6 +50,7 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 set list_projs [get_projects -quiet]
 if { $list_projs eq "" } {
    create_project project_1 myproj -part xc7z020clg400-1
+   set_property BOARD_PART tul.com.tw:pynq-z2:part0:1.0 [current_project]
 }
 
 
@@ -129,10 +130,12 @@ set bCheckIPsPassed 1
 set bCheckIPs 1
 if { $bCheckIPs == 1 } {
    set list_check_ips "\ 
-xilinx.com:ip:processing_system7:5.5\
-indra.es:user:pwm_enjoyer_axi:1.0\
 xilinx.com:ip:smartconnect:1.0\
+indra.es:user:pwm_enjoyer_axi:1.0\
+indra.es:user:rgb_ctrlr:1.0\
+xilinx.com:ip:xlconcat:2.1\
 xilinx.com:ip:proc_sys_reset:5.0\
+xilinx.com:ip:processing_system7:5.5\
 "
 
    set list_ips_missing ""
@@ -161,6 +164,208 @@ if { $bCheckIPsPassed != 1 } {
 # DESIGN PROCs
 ##################################################################
 
+
+# Hierarchical cell: PS
+proc create_hier_cell_PS { parentCell nameHier } {
+
+  variable script_folder
+
+  if { $parentCell eq "" || $nameHier eq "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2092 -severity "ERROR" "create_hier_cell_PS() - Empty argument(s)!"}
+     return
+  }
+
+  # Get object for parentCell
+  set parentObj [get_bd_cells $parentCell]
+  if { $parentObj == "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2090 -severity "ERROR" "Unable to find parent cell <$parentCell>!"}
+     return
+  }
+
+  # Make sure parentObj is hier blk
+  set parentType [get_property TYPE $parentObj]
+  if { $parentType ne "hier" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2091 -severity "ERROR" "Parent <$parentObj> has TYPE = <$parentType>. Expected to be <hier>."}
+     return
+  }
+
+  # Save current instance; Restore later
+  set oldCurInst [current_bd_instance .]
+
+  # Set parent object as current
+  current_bd_instance $parentObj
+
+  # Create cell and set as current instance
+  set hier_obj [create_bd_cell -type hier $nameHier]
+  current_bd_instance $hier_obj
+
+  # Create interface pins
+  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:ddrx_rtl:1.0 DDR
+
+  create_bd_intf_pin -mode Master -vlnv xilinx.com:display_processing_system7:fixedio_rtl:1.0 FIXED_IO
+
+  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_AXI_GP0
+
+
+  # Create pins
+  create_bd_pin -dir O -type clk FCLK_CLK0
+  create_bd_pin -dir O -from 0 -to 0 -type rst peripheral_aresetn
+
+  # Create instance: rst_ps7_0_125M, and set properties
+  set rst_ps7_0_125M [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 rst_ps7_0_125M ]
+
+  # Create instance: processing_system7_0, and set properties
+  set processing_system7_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7:5.5 processing_system7_0 ]
+  set_property -dict [list \
+    CONFIG.PCW_ACT_APU_PERIPHERAL_FREQMHZ {666.666687} \
+    CONFIG.PCW_ACT_CAN_PERIPHERAL_FREQMHZ {10.000000} \
+    CONFIG.PCW_ACT_DCI_PERIPHERAL_FREQMHZ {10.158730} \
+    CONFIG.PCW_ACT_ENET0_PERIPHERAL_FREQMHZ {10.000000} \
+    CONFIG.PCW_ACT_ENET1_PERIPHERAL_FREQMHZ {10.000000} \
+    CONFIG.PCW_ACT_FPGA0_PERIPHERAL_FREQMHZ {125.000000} \
+    CONFIG.PCW_ACT_FPGA1_PERIPHERAL_FREQMHZ {10.000000} \
+    CONFIG.PCW_ACT_FPGA2_PERIPHERAL_FREQMHZ {10.000000} \
+    CONFIG.PCW_ACT_FPGA3_PERIPHERAL_FREQMHZ {10.000000} \
+    CONFIG.PCW_ACT_PCAP_PERIPHERAL_FREQMHZ {200.000000} \
+    CONFIG.PCW_ACT_QSPI_PERIPHERAL_FREQMHZ {10.000000} \
+    CONFIG.PCW_ACT_SDIO_PERIPHERAL_FREQMHZ {10.000000} \
+    CONFIG.PCW_ACT_SMC_PERIPHERAL_FREQMHZ {10.000000} \
+    CONFIG.PCW_ACT_SPI_PERIPHERAL_FREQMHZ {10.000000} \
+    CONFIG.PCW_ACT_TPIU_PERIPHERAL_FREQMHZ {200.000000} \
+    CONFIG.PCW_ACT_TTC0_CLK0_PERIPHERAL_FREQMHZ {111.111115} \
+    CONFIG.PCW_ACT_TTC0_CLK1_PERIPHERAL_FREQMHZ {111.111115} \
+    CONFIG.PCW_ACT_TTC0_CLK2_PERIPHERAL_FREQMHZ {111.111115} \
+    CONFIG.PCW_ACT_TTC1_CLK0_PERIPHERAL_FREQMHZ {111.111115} \
+    CONFIG.PCW_ACT_TTC1_CLK1_PERIPHERAL_FREQMHZ {111.111115} \
+    CONFIG.PCW_ACT_TTC1_CLK2_PERIPHERAL_FREQMHZ {111.111115} \
+    CONFIG.PCW_ACT_UART_PERIPHERAL_FREQMHZ {10.000000} \
+    CONFIG.PCW_ACT_WDT_PERIPHERAL_FREQMHZ {111.111115} \
+    CONFIG.PCW_CLK0_FREQ {125000000} \
+    CONFIG.PCW_CLK1_FREQ {10000000} \
+    CONFIG.PCW_CLK2_FREQ {10000000} \
+    CONFIG.PCW_CLK3_FREQ {10000000} \
+    CONFIG.PCW_DDR_RAM_HIGHADDR {0x1FFFFFFF} \
+    CONFIG.PCW_ENET0_PERIPHERAL_CLKSRC {IO PLL} \
+    CONFIG.PCW_ENET0_PERIPHERAL_ENABLE {0} \
+    CONFIG.PCW_ENET1_PERIPHERAL_CLKSRC {IO PLL} \
+    CONFIG.PCW_ENET1_PERIPHERAL_ENABLE {0} \
+    CONFIG.PCW_EN_EMIO_ENET0 {0} \
+    CONFIG.PCW_EN_EMIO_ENET1 {0} \
+    CONFIG.PCW_EN_EMIO_PJTAG {0} \
+    CONFIG.PCW_EN_EMIO_UART0 {0} \
+    CONFIG.PCW_EN_ENET0 {0} \
+    CONFIG.PCW_EN_ENET1 {0} \
+    CONFIG.PCW_EN_PJTAG {0} \
+    CONFIG.PCW_EN_QSPI {0} \
+    CONFIG.PCW_EN_UART0 {0} \
+    CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ {125} \
+    CONFIG.PCW_FPGA_FCLK0_ENABLE {1} \
+    CONFIG.PCW_MIO_TREE_PERIPHERALS {unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned}\
+\
+    CONFIG.PCW_MIO_TREE_SIGNALS {unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned#unassigned}\
+\
+    CONFIG.PCW_NAND_PERIPHERAL_ENABLE {0} \
+    CONFIG.PCW_NOR_PERIPHERAL_ENABLE {0} \
+    CONFIG.PCW_PERIPHERAL_BOARD_PRESET {part0} \
+    CONFIG.PCW_PJTAG_PERIPHERAL_ENABLE {0} \
+    CONFIG.PCW_PRESET_BANK1_VOLTAGE {LVCMOS 2.5V} \
+    CONFIG.PCW_QSPI_PERIPHERAL_ENABLE {0} \
+    CONFIG.PCW_UART0_PERIPHERAL_ENABLE {0} \
+    CONFIG.PCW_UART_PERIPHERAL_VALID {0} \
+    CONFIG.PCW_UIPARAM_ACT_DDR_FREQ_MHZ {533.333374} \
+  ] $processing_system7_0
+
+
+  # Create interface connections
+  connect_bd_intf_net -intf_net processing_system7_0_DDR [get_bd_intf_pins DDR] [get_bd_intf_pins processing_system7_0/DDR]
+  connect_bd_intf_net -intf_net processing_system7_0_FIXED_IO [get_bd_intf_pins FIXED_IO] [get_bd_intf_pins processing_system7_0/FIXED_IO]
+  connect_bd_intf_net -intf_net processing_system7_0_M_AXI_GP0 [get_bd_intf_pins M_AXI_GP0] [get_bd_intf_pins processing_system7_0/M_AXI_GP0]
+
+  # Create port connections
+  connect_bd_net -net processing_system7_0_FCLK_CLK0  [get_bd_pins processing_system7_0/FCLK_CLK0] \
+  [get_bd_pins FCLK_CLK0] \
+  [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] \
+  [get_bd_pins rst_ps7_0_125M/slowest_sync_clk]
+  connect_bd_net -net processing_system7_0_FCLK_RESET0_N  [get_bd_pins processing_system7_0/FCLK_RESET0_N] \
+  [get_bd_pins rst_ps7_0_125M/ext_reset_in]
+  connect_bd_net -net rst_ps7_0_125M_peripheral_aresetn  [get_bd_pins rst_ps7_0_125M/peripheral_aresetn] \
+  [get_bd_pins peripheral_aresetn]
+
+  # Restore current instance
+  current_bd_instance $oldCurInst
+}
+
+# Hierarchical cell: RGB_LEDS
+proc create_hier_cell_RGB_LEDS { parentCell nameHier } {
+
+  variable script_folder
+
+  if { $parentCell eq "" || $nameHier eq "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2092 -severity "ERROR" "create_hier_cell_RGB_LEDS() - Empty argument(s)!"}
+     return
+  }
+
+  # Get object for parentCell
+  set parentObj [get_bd_cells $parentCell]
+  if { $parentObj == "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2090 -severity "ERROR" "Unable to find parent cell <$parentCell>!"}
+     return
+  }
+
+  # Make sure parentObj is hier blk
+  set parentType [get_property TYPE $parentObj]
+  if { $parentType ne "hier" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2091 -severity "ERROR" "Parent <$parentObj> has TYPE = <$parentType>. Expected to be <hier>."}
+     return
+  }
+
+  # Save current instance; Restore later
+  set oldCurInst [current_bd_instance .]
+
+  # Set parent object as current
+  current_bd_instance $parentObj
+
+  # Create cell and set as current instance
+  set hier_obj [create_bd_cell -type hier $nameHier]
+  current_bd_instance $hier_obj
+
+  # Create interface pins
+
+  # Create pins
+  create_bd_pin -dir I CLK_I
+  create_bd_pin -dir I RST_I
+  create_bd_pin -dir I -from 1 -to 0 CTRL_I
+  create_bd_pin -dir O -from 2 -to 0 RGB_O
+
+  # Create instance: RGB_CTRLR, and set properties
+  set RGB_CTRLR [ create_bd_cell -type ip -vlnv indra.es:user:rgb_ctrlr:1.0 RGB_CTRLR ]
+  set_property CONFIG.G_RST_POL {0} $RGB_CTRLR
+
+
+  # Create instance: xlconcat_0, and set properties
+  set xlconcat_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat:2.1 xlconcat_0 ]
+  set_property CONFIG.NUM_PORTS {3} $xlconcat_0
+
+
+  # Create port connections
+  connect_bd_net -net PWM_ENJOYER_STATUS_O  [get_bd_pins CTRL_I] \
+  [get_bd_pins RGB_CTRLR/MODE_I]
+  connect_bd_net -net RGB_CTRLR_BLUE_O  [get_bd_pins RGB_CTRLR/BLUE_O] \
+  [get_bd_pins xlconcat_0/In2]
+  connect_bd_net -net RGB_CTRLR_GREEN_O  [get_bd_pins RGB_CTRLR/GREEN_O] \
+  [get_bd_pins xlconcat_0/In1]
+  connect_bd_net -net RGB_CTRLR_RED_O  [get_bd_pins RGB_CTRLR/RED_O] \
+  [get_bd_pins xlconcat_0/In0]
+  connect_bd_net -net processing_system7_0_FCLK_CLK0  [get_bd_pins CLK_I] \
+  [get_bd_pins RGB_CTRLR/CLK_I]
+  connect_bd_net -net rst_ps7_0_125M_peripheral_aresetn  [get_bd_pins RST_I] \
+  [get_bd_pins RGB_CTRLR/RST_I]
+  connect_bd_net -net xlconcat_0_dout  [get_bd_pins xlconcat_0/dout] \
+  [get_bd_pins RGB_O]
+
+  # Restore current instance
+  current_bd_instance $oldCurInst
+}
 
 
 # Procedure to create entire design; Provide argument to make
@@ -203,77 +408,48 @@ proc create_root_design { parentCell } {
 
   # Create ports
   set PWMS [ create_bd_port -dir O -from 31 -to 0 PWMS ]
-
-  # Create instance: processing_system7_0, and set properties
-  set processing_system7_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7:5.5 processing_system7_0 ]
-  set_property -dict [list \
-    CONFIG.PCW_ACT_APU_PERIPHERAL_FREQMHZ {666.666687} \
-    CONFIG.PCW_ACT_CAN_PERIPHERAL_FREQMHZ {10.000000} \
-    CONFIG.PCW_ACT_DCI_PERIPHERAL_FREQMHZ {10.158730} \
-    CONFIG.PCW_ACT_ENET0_PERIPHERAL_FREQMHZ {10.000000} \
-    CONFIG.PCW_ACT_ENET1_PERIPHERAL_FREQMHZ {10.000000} \
-    CONFIG.PCW_ACT_FPGA0_PERIPHERAL_FREQMHZ {125.000000} \
-    CONFIG.PCW_ACT_FPGA1_PERIPHERAL_FREQMHZ {10.000000} \
-    CONFIG.PCW_ACT_FPGA2_PERIPHERAL_FREQMHZ {10.000000} \
-    CONFIG.PCW_ACT_FPGA3_PERIPHERAL_FREQMHZ {10.000000} \
-    CONFIG.PCW_ACT_PCAP_PERIPHERAL_FREQMHZ {200.000000} \
-    CONFIG.PCW_ACT_QSPI_PERIPHERAL_FREQMHZ {10.000000} \
-    CONFIG.PCW_ACT_SDIO_PERIPHERAL_FREQMHZ {10.000000} \
-    CONFIG.PCW_ACT_SMC_PERIPHERAL_FREQMHZ {10.000000} \
-    CONFIG.PCW_ACT_SPI_PERIPHERAL_FREQMHZ {10.000000} \
-    CONFIG.PCW_ACT_TPIU_PERIPHERAL_FREQMHZ {200.000000} \
-    CONFIG.PCW_ACT_TTC0_CLK0_PERIPHERAL_FREQMHZ {111.111115} \
-    CONFIG.PCW_ACT_TTC0_CLK1_PERIPHERAL_FREQMHZ {111.111115} \
-    CONFIG.PCW_ACT_TTC0_CLK2_PERIPHERAL_FREQMHZ {111.111115} \
-    CONFIG.PCW_ACT_TTC1_CLK0_PERIPHERAL_FREQMHZ {111.111115} \
-    CONFIG.PCW_ACT_TTC1_CLK1_PERIPHERAL_FREQMHZ {111.111115} \
-    CONFIG.PCW_ACT_TTC1_CLK2_PERIPHERAL_FREQMHZ {111.111115} \
-    CONFIG.PCW_ACT_UART_PERIPHERAL_FREQMHZ {10.000000} \
-    CONFIG.PCW_ACT_WDT_PERIPHERAL_FREQMHZ {111.111115} \
-    CONFIG.PCW_CLK0_FREQ {125000000} \
-    CONFIG.PCW_CLK1_FREQ {10000000} \
-    CONFIG.PCW_CLK2_FREQ {10000000} \
-    CONFIG.PCW_CLK3_FREQ {10000000} \
-    CONFIG.PCW_DDR_RAM_HIGHADDR {0x1FFFFFFF} \
-    CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ {125} \
-    CONFIG.PCW_FPGA_FCLK0_ENABLE {1} \
-    CONFIG.PCW_UIPARAM_ACT_DDR_FREQ_MHZ {533.333374} \
-  ] $processing_system7_0
-
-
-  # Create instance: pwm_enjoyer_axi_0, and set properties
-  set pwm_enjoyer_axi_0 [ create_bd_cell -type ip -vlnv indra.es:user:pwm_enjoyer_axi:1.0 pwm_enjoyer_axi_0 ]
+  set RGB_1 [ create_bd_port -dir O -from 2 -to 0 -type data RGB_1 ]
+  set RGB_2 [ create_bd_port -dir O -from 2 -to 0 -type data RGB_2 ]
 
   # Create instance: axi_smc, and set properties
   set axi_smc [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 axi_smc ]
   set_property CONFIG.NUM_SI {1} $axi_smc
 
 
-  # Create instance: rst_ps7_0_125M, and set properties
-  set rst_ps7_0_125M [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 rst_ps7_0_125M ]
+  # Create instance: RGB_LEDS
+  create_hier_cell_RGB_LEDS [current_bd_instance .] RGB_LEDS
+
+  # Create instance: PWM_ENJOYER, and set properties
+  set PWM_ENJOYER [ create_bd_cell -type ip -vlnv indra.es:user:pwm_enjoyer_axi:1.0 PWM_ENJOYER ]
+
+  # Create instance: PS
+  create_hier_cell_PS [current_bd_instance .] PS
 
   # Create interface connections
-  connect_bd_intf_net -intf_net axi_smc_M00_AXI [get_bd_intf_pins axi_smc/M00_AXI] [get_bd_intf_pins pwm_enjoyer_axi_0/S_AXI]
-  connect_bd_intf_net -intf_net processing_system7_0_DDR [get_bd_intf_ports DDR] [get_bd_intf_pins processing_system7_0/DDR]
-  connect_bd_intf_net -intf_net processing_system7_0_FIXED_IO [get_bd_intf_ports FIXED_IO] [get_bd_intf_pins processing_system7_0/FIXED_IO]
-  connect_bd_intf_net -intf_net processing_system7_0_M_AXI_GP0 [get_bd_intf_pins processing_system7_0/M_AXI_GP0] [get_bd_intf_pins axi_smc/S00_AXI]
+  connect_bd_intf_net -intf_net axi_smc_M00_AXI [get_bd_intf_pins axi_smc/M00_AXI] [get_bd_intf_pins PWM_ENJOYER/S_AXI]
+  connect_bd_intf_net -intf_net processing_system7_0_DDR [get_bd_intf_ports DDR] [get_bd_intf_pins PS/DDR]
+  connect_bd_intf_net -intf_net processing_system7_0_FIXED_IO [get_bd_intf_ports FIXED_IO] [get_bd_intf_pins PS/FIXED_IO]
+  connect_bd_intf_net -intf_net processing_system7_0_M_AXI_GP0 [get_bd_intf_pins PS/M_AXI_GP0] [get_bd_intf_pins axi_smc/S00_AXI]
 
   # Create port connections
-  connect_bd_net -net processing_system7_0_FCLK_CLK0  [get_bd_pins processing_system7_0/FCLK_CLK0] \
-  [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] \
+  connect_bd_net -net CTRL_I_1  [get_bd_pins PWM_ENJOYER/STATUS_O] \
+  [get_bd_pins RGB_LEDS/CTRL_I]
+  connect_bd_net -net processing_system7_0_FCLK_CLK0  [get_bd_pins PS/FCLK_CLK0] \
   [get_bd_pins axi_smc/aclk] \
-  [get_bd_pins rst_ps7_0_125M/slowest_sync_clk] \
-  [get_bd_pins pwm_enjoyer_axi_0/S_AXI_ACLK]
-  connect_bd_net -net processing_system7_0_FCLK_RESET0_N  [get_bd_pins processing_system7_0/FCLK_RESET0_N] \
-  [get_bd_pins rst_ps7_0_125M/ext_reset_in]
-  connect_bd_net -net pwm_enjoyer_axi_0_PWMS_O  [get_bd_pins pwm_enjoyer_axi_0/PWMS_O] \
+  [get_bd_pins RGB_LEDS/CLK_I] \
+  [get_bd_pins PWM_ENJOYER/S_AXI_ACLK]
+  connect_bd_net -net pwm_enjoyer_axi_0_PWMS_O  [get_bd_pins PWM_ENJOYER/PWMS_O] \
   [get_bd_ports PWMS]
-  connect_bd_net -net rst_ps7_0_125M_peripheral_aresetn  [get_bd_pins rst_ps7_0_125M/peripheral_aresetn] \
+  connect_bd_net -net rst_ps7_0_125M_peripheral_aresetn  [get_bd_pins PS/peripheral_aresetn] \
   [get_bd_pins axi_smc/aresetn] \
-  [get_bd_pins pwm_enjoyer_axi_0/S_AXI_ARESETN]
+  [get_bd_pins RGB_LEDS/RST_I] \
+  [get_bd_pins PWM_ENJOYER/S_AXI_ARESETN]
+  connect_bd_net -net xlconcat_0_dout  [get_bd_pins RGB_LEDS/RGB_O] \
+  [get_bd_ports RGB_1] \
+  [get_bd_ports RGB_2]
 
   # Create address segments
-  assign_bd_address -offset 0x40000000 -range 0x00001000 -target_address_space [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs pwm_enjoyer_axi_0/S_AXI/reg0] -force
+  assign_bd_address -offset 0x40000000 -range 0x00001000 -target_address_space [get_bd_addr_spaces PS/processing_system7_0/Data] [get_bd_addr_segs PWM_ENJOYER/S_AXI/reg0] -force
 
 
   # Restore current instance

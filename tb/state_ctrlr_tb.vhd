@@ -29,9 +29,7 @@ architecture beh of state_ctrlr_tb is
     component state_ctrlr is
         generic (
             G_RST_POL           : std_logic := '1';
-            G_STATE_MAX_L2      : natural := 32;        -- Tamaño del vector de número de pulsos de un estado
             G_MEM_SIZE_MAX_L2   : natural := 32;        -- Tamaño del vector del número máximo de estados
-            G_PERIOD_MAX_N      : natural := 2**32 - 1; -- Número máximo de periodos de reloj de una configuración
             G_PERIOD_MAX_L2     : natural := 32         -- Tamaño del vector del número máximo de periodos de reloj de una configuración
         );
         port (
@@ -42,12 +40,13 @@ architecture beh of state_ctrlr_tb is
             N_TOT_CYC_I     : in std_logic_vector((G_PERIOD_MAX_L2 - 1) downto 0);      -- Número total de ciclos que dura la configuración
             UPD_MEM_I       : in std_logic;                                             -- Señal de actualización de memoria
             CNT_END_I       : in std_logic;                                             -- Fin de estado
-            NEXT_CONFIG_I   : in mem;                                                   -- Siguiente configuración
+            CNT_END_PRE_I   : in std_logic;                                             -- Fin de estado anticipado
+            EARLY_SW_I      : in std_logic;                                             -- Protección ante SWITCH sin configuración previa
             RD_ADDR_O       : out std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0);   -- Dirección de memoria (estado) a leer
             EN_CNT_O        : out std_logic;                                            -- Habiltador del contador
             SWITCH_MEM_O    : out std_logic;                                            -- Cambio de memoria
-            LAST_CYC_O      : out std_logic;                                            -- Inidicador de último ciclo
-            EN_WR_CONFIG_O  : out std_logic                                             -- Bloqueo de escritura de configuración
+            LAST_CYC_O      : out std_logic;                                            -- Indicador de último ciclo
+            UNLOCKED_O      : out std_logic                                             -- Bloqueo de escritura de configuración
         );
     end component state_ctrlr;
 
@@ -65,22 +64,32 @@ architecture beh of state_ctrlr_tb is
     signal N_ADDR_I         : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0);
     signal N_TOT_CYC_I      : std_logic_vector((C_PERIOD_MAX_L2 - 1) downto 0);
     signal UPD_MEM_I        : std_logic;
-    signal NEXT_CONFIG_I    : mem;                                         
     signal CNT_END_I        : std_logic;                                         
+    signal CNT_END_PRE_I    : std_logic;                                         
+    signal EARLY_SW_I       : std_logic;                                         
     signal RD_ADDR_O        : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0);
     signal EN_CNT_O         : std_logic;                                         
     signal SWITCH_MEM_O     : std_logic;
     signal LAST_CYC_O       : std_logic;
-    signal EN_WR_CONFIG_O   : std_logic;
+    signal UNLOCKED_O       : std_logic;
+
+    -- CNT Port map
+    signal DATA_I           : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0);
+    signal DATA_NEXT_I      : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0);
+    signal DATA_NEXT_2_I    : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0);
+    signal PWM_INIT_I       : std_logic;
+    signal PWM_O            : std_logic;
+
+    -- MEM Port map
+    signal WR_EN_I          : std_logic;
+    signal WR_ADDR_I        : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0);
+    signal WR_DATA_I        : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0);
 
     -- Soporte
     type memory is array (0 to (C_MEM_SIZE_MAX_N - 1)) of integer range 0 to C_STATE_MAX_N;
     shared variable v_mem       : memory := (others => 0);
-    signal cnt_data_sim         : integer range 0 to C_STATE_MAX_N := 0;
-    signal data_sim             : integer range 0 to C_MEM_SIZE_MAX_N := 0;
-    signal internal_n_addr      : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0) := (others => '0');  
-    signal internal_n_tot_cyc   : std_logic_vector((C_PERIOD_MAX_L2 - 1) downto 0) := (others => '0'); 
-    signal internal_mem         : memory := (others => 0);
+    shared variable v_n_addr    : integer := 0;
+    shared variable v_n_tot_cyc : integer := 0;
 
     -------------------------------------------------
     -- Funciones y procedimientos
@@ -101,28 +110,59 @@ architecture beh of state_ctrlr_tb is
         signal n_addr   : out std_logic_vector;
         signal n_tot    : out std_logic_vector;
         signal upd      : out std_logic;
-        signal config   : out mem
+        signal pwm_init : out std_logic;
+        signal wr_en    : out std_logic;
+        signal wr_addr  : out std_logic_vector;
+        signal wr_data  : out std_logic_vector
     ) is
     begin
-        rst     <= C_RST_POL;
-        en      <= '0';
-        n_addr  <= (others => '0');
-        n_tot   <= (others => '0');
-        upd     <= '0';
-        config  <= (others => (others => '0'));
+        rst         <= C_RST_POL;
+        en          <= '0';
+        n_addr      <= (others => '0');
+        n_tot       <= (others => '0');
+        upd         <= '0';
+        pwm_init    <= '0';
+        wr_en       <= '0';
+        wr_addr     <= (others => '0');
+        wr_data     <= (others => '0');
         p_wait(clk_period);
-        rst     <= not C_RST_POL;
+        rst         <= not C_RST_POL;
     end procedure reset;
 
     -- Pulso
     procedure pulso (
-        signal s    : out std_logic
+        signal sig  : out std_logic
     ) is
     begin
-        s   <= '1';
+        sig <= '1';
         p_wait(clk_period);
-        s   <= '0';
+        sig <= '0';
     end procedure pulso;
+
+    -- Write config
+    procedure wr_config (
+        variable mem        : in memory;
+        variable mem_len    : in integer;
+        constant pulses     : in integer;   -- Pulsos de seperación entre wr_en
+        signal wr_en        : out std_logic;
+        signal wr_addr      : out std_logic_vector;
+        signal wr_data      : out std_logic_vector
+    ) is
+    begin
+        for i in 0 to (mem_len - 1) loop
+            wr_en   <= '1';
+            wr_addr <= std_logic_vector(to_unsigned(i, wr_addr'length));
+            wr_data <= std_logic_vector(to_unsigned(mem(i), wr_data'length));
+            if (pulses = 0) then
+                p_wait(clk_period);
+            else
+                p_wait(clk_period);
+                wr_en   <= '0';
+                p_wait(pulses*clk_period);
+            end if;
+        end loop;
+        wr_en <= '0';
+    end procedure wr_config;
 
 begin
 
@@ -132,10 +172,7 @@ begin
     uut : component state_ctrlr
         generic map (
             G_RST_POL           => C_RST_POL,
-            G_STATE_MAX_L2      => C_STATE_MAX_L2,
             G_MEM_SIZE_MAX_L2   => C_MEM_SIZE_MAX_L2,
-            -- G_PERIOD_MAX_N      => C_PERIOD_MAX_N,
-            G_PERIOD_MAX_N      => 1000,
             G_PERIOD_MAX_L2     => C_PERIOD_MAX_L2
         )
         port map (
@@ -146,12 +183,58 @@ begin
             N_TOT_CYC_I     => N_TOT_CYC_I,
             UPD_MEM_I       => UPD_MEM_I,
             CNT_END_I       => CNT_END_I,
-            NEXT_CONFIG_I   => NEXT_CONFIG_I,
+            CNT_END_PRE_I   => CNT_END_PRE_I,
+            EARLY_SW_I      => EARLY_SW_I,
             RD_ADDR_O       => RD_ADDR_O,
             EN_CNT_O        => EN_CNT_O,
             SWITCH_MEM_O    => SWITCH_MEM_O,
             LAST_CYC_O      => LAST_CYC_O,
-            EN_WR_CONFIG_O  => EN_WR_CONFIG_O
+            UNLOCKED_O      => UNLOCKED_O
+        );
+
+    cnt : entity work.pwm_counter
+        generic map (
+            G_RST_POL       => C_RST_POL,
+            G_STATE_MAX_L2  => C_STATE_MAX_L2
+        )
+        port map (
+            CLK_I               => CLK_I,
+            RST_I               => RST_I,
+            EN_I                => EN_CNT_O,
+            CNT_LEN_I           => DATA_I,
+            CNT_LEN_NEXT_I      => DATA_NEXT_I,
+            CNT_LEN_NEXT_2_I    => DATA_NEXT_2_I,
+            SWITCH_MEM_I        => SWITCH_MEM_O,
+            PWM_INIT_I          => PWM_INIT_I,
+            PWM_O               => PWM_O,
+            CNT_END_O           => CNT_END_I,
+            CNT_END_PRE_O       => CNT_END_PRE_I
+        );
+
+    mem : entity work.pwm_dp_mem
+        generic map (
+            G_DATA_W    => C_STATE_MAX_L2,
+            G_ADDR_W    => C_MEM_SIZE_MAX_L2,
+            G_MEM_DEPTH => C_MEM_SIZE_MAX_N,
+            G_MEM_MODE  => "LOW_LATENCY",
+            G_RST_POL   => C_RST_POL
+        )
+        port map (
+            CLK_I               => CLK_I,
+            RST_I               => RST_I,
+            EN_I                => EN_I,
+            UNLOCKED_I          => UNLOCKED_O,
+            WR_EN_I             => WR_EN_I,
+            WR_ADDR_I           => WR_ADDR_I,
+            WR_DATA_I           => WR_DATA_I,
+            SWITCH_MEM_I        => SWITCH_MEM_O,
+            LAST_CYC_I          => LAST_CYC_O,
+            N_ADDR_I            => N_ADDR_I,
+            RD_ADDR_I           => RD_ADDR_O,
+            RD_DATA_O           => DATA_I, 
+            RD_DATA_NEXT_O      => DATA_NEXT_I,
+            RD_DATA_NEXT_2_O    => DATA_NEXT_2_I,
+            EARLY_SW_O          => EARLY_SW_I
         );
 
     -------------------------------------------------
@@ -166,36 +249,10 @@ begin
         wait for clk_period/2;
     end process;
 
-    -- Emulador del contador y señal de END
-    P_CNT : process (CLK_I, RST_I)
-    begin
-        if (RST_I = C_RST_POL) then
-            cnt_data_sim     <= 0;
-            data_sim      <= 0;
-        elsif rising_edge(CLK_I) then
-            if (EN_CNT_O = '1') then
-                if (cnt_data_sim < (internal_mem(data_sim) - 1)) then
-                    cnt_data_sim     <= cnt_data_sim + 1;
-                else
-                    cnt_data_sim     <= 0;
-                    if (data_sim < (to_integer(unsigned(internal_n_addr)) - 1)) then
-                        data_sim <= data_sim + 1;
-                    else
-                        data_sim  <= 0;
-                    end if;
-                end if;
-            end if;
-        end if;
-    end process;
-
-    CNT_END_I <= '1' when (EN_CNT_O = '1') and (cnt_data_sim = (internal_mem(data_sim) - 1)) else '0';
-
     -------------------------------------------------
     -- Estímulos
     -------------------------------------------------
     P_STIM : process
-        variable v_n_est    : integer := 0;
-        variable v_n_tot    : integer := 0;
     begin
 
         assert FALSE report "Start simulation" severity note;
@@ -204,116 +261,197 @@ begin
         -- Init
         ------------------------------
         sim <= x"49_4E_49_54_20_20";    -- INIT
-        reset(RST_I, EN_I, N_ADDR_I, N_TOT_CYC_I, UPD_MEM_I, NEXT_CONFIG_I);
+        reset(RST_I, EN_I, N_ADDR_I, N_TOT_CYC_I, UPD_MEM_I, PWM_INIT_I, WR_EN_I, WR_ADDR_I, WR_DATA_I);
         p_wait(10*clk_period);
 
         EN_I <= '1';
+
+        p_wait(10*clk_period);
 
         ------------------------------
         -- Config 1
         ------------------------------
         sim <= x"43_4F_4E_46_20_31";    -- CONF 1
-        
-        v_n_est         := 4;
-        v_n_tot         := 10;
-        v_mem           := (0 => 3, 1 => 1, 2 => 2, 3 => 4, others => 0);
-        N_ADDR_I        <= std_logic_vector(to_unsigned(v_n_est, N_ADDR_I'length));
-        N_TOT_CYC_I     <= std_logic_vector(to_unsigned(v_n_tot, N_TOT_CYC_I'length));
-        for i in 0 to (C_MEM_SIZE_MAX_N - 1) loop
-            NEXT_CONFIG_I(i) <= std_logic_vector(to_unsigned(v_mem(i), NEXT_CONFIG_I(i)'length));
-        end loop;
 
-        p_wait(10*clk_period);
+        v_n_addr    := 4;
+        v_n_tot_cyc := 10;
+        v_mem := (  0 => 4,
+                    1 => 1,
+                    2 => 3,
+                    3 => 2,
+                    others => 0);
+        PWM_INIT_I  <= '1';
+        N_ADDR_I    <= std_logic_vector(to_unsigned(v_n_addr, N_ADDR_I'length));
+        N_TOT_CYC_I <= std_logic_vector(to_unsigned(v_n_tot_cyc, N_TOT_CYC_I'length));
+        wr_config(v_mem, v_n_addr, 0, WR_EN_I, WR_ADDR_I, WR_DATA_I);
+        p_wait(20*clk_period);
 
-        ------------------------------
-        -- Update 1
-        ------------------------------
-        sim <= x"55_50_44_54_20_31";    -- UPDT 1
-        
+        -- Update
         pulso(UPD_MEM_I);
 
-        -- wait until (SWITCH_MEM_O = '1');
-        wait until falling_edge(SWITCH_MEM_O);
-        -- internal_n_addr     <= N_ADDR_I;
-        internal_n_tot_cyc  <= N_TOT_CYC_I;
-        internal_mem        <= v_mem;
-        p_wait(clk_period);
-        internal_n_addr     <= N_ADDR_I;
-        
-        p_wait(60*clk_period);
-        
+        p_wait(50*clk_period);
+
         ------------------------------
         -- Config 2
         ------------------------------
         sim <= x"43_4F_4E_46_20_32";    -- CONF 2
-        
-        v_n_est     := 2;
-        v_n_tot     := 7;
-        v_mem       := (0 => 2, 1 => 5, others => 0);
-        N_ADDR_I    <= std_logic_vector(to_unsigned(v_n_est, N_ADDR_I'length));
-        N_TOT_CYC_I <= std_logic_vector(to_unsigned(v_n_tot, N_TOT_CYC_I'length));
-        for i in 0 to (C_MEM_SIZE_MAX_N - 1) loop
-            NEXT_CONFIG_I(i) <= std_logic_vector(to_unsigned(v_mem(i), NEXT_CONFIG_I(i)'length));
-        end loop;
 
-        p_wait(10*clk_period);
+        v_n_addr    := 3;
+        v_n_tot_cyc := 8;
+        v_mem := (  0 => 2,
+                    1 => 1,
+                    2 => 5,
+                    others => 0);
+        PWM_INIT_I  <= '0';
+        N_ADDR_I    <= std_logic_vector(to_unsigned(v_n_addr, N_ADDR_I'length));
+        N_TOT_CYC_I <= std_logic_vector(to_unsigned(v_n_tot_cyc, N_TOT_CYC_I'length));
+        wr_config(v_mem, v_n_addr, 0, WR_EN_I, WR_ADDR_I, WR_DATA_I);
+        p_wait(20*clk_period);
 
-        ------------------------------
-        -- Update 2
-        ------------------------------
-        sim <= x"55_50_44_54_20_32";    -- UPDT 2
-        
+        -- Update
         pulso(UPD_MEM_I);
 
-        -- wait until (SWITCH_MEM_O = '1');
-        wait until falling_edge(SWITCH_MEM_O);
-        -- internal_n_addr     <= N_ADDR_I;
-        internal_n_tot_cyc  <= N_TOT_CYC_I;
-        internal_mem        <= v_mem;
-        p_wait(clk_period);
-        internal_n_addr     <= N_ADDR_I;
-        
-        p_wait(60*clk_period);
+        p_wait(50*clk_period);
 
         ------------------------------
         -- Config 3
         ------------------------------
         sim <= x"43_4F_4E_46_20_33";    -- CONF 3
-        
-        v_n_est     := 5;
-        v_n_tot     := 9;
-        v_mem       := (0 => 1, 1 => 1, 2 => 5, 3 => 1, 4 => 1, others => 0);
-        N_ADDR_I    <= std_logic_vector(to_unsigned(v_n_est, N_ADDR_I'length));
-        N_TOT_CYC_I <= std_logic_vector(to_unsigned(v_n_tot, N_TOT_CYC_I'length));
-        for i in 0 to (C_MEM_SIZE_MAX_N - 1) loop
-            NEXT_CONFIG_I(i) <= std_logic_vector(to_unsigned(v_mem(i), NEXT_CONFIG_I(i)'length));
-        end loop;
 
-        p_wait(10*clk_period);
+        v_n_addr    := 4;
+        v_n_tot_cyc := 6;
+        v_mem := (  0 => 1,
+                    1 => 2,
+                    2 => 2,
+                    3 => 1,
+                    others => 0);
+        PWM_INIT_I  <= '1';
+        N_ADDR_I    <= std_logic_vector(to_unsigned(v_n_addr, N_ADDR_I'length));
+        N_TOT_CYC_I <= std_logic_vector(to_unsigned(v_n_tot_cyc, N_TOT_CYC_I'length));
+        wr_config(v_mem, v_n_addr, 0, WR_EN_I, WR_ADDR_I, WR_DATA_I);
+        p_wait(20*clk_period);
 
-        ------------------------------
-        -- Update 3
-        ------------------------------
-        sim <= x"55_50_44_54_20_33";    -- UPDT 3
-        
+        -- Update
         pulso(UPD_MEM_I);
 
-        -- wait until (SWITCH_MEM_O = '1');
-        wait until falling_edge(SWITCH_MEM_O);
-        -- internal_n_addr     <= N_ADDR_I;
-        internal_n_tot_cyc  <= N_TOT_CYC_I;
-        internal_mem        <= v_mem;
-        p_wait(clk_period);
-        internal_n_addr     <= N_ADDR_I;
-        
-        p_wait(60*clk_period);
+        p_wait(50*clk_period);
 
         ------------------------------
-        -- Disenable
+        -- Config 4
         ------------------------------
-        sim <= x"44_49_53_45_4E_41";    -- DISENA
+        sim <= x"43_4F_4E_46_20_34";    -- CONF 4
+
+        v_n_addr    := 5;
+        v_n_tot_cyc := 5;
+        v_mem := (  0 => 1,
+                    1 => 1,
+                    2 => 1,
+                    3 => 1,
+                    4 => 1,
+                    others => 0);
+        PWM_INIT_I  <= '1';
+        N_ADDR_I    <= std_logic_vector(to_unsigned(v_n_addr, N_ADDR_I'length));
+        N_TOT_CYC_I <= std_logic_vector(to_unsigned(v_n_tot_cyc, N_TOT_CYC_I'length));
+        wr_config(v_mem, v_n_addr, 0, WR_EN_I, WR_ADDR_I, WR_DATA_I);
+        p_wait(20*clk_period);
+
+        -- Update
+        pulso(UPD_MEM_I);
+
+        p_wait(50*clk_period);
+
+        ------------------------------
+        -- Config 5
+        ------------------------------
+        sim <= x"43_4F_4E_46_20_35";    -- CONF 5
+
+        v_n_addr    := 2;
+        v_n_tot_cyc := 6;
+        v_mem := (  0 => 2,
+                    1 => 4,
+                    others => 0);
+        PWM_INIT_I  <= '1';
+        N_ADDR_I    <= std_logic_vector(to_unsigned(v_n_addr, N_ADDR_I'length));
+        N_TOT_CYC_I <= std_logic_vector(to_unsigned(v_n_tot_cyc, N_TOT_CYC_I'length));
+        wr_config(v_mem, v_n_addr, 0, WR_EN_I, WR_ADDR_I, WR_DATA_I);
+        p_wait(20*clk_period);
+
+        -- Update
+        pulso(UPD_MEM_I);
+
+        p_wait(50*clk_period);
+
+        ------------------------------
+        -- Apagar
+        ------------------------------
+        sim <= x"41_50_41_47_41_52";    -- APAGAR
+
         EN_I <= '0';
-        p_wait(30*clk_period);
+
+        p_wait(20*clk_period);
+
+        ------------------------------
+        -- Reiniciar
+        ------------------------------
+        sim <= x"41_50_41_47_41_52";    -- APAGAR
+
+        EN_I <= '1';
+
+        p_wait(clk_period);
+
+        ------------------------------
+        -- Config 6
+        ------------------------------
+        sim <= x"43_4F_4E_46_20_36";    -- CONF 6
+
+        v_n_addr    := 2;
+        v_n_tot_cyc := 3;
+        v_mem := (  0 => 1,
+                    1 => 2,
+                    others => 0);
+        PWM_INIT_I  <= '0';
+        N_ADDR_I    <= std_logic_vector(to_unsigned(v_n_addr, N_ADDR_I'length));
+        N_TOT_CYC_I <= std_logic_vector(to_unsigned(v_n_tot_cyc, N_TOT_CYC_I'length));
+        wr_config(v_mem, v_n_addr, 0, WR_EN_I, WR_ADDR_I, WR_DATA_I);
+        p_wait(20*clk_period);
+
+        -- Update
+        pulso(UPD_MEM_I);
+
+        p_wait(50*clk_period);
+
+        ------------------------------
+        -- Reset
+        ------------------------------
+        sim <= x"52_45_53_45_54_20";    -- RESET
+        reset(RST_I, EN_I, N_ADDR_I, N_TOT_CYC_I, UPD_MEM_I, PWM_INIT_I, WR_EN_I, WR_ADDR_I, WR_DATA_I);
+        p_wait(20*clk_period);
+
+        EN_I <= '1';
+
+        p_wait(clk_period);
+
+        ------------------------------
+        -- Config 7
+        ------------------------------
+        sim <= x"43_4F_4E_46_20_37";    -- CONF 7
+
+        v_n_addr    := 3;
+        v_n_tot_cyc := 3;
+        v_mem := (  0 => 1,
+                    1 => 1,
+                    2 => 1,
+                    others => 0);
+        PWM_INIT_I  <= '0';
+        N_ADDR_I    <= std_logic_vector(to_unsigned(v_n_addr, N_ADDR_I'length));
+        N_TOT_CYC_I <= std_logic_vector(to_unsigned(v_n_tot_cyc, N_TOT_CYC_I'length));
+        wr_config(v_mem, v_n_addr, 0, WR_EN_I, WR_ADDR_I, WR_DATA_I);
+        p_wait(20*clk_period);
+
+        -- Update
+        pulso(UPD_MEM_I);
+
+        p_wait(50*clk_period);
 
         ------------------------------
         -- End

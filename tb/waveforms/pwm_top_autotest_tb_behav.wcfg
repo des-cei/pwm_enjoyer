@@ -11,15 +11,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0.000000 us"></ZoomStartTime>
-      <ZoomEndTime time="13.408001 us"></ZoomEndTime>
-      <Cursor1Time time="5.588284 us"></Cursor1Time>
+      <ZoomStartTime time="0.000 ns"></ZoomStartTime>
+      <ZoomEndTime time="1,192.001 ns"></ZoomEndTime>
+      <Cursor1Time time="440.000 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="170"></NameColumnWidth>
-      <ValueColumnWidth column_width="70"></ValueColumnWidth>
+      <ValueColumnWidth column_width="62"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="23" />
+   <WVObjectSize size="22" />
    <wvobject fp_name="/pwm_top_autotest_tb/CLK_I" type="logic">
       <obj_property name="ElementShortName">CLK_I</obj_property>
       <obj_property name="ObjectShortName">CLK_I</obj_property>
@@ -45,8 +45,8 @@
       <obj_property name="UseCustomSignalColor">true</obj_property>
    </wvobject>
    <wvobject fp_name="/pwm_top_autotest_tb/WR_ADDR_I" type="array">
-      <obj_property name="ElementShortName">WR_ADDR_I[2:0]</obj_property>
-      <obj_property name="ObjectShortName">WR_ADDR_I[2:0]</obj_property>
+      <obj_property name="ElementShortName">WR_ADDR_I[6:0]</obj_property>
+      <obj_property name="ObjectShortName">WR_ADDR_I[6:0]</obj_property>
       <obj_property name="CustomSignalColor">#FFFF00</obj_property>
       <obj_property name="UseCustomSignalColor">true</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
@@ -59,13 +59,13 @@
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="/pwm_top_autotest_tb/N_ADDR_I" type="array">
-      <obj_property name="ElementShortName">N_ADDR_I[2:0]</obj_property>
-      <obj_property name="ObjectShortName">N_ADDR_I[2:0]</obj_property>
+      <obj_property name="ElementShortName">N_ADDR_I[6:0]</obj_property>
+      <obj_property name="ObjectShortName">N_ADDR_I[6:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="/pwm_top_autotest_tb/N_TOT_CYC_I" type="array">
-      <obj_property name="ElementShortName">N_TOT_CYC_I[7:0]</obj_property>
-      <obj_property name="ObjectShortName">N_TOT_CYC_I[7:0]</obj_property>
+      <obj_property name="ElementShortName">N_TOT_CYC_I[11:0]</obj_property>
+      <obj_property name="ObjectShortName">N_TOT_CYC_I[11:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="/pwm_top_autotest_tb/uut/PWM_INIT_I" type="logic">
@@ -81,11 +81,13 @@
    <wvobject fp_name="/pwm_top_autotest_tb/PWM_O" type="logic">
       <obj_property name="ElementShortName">PWM_O</obj_property>
       <obj_property name="ObjectShortName">PWM_O</obj_property>
+      <obj_property name="CustomSignalColor">#00FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
    </wvobject>
-   <wvobject fp_name="/pwm_top_autotest_tb/EN_WR_CONFIG_O" type="logic">
-      <obj_property name="ElementShortName">EN_WR_CONFIG_O</obj_property>
-      <obj_property name="ObjectShortName">EN_WR_CONFIG_O</obj_property>
-      <obj_property name="CustomSignalColor">#008000</obj_property>
+   <wvobject fp_name="/pwm_top_autotest_tb/uut/UNLOCKED_O" type="logic">
+      <obj_property name="ElementShortName">UNLOCKED_O</obj_property>
+      <obj_property name="ObjectShortName">UNLOCKED_O</obj_property>
+      <obj_property name="CustomSignalColor">#0000FF</obj_property>
       <obj_property name="UseCustomSignalColor">true</obj_property>
    </wvobject>
    <wvobject type="divider" fp_name="divider85">
@@ -96,23 +98,12 @@
       <obj_property name="ElementShortName">r_state</obj_property>
       <obj_property name="ObjectShortName">r_state</obj_property>
    </wvobject>
-   <wvobject fp_name="/pwm_top_autotest_tb/uut/fsm_i/s_cnt_end" type="logic">
-      <obj_property name="ElementShortName">s_cnt_end</obj_property>
-      <obj_property name="ObjectShortName">s_cnt_end</obj_property>
-      <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
-      <obj_property name="UseCustomSignalColor">true</obj_property>
-   </wvobject>
-   <wvobject fp_name="/pwm_top_autotest_tb/uut/fsm_i/s_cnt_end_sw" type="logic">
-      <obj_property name="ElementShortName">s_cnt_end_sw</obj_property>
-      <obj_property name="ObjectShortName">s_cnt_end_sw</obj_property>
-      <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
-      <obj_property name="UseCustomSignalColor">true</obj_property>
-   </wvobject>
    <wvobject fp_name="/pwm_top_autotest_tb/uut/mem_i/RD_ADDR_I" type="array">
-      <obj_property name="ElementShortName">RD_ADDR_I[2:0]</obj_property>
-      <obj_property name="ObjectShortName">RD_ADDR_I[2:0]</obj_property>
+      <obj_property name="ElementShortName">RD_ADDR_I[6:0]</obj_property>
+      <obj_property name="ObjectShortName">RD_ADDR_I[6:0]</obj_property>
       <obj_property name="CustomSignalColor">#FF0080</obj_property>
       <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="/pwm_top_autotest_tb/uut/mem_i/LAST_CYC_I" type="logic">
       <obj_property name="ElementShortName">LAST_CYC_I</obj_property>
@@ -125,6 +116,13 @@
       <obj_property name="ObjectShortName">SWITCH_MEM_I</obj_property>
       <obj_property name="CustomSignalColor">#008080</obj_property>
       <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_top_autotest_tb/uut/fsm_i/r_cnt_pulse" type="array">
+      <obj_property name="ElementShortName">r_cnt_pulse[31:0]</obj_property>
+      <obj_property name="ObjectShortName">r_cnt_pulse[31:0]</obj_property>
+      <obj_property name="CustomSignalColor">#0000FF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="/pwm_top_autotest_tb/uut/mem_i/RD_DATA_O" type="array">
       <obj_property name="ElementShortName">RD_DATA_O[4:0]</obj_property>

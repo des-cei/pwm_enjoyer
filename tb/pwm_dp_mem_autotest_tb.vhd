@@ -20,7 +20,7 @@ entity pwm_dp_mem_autotest_tb is
     generic (
         -- Ficheros .txt
         C_N_INPUTS          : integer := 7; -- Número de entradas (columnas)
-        C_N_OUTPUTS         : integer := 2; -- Número de salidas (columnas)
+        C_N_OUTPUTS         : integer := 3; -- Número de salidas (columnas)
         C_WIDTH             : integer := 8; -- Número de bits de las señales
         -- C_INPUTS_PATH       : string := "\\AMS_NAS\home\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_dp_mem_inputs.txt";
         -- C_OUTPUTS_REF_PATH  : string := "\\AMS_NAS\home\Universidad\TFM\pwm_enjoyer\tb\autotest\pwm_dp_mem_outputs_ref.txt";
@@ -48,19 +48,20 @@ architecture beh of pwm_dp_mem_autotest_tb is
             G_RST_POL   : std_logic := '1'
         );
         port (
-            CLK_I           : in std_logic;     
-            RST_I           : in std_logic;
-            EN_WR_CONFIG_I  : in std_logic;                                     -- Bloqueo de escritura de configuración
-            WR_EN_I         : in std_logic;                                     -- Enable de escritura
-            WR_ADDR_I       : in std_logic_vector((G_ADDR_W - 1) downto 0);     -- Dirección de escritura
-            WR_DATA_I       : in std_logic_vector((G_DATA_W - 1) downto 0);     -- Dato de escritura
-            SWITCH_MEM_I    : in std_logic;                                     -- Señal de actualización de memoria
-            LAST_CYC_I      : in std_logic;                                     -- Indicador de último valor del último ciclo
-            N_ADDR_I        : in std_logic_vector((G_ADDR_W - 1) downto 0);     -- Número de estados del PWM
-            RD_ADDR_I       : in std_logic_vector((G_ADDR_W - 1) downto 0);     -- Dirección de lectura
-            RD_DATA_O       : out std_logic_vector((G_DATA_W - 1) downto 0);    -- Dato de lectura
-            RD_DATA_NEXT_O  : out std_logic_vector((G_DATA_W - 1) downto 0);    -- Siguiente dato de lectura
-            NEXT_CONFIG_O   : out mem
+            CLK_I               : in std_logic;     
+            RST_I               : in std_logic;
+            EN_I                : in std_logic;                                     -- Mismo enable que el contador
+            UNLOCKED_I          : in std_logic;                                     -- Bloqueo de escritura de configuración
+            WR_EN_I             : in std_logic;                                     -- Enable de escritura
+            WR_ADDR_I           : in std_logic_vector((G_ADDR_W - 1) downto 0);     -- Dirección de escritura
+            WR_DATA_I           : in std_logic_vector((G_DATA_W - 1) downto 0);     -- Dato de escritura
+            SWITCH_MEM_I        : in std_logic;                                     -- Señal de actualización de memoria
+            LAST_CYC_I          : in std_logic;                                     -- Indicador de último valor del último ciclo
+            N_ADDR_I            : in std_logic_vector((G_ADDR_W - 1) downto 0);     -- Número de estados del PWM
+            RD_ADDR_I           : in std_logic_vector((G_ADDR_W - 1) downto 0);     -- Dirección de lectura
+            RD_DATA_O           : out std_logic_vector((G_DATA_W - 1) downto 0);    -- Dato de lectura
+            RD_DATA_NEXT_O      : out std_logic_vector((G_DATA_W - 1) downto 0);    -- Siguiente dato de lectura
+            RD_DATA_NEXT_2_O    : out std_logic_vector((G_DATA_W - 1) downto 0)     -- Siguiente dato 2 de lectura
         );
     end component pwm_dp_mem;
 
@@ -73,7 +74,8 @@ architecture beh of pwm_dp_mem_autotest_tb is
     -- Port map
     signal CLK_I            : std_logic;     
     signal RST_I            : std_logic := '1';
-    signal EN_WR_CONFIG_I   : std_logic := '1';                                
+    signal EN_I             : std_logic := '1';
+    signal UNLOCKED_I       : std_logic := '1';                                
     signal WR_EN_I          : std_logic := '0';                                
     signal WR_ADDR_I        : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0) := (others => '0');
     signal WR_DATA_I        : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0) := (others => '0');
@@ -83,7 +85,7 @@ architecture beh of pwm_dp_mem_autotest_tb is
     signal RD_ADDR_I        : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0) := (others => '0');
     signal RD_DATA_O        : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0) := (others => '0');
     signal RD_DATA_NEXT_O   : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0) := (others => '0');
-    signal NEXT_CONFIG_O    : mem;
+    signal RD_DATA_NEXT_2_O : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0) := (others => '0');
 
     -- Vectores de datos
     type vec_input is array (0 to (C_N_INPUTS - 1)) of bit_vector((C_WIDTH - 1) downto 0);
@@ -108,19 +110,20 @@ begin
             G_RST_POL   => C_RST_POL  
         )
         port map (
-            CLK_I           => CLK_I,
-            RST_I           => RST_I,
-            EN_WR_CONFIG_I  => EN_WR_CONFIG_I,
-            WR_EN_I         => WR_EN_I,
-            WR_ADDR_I       => WR_ADDR_I,
-            WR_DATA_I       => WR_DATA_I,
-            SWITCH_MEM_I    => SWITCH_MEM_I,
-            LAST_CYC_I      => LAST_CYC_I,
-            N_ADDR_I        => N_ADDR_I,
-            RD_ADDR_I       => RD_ADDR_I,
-            RD_DATA_O       => RD_DATA_O, 
-            RD_DATA_NEXT_O  => RD_DATA_NEXT_O, 
-            NEXT_CONFIG_O   => NEXT_CONFIG_O 
+            CLK_I               => CLK_I,
+            RST_I               => RST_I,
+            EN_I                => EN_I,
+            UNLOCKED_I          => UNLOCKED_I,
+            WR_EN_I             => WR_EN_I,
+            WR_ADDR_I           => WR_ADDR_I,
+            WR_DATA_I           => WR_DATA_I,
+            SWITCH_MEM_I        => SWITCH_MEM_I,
+            LAST_CYC_I          => LAST_CYC_I,
+            N_ADDR_I            => N_ADDR_I,
+            RD_ADDR_I           => RD_ADDR_I,
+            RD_DATA_O           => RD_DATA_O, 
+            RD_DATA_NEXT_O      => RD_DATA_NEXT_O, 
+            RD_DATA_NEXT_2_O    => RD_DATA_NEXT_2_O
         );
 
     -------------------------------------------------
@@ -162,7 +165,7 @@ begin
             for i in 0 to (C_N_INPUTS - 1) loop
                 read(line_in, data_in(i));              -- Lee dato a dato, separados por espacios
             end loop;
-            -- User TODO: Asignación de entradas
+            -- USER: Asignación de entradas
             WR_EN_I         <= to_stdlogicvector(data_in(0))(0);
             WR_ADDR_I       <= to_stdlogicvector(data_in(1))((WR_ADDR_I'length - 1) downto 0);
             WR_DATA_I       <= to_stdlogicvector(data_in(2))((WR_DATA_I'length - 1) downto 0);
@@ -170,7 +173,7 @@ begin
             LAST_CYC_I      <= to_stdlogicvector(data_in(4))(0);
             N_ADDR_I        <= to_stdlogicvector(data_in(5))((N_ADDR_I'length - 1) downto 0);
             RD_ADDR_I       <= to_stdlogicvector(data_in(6))((RD_ADDR_I'length - 1) downto 0);
-            ---------------------------------------
+            -- USER -----------------------
         end loop;
         -- wait until rising_edge(CLK_I);
         wait until CLK_I'event and (CLK_I = '1');
@@ -199,16 +202,17 @@ begin
             wait until rising_edge(CLK_I);
             readline(read_file, line_in);                       -- Lee fila a fila
             index := index + 1;
-            -- User TODO: Asignación de salidas
-            data_out(0)((RD_DATA_O'length - 1) downto 0) := to_bitvector(RD_DATA_O);
-            data_out(1)((RD_DATA_NEXT_O'length - 1) downto 0) := to_bitvector(RD_DATA_NEXT_O);
+            -- User : Asignación de salidas
+            data_out(0)((RD_DATA_O'length - 1) downto 0)        := to_bitvector(RD_DATA_O);
+            data_out(1)((RD_DATA_NEXT_O'length - 1) downto 0)   := to_bitvector(RD_DATA_NEXT_O);
+            data_out(2)((RD_DATA_NEXT_2_O'length - 1) downto 0) := to_bitvector(RD_DATA_NEXT_2_O);
             ----------------------------------------
             for i in 0 to (C_N_OUTPUTS - 1) loop
                 read(line_in, data_in(i));                          -- Lee dato a dato, separados por espacios
                 write(line_out, data_out(i), right, (C_WIDTH + 1)); -- Escribe dato a dato, separados por espacios
             end loop;
             writeline(write_file, line_out);                        -- Escribe fila a fila
-            -- User TODO: Comparación de salidas
+            -- USER -----------------------
             assert data_out(0) = data_in(0)
                 report ":( Wrong DATA output. Obtained: " & integer'image(to_integer(unsigned(to_stdlogicvector(data_out(0))))) &
                     " Expected: " & integer'image(to_integer(unsigned(to_stdlogicvector(data_in(0))))) & " at step: " & integer'image(index)
@@ -216,6 +220,10 @@ begin
             assert data_out(1) = data_in(1)
                 report ":( Wrong NEXT_DATA output. Obtained: " & integer'image(to_integer(unsigned(to_stdlogicvector(data_out(1))))) &
                     " Expected: " & integer'image(to_integer(unsigned(to_stdlogicvector(data_in(1))))) & " at step: " & integer'image(index)
+                severity failure;
+            assert data_out(2) = data_in(2)
+                report ":( Wrong NEXT_DATA_2 output. Obtained: " & integer'image(to_integer(unsigned(to_stdlogicvector(data_out(2))))) &
+                    " Expected: " & integer'image(to_integer(unsigned(to_stdlogicvector(data_in(2))))) & " at step: " & integer'image(index)
                 severity failure;
             ---------------------------------------
         end loop;

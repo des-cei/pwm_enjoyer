@@ -11,15 +11,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="375667fs"></ZoomStartTime>
-      <ZoomEndTime time="1176668fs"></ZoomEndTime>
-      <Cursor1Time time="580667fs"></Cursor1Time>
+      <ZoomStartTime time="497.500 ns"></ZoomStartTime>
+      <ZoomEndTime time="595.301 ns"></ZoomEndTime>
+      <Cursor1Time time="524.000 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="172"></NameColumnWidth>
-      <ValueColumnWidth column_width="58"></ValueColumnWidth>
+      <NameColumnWidth column_width="206"></NameColumnWidth>
+      <ValueColumnWidth column_width="74"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="10" />
+   <WVObjectSize size="14" />
    <wvobject fp_name="/pwm_counter_tb/CLK_I" type="logic">
       <obj_property name="ElementShortName">CLK_I</obj_property>
       <obj_property name="ObjectShortName">CLK_I</obj_property>
@@ -39,6 +39,10 @@
       <obj_property name="ElementShortName">EN_I</obj_property>
       <obj_property name="ObjectShortName">EN_I</obj_property>
    </wvobject>
+   <wvobject fp_name="/pwm_counter_tb/PWM_INIT_I" type="logic">
+      <obj_property name="ElementShortName">PWM_INIT_I</obj_property>
+      <obj_property name="ObjectShortName">PWM_INIT_I</obj_property>
+   </wvobject>
    <wvobject fp_name="/pwm_counter_tb/CNT_LEN_I" type="array">
       <obj_property name="ElementShortName">CNT_LEN_I[4:0]</obj_property>
       <obj_property name="ObjectShortName">CNT_LEN_I[4:0]</obj_property>
@@ -49,13 +53,17 @@
       <obj_property name="ObjectShortName">CNT_LEN_NEXT_I[4:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
-   <wvobject fp_name="/pwm_counter_tb/LAST_CYC_I" type="logic">
-      <obj_property name="ElementShortName">LAST_CYC_I</obj_property>
-      <obj_property name="ObjectShortName">LAST_CYC_I</obj_property>
+   <wvobject fp_name="/pwm_counter_tb/CNT_LEN_NEXT_2_I" type="array">
+      <obj_property name="ElementShortName">CNT_LEN_NEXT_2_I[4:0]</obj_property>
+      <obj_property name="ObjectShortName">CNT_LEN_NEXT_2_I[4:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
-   <wvobject fp_name="/pwm_counter_tb/PWM_INIT_I" type="logic">
-      <obj_property name="ElementShortName">PWM_INIT_I</obj_property>
-      <obj_property name="ObjectShortName">PWM_INIT_I</obj_property>
+   <wvobject fp_name="/pwm_counter_tb/uut/r_cnt" type="array">
+      <obj_property name="ElementShortName">r_cnt[4:0]</obj_property>
+      <obj_property name="ObjectShortName">r_cnt[4:0]</obj_property>
+      <obj_property name="CustomSignalColor">#FF00FF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="/pwm_counter_tb/PWM_O" type="logic">
       <obj_property name="ElementShortName">PWM_O</obj_property>
@@ -66,7 +74,23 @@
    <wvobject fp_name="/pwm_counter_tb/CNT_END_O" type="logic">
       <obj_property name="ElementShortName">CNT_END_O</obj_property>
       <obj_property name="ObjectShortName">CNT_END_O</obj_property>
-      <obj_property name="CustomSignalColor">#FFFF00</obj_property>
+      <obj_property name="CustomSignalColor">#F0E68C</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_counter_tb/CNT_END_PRE_O" type="logic">
+      <obj_property name="ElementShortName">CNT_END_PRE_O</obj_property>
+      <obj_property name="ObjectShortName">CNT_END_PRE_O</obj_property>
+      <obj_property name="CustomSignalColor">#F0E68C</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_counter_tb/r_end_pre_d1" type="logic">
+      <obj_property name="ElementShortName">r_end_pre_d1</obj_property>
+      <obj_property name="ObjectShortName">r_end_pre_d1</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_counter_tb/s_end_verif" type="logic">
+      <obj_property name="ElementShortName">s_end_verif</obj_property>
+      <obj_property name="ObjectShortName">s_end_verif</obj_property>
+      <obj_property name="CustomSignalColor">#FF0080</obj_property>
       <obj_property name="UseCustomSignalColor">true</obj_property>
    </wvobject>
 </wave_config>

@@ -31,7 +31,6 @@ architecture beh of pwm_top_tb is
         generic (
             G_STATE_MAX_L2      : natural   := 32;              -- Ancho de datos en bits
             G_MEM_SIZE_MAX_L2   : natural   := 32;              -- Ancho de direcciones en bits
-            G_PERIOD_MAX_N      : natural   := 2**32 - 1;       -- Número máximo de periodos de reloj
             G_PERIOD_MAX_L2     : natural   := 32;              -- Tamaño del vector del número máximo de pulsos de una configuración
             G_MEM_SIZE_MAX_N    : natural   := 128;             -- Profundidad de memoria
             G_MEM_MODE          : string    := "LOW_LATENCY";   -- Modo de funcionamiento de la memoria
@@ -52,7 +51,7 @@ architecture beh of pwm_top_tb is
             PWM_INIT_I      : in std_logic;                                             -- Valor inicial de salida
             -- Salidas
             PWM_O           : out std_logic;                                            -- Salida del PWM
-            EN_WR_CONFIG_O  : out std_logic                                             -- Habilitación de configuración de memoria
+            UNLOCKED_O      : out std_logic                                             -- Habilitación de configuración de memoria
         );
     end component pwm_top;
 
@@ -64,18 +63,18 @@ architecture beh of pwm_top_tb is
     signal sim          : std_logic_vector(47 downto 0) := (others => '0'); -- 6 caracteres ASCII
 
     -- Port map
-    signal CLK_I            : std_logic;     
-    signal RST_I            : std_logic;
-    signal EN_I             : std_logic;                                            -- Señal de habilitación del PWM
-    signal UPD_MEM_I        : std_logic;                                            -- Pulso de actualización de memoria
-    signal WR_EN_I          : std_logic;                                            -- Enable de escritura
-    signal WR_ADDR_I        : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0);   -- Dirección de escritura
-    signal WR_DATA_I        : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0);      -- Dato de escritura
-    signal N_ADDR_I         : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0);   -- Número de estados
-    signal N_TOT_CYC_I      : std_logic_vector((C_PERIOD_MAX_L2 - 1) downto 0);     -- Número total de ciclos que dura la configuración
-    signal PWM_INIT_I       : std_logic;                                            -- Valor inicial de salida
-    signal PWM_O            : std_logic;                                            -- Salida del PWM
-    signal EN_WR_CONFIG_O   : std_logic;                                            -- Habilitación de configuración de memoria
+    signal CLK_I        : std_logic;     
+    signal RST_I        : std_logic;
+    signal EN_I         : std_logic;                                            -- Señal de habilitación del PWM
+    signal UPD_MEM_I    : std_logic;                                            -- Pulso de actualización de memoria
+    signal WR_EN_I      : std_logic;                                            -- Enable de escritura
+    signal WR_ADDR_I    : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0);   -- Dirección de escritura
+    signal WR_DATA_I    : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0);      -- Dato de escritura
+    signal N_ADDR_I     : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0);   -- Número de estados
+    signal N_TOT_CYC_I  : std_logic_vector((C_PERIOD_MAX_L2 - 1) downto 0);     -- Número total de ciclos que dura la configuración
+    signal PWM_INIT_I   : std_logic;                                            -- Valor inicial de salida
+    signal PWM_O        : std_logic;                                            -- Salida del PWM
+    signal UNLOCKED_O   : std_logic;                                            -- Habilitación de configuración de memoria
     
     -- Soporte
     type memory is array (0 to (C_MEM_SIZE_MAX_N - 1)) of integer range 0 to C_STATE_MAX_N;
@@ -84,6 +83,7 @@ architecture beh of pwm_top_tb is
     shared variable v_n_tot     : integer := 0;
     shared variable v_pwm_init  : std_logic := '0';
     signal cnt_pulse    : integer range 0 to C_STATE_MAX_N;
+    signal unlocked_d1  : std_logic;
 
     -------------------------------------------------
     -- Funciones y procedimientos
@@ -168,7 +168,6 @@ begin
         generic map (
             G_STATE_MAX_L2      => C_STATE_MAX_L2,
             G_MEM_SIZE_MAX_L2   => C_MEM_SIZE_MAX_L2,
-            G_PERIOD_MAX_N      => C_PERIOD_MAX_N,
             G_PERIOD_MAX_L2     => C_PERIOD_MAX_L2,
             G_MEM_SIZE_MAX_N    => C_MEM_SIZE_MAX_N,
             G_MEM_MODE          => "LOW_LATENCY",
@@ -186,7 +185,7 @@ begin
             N_TOT_CYC_I     => N_TOT_CYC_I,
             PWM_INIT_I      => PWM_INIT_I,
             PWM_O           => PWM_O,
-            EN_WR_CONFIG_O  => EN_WR_CONFIG_O
+            UNLOCKED_O      => UNLOCKED_O
         );
 
     -------------------------------------------------
@@ -201,17 +200,29 @@ begin
         wait for clk_period/2;
     end process;
 
-    -- Contador de pulsos
-    P_CNT : process (CLK_I, RST_I, PWM_O, EN_WR_CONFIG_O)
+    -- Delay
+    P_DELAY : process (CLK_I, RST_I)
     begin
         if (RST_I = C_RST_POL) then
-            cnt_pulse   <= 0;
-        elsif falling_edge(EN_WR_CONFIG_O) then
-            cnt_pulse <= 1; 
-        elsif PWM_O'event then
+            unlocked_d1 <= '1';
+        elsif rising_edge(CLK_I) then
+            unlocked_d1 <= UNLOCKED_O;
+        end if;
+    end process P_DELAY;
+
+    -- Contador de pulsos
+    P_CNT : process (CLK_I, RST_I, PWM_O)
+    begin
+        if (RST_I = C_RST_POL) then
+            cnt_pulse <= 0;
+        elsif (PWM_O'event) then
             cnt_pulse <= 1;
         elsif rising_edge(CLK_I) then
-            cnt_pulse <= cnt_pulse + 1;   
+            if ((UNLOCKED_O = '1') and (unlocked_d1 = '0')) then
+                cnt_pulse <= 1;
+            else 
+                cnt_pulse <= cnt_pulse + 1;
+            end if;
         end if;
     end process P_CNT;
 
@@ -317,11 +328,38 @@ begin
         p_wait(25*clk_period);
 
         ------------------------------
+        -- Early SWITCH
+        ------------------------------
+        sim <= x"45_41_52_4C_59_20";    -- EARLY
+        p_wait(100*clk_period);
+        pulso(UPD_MEM_I);
+        p_wait(100*clk_period);
+
+        ------------------------------
+        -- Config 4
+        ------------------------------
+        sim <= x"43_4F_4E_46_20_34";    -- CONF 4
+
+        v_n_addr    := 2;
+        v_n_tot     := 3;
+        v_pwm_init  := '1';
+        v_mem := (
+            0 => 1,
+            1 => 2,
+            others => 0);
+        set_config(v_mem, v_n_addr, v_n_tot, v_pwm_init, WR_EN_I, WR_ADDR_I, WR_DATA_I, N_ADDR_I, N_TOT_CYC_I, PWM_INIT_I);
+
+        p_wait(5*clk_period);
+        pulso(UPD_MEM_I);
+
+        p_wait(70*clk_period);
+
+        ------------------------------
         -- Reset
         ------------------------------
         sim <= x"52_45_53_45_54_20";    -- RESET
         reset(RST_I, EN_I, UPD_MEM_I, WR_EN_I, WR_ADDR_I, WR_DATA_I, N_ADDR_I, N_TOT_CYC_I, PWM_INIT_I);
-        p_wait(25*clk_period);
+        p_wait(50*clk_period);
 
         ------------------------------
         -- Renable
@@ -329,6 +367,27 @@ begin
         sim <= x"45_4E_41_42_4C_45";    -- ENABLE
         EN_I <= '1';
         p_wait(25*clk_period);
+
+        ------------------------------
+        -- Config 5
+        ------------------------------
+        sim <= x"43_4F_4E_46_20_35";    -- CONF 5
+
+        v_n_addr    := 2;
+        v_n_tot     := 2;
+        v_pwm_init  := '0';
+        v_mem := (
+            0 => 1,
+            1 => 1,
+            others => 0);
+        set_config(v_mem, v_n_addr, v_n_tot, v_pwm_init, WR_EN_I, WR_ADDR_I, WR_DATA_I, N_ADDR_I, N_TOT_CYC_I, PWM_INIT_I);
+
+        p_wait(5*clk_period);
+        pulso(UPD_MEM_I);
+
+        p_wait(70*clk_period);
+
+
 
         ------------------------------
         -- End

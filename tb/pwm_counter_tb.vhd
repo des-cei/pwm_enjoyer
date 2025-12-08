@@ -32,15 +32,17 @@ architecture beh of pwm_counter_tb is
             G_STATE_MAX_L2  : natural := 32     -- Tamaño del vector de número de pulsos de un estado
         );
         port (
-            CLK_I           : in std_logic;
-            RST_I           : in std_logic;
-            EN_I            : in std_logic;                                         -- Señal de habilitación                                         
-            CNT_LEN_I       : in std_logic_vector((G_STATE_MAX_L2 - 1) downto 0);   -- Número de pulsos del estado actual
-            CNT_LEN_NEXT_I  : in std_logic_vector((G_STATE_MAX_L2 - 1) downto 0);   -- Número de pulsos del estado actual
-            SWITCH_MEM_I    : in std_logic;                                         -- Indicador de último valor del último ciclo
-            PWM_INIT_I      : in std_logic;                                         -- Valor inicial del ciclo
-            PWM_O           : out std_logic;                                        -- Salida del PWM
-            CNT_END_O       : out std_logic                                         -- Indicador de final de estado
+            CLK_I               : in std_logic;
+            RST_I               : in std_logic;
+            EN_I                : in std_logic;                                         -- Señal de habilitación                                         
+            CNT_LEN_I           : in std_logic_vector((G_STATE_MAX_L2 - 1) downto 0);   -- Número de pulsos del estado actual
+            CNT_LEN_NEXT_I      : in std_logic_vector((G_STATE_MAX_L2 - 1) downto 0);   -- Número de pulsos del siguiente estado
+            CNT_LEN_NEXT_2_I    : in std_logic_vector((G_STATE_MAX_L2 - 1) downto 0);   -- Número de pulsos del siguiente siguiente estado
+            SWITCH_MEM_I        : in std_logic;                                         -- Indicador de último valor del último ciclo
+            PWM_INIT_I          : in std_logic;                                         -- Valor inicial del ciclo
+            PWM_O               : out std_logic;                                        -- Salida del PWM
+            CNT_END_O           : out std_logic;                                        -- Indicador de final de estado
+            CNT_END_PRE_O       : out std_logic
         );
     end component pwm_counter;
 
@@ -52,18 +54,22 @@ architecture beh of pwm_counter_tb is
     signal sim          : std_logic_vector(47 downto 0) := (others => '0'); -- 6 caracteres ASCII
 
     -- Port map
-    signal CLK_I           : std_logic;
-    signal RST_I           : std_logic;
-    signal EN_I            : std_logic;                                      
-    signal CNT_LEN_I       : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0);
-    signal CNT_LEN_NEXT_I  : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0);
-    signal SWITCH_MEM_I    : std_logic;                                      
-    signal PWM_INIT_I      : std_logic;                                      
-    signal PWM_O           : std_logic;                                     
-    signal CNT_END_O       : std_logic;
+    signal CLK_I            : std_logic;
+    signal RST_I            : std_logic;
+    signal EN_I             : std_logic;                                      
+    signal CNT_LEN_I        : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0);
+    signal CNT_LEN_NEXT_I   : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0);
+    signal CNT_LEN_NEXT_2_I : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0);
+    signal SWITCH_MEM_I     : std_logic;                                      
+    signal PWM_INIT_I       : std_logic;                                      
+    signal PWM_O            : std_logic;                                     
+    signal CNT_END_O        : std_logic;
+    signal CNT_END_PRE_O    : std_logic;
     
-    -- Array de memoria
+    -- Otras
     type memory is array (0 to (C_MEM_SIZE_MAX_N - 1)) of integer range 0 to C_STATE_MAX_N;
+    signal s_end_verif  : std_logic;
+    signal r_end_pre_d1 : std_logic;
 
     -------------------------------------------------
     -- Funciones y procedimientos
@@ -79,18 +85,20 @@ architecture beh of pwm_counter_tb is
 
     -- Reset
     procedure reset (
-        signal rst          : out std_logic;
-        signal en           : out std_logic;
-        signal cnt_len      : out std_logic_vector;
-        signal cnt_len_next : out std_logic_vector;
-        signal last_cyc     : out std_logic;
-        signal pwm_init     : out std_logic
+        signal rst              : out std_logic;
+        signal en               : out std_logic;
+        signal cnt_len          : out std_logic_vector;
+        signal cnt_len_next     : out std_logic_vector;
+        signal cnt_len_next_2   : out std_logic_vector;
+        signal last_cyc         : out std_logic;
+        signal pwm_init         : out std_logic
     ) is
     begin
         rst             <= C_RST_POL;
         en              <= '0';
         cnt_len         <= (others => '0');
         cnt_len_next    <= (others => '0');
+        cnt_len_next_2  <= (others => '0');
         last_cyc        <= '1';
         pwm_init        <= '0';
         p_wait(clk_period);
@@ -98,15 +106,17 @@ architecture beh of pwm_counter_tb is
     end procedure reset;
 
     procedure cnt_cyc (
-        variable mem        : in memory;            -- Memoria actual
-        variable n_ciclos   : in integer;           -- Número de ciclos
-        variable n_estados  : in integer;           -- Numero de estados actuales
-        variable nx_pwm_ini : in std_logic;         -- Valor inicial del siguiente ciclo
-        variable nx_cnt_len : in integer;           -- Tiempo inicial del siguiente ciclo
-        signal cnt_len      : out std_logic_vector; -- Tiempo de estado actual
-        signal cnt_len_next : out std_logic_vector; -- Tiempo de estado siguiente
-        signal last_cyc     : out std_logic;        -- Inidicador de último ciclo
-        signal pwm_init     : out std_logic
+        variable mem            : in memory;            -- Memoria actual
+        variable n_ciclos       : in integer;           -- Número de ciclos
+        variable n_estados      : in integer;           -- Numero de estados actuales
+        variable nx_pwm_ini     : in std_logic;         -- Valor inicial del siguiente ciclo
+        variable nx_cnt_len     : in integer;           -- Tiempo inicial del siguiente ciclo
+        variable nx_cnt_len_2   : in integer;           -- Tiempo inicial del siguiente siguiente ciclo
+        signal cnt_len          : out std_logic_vector; -- Tiempo de estado actual
+        signal cnt_len_next     : out std_logic_vector; -- Tiempo de estado siguiente
+        signal cnt_len_next_2   : out std_logic_vector; -- Tiempo de estado siguiente siguiente
+        signal last_cyc         : out std_logic;        -- Inidicador de último ciclo
+        signal pwm_init         : out std_logic
     ) is
     begin
         last_cyc <= '0';
@@ -117,7 +127,9 @@ architecture beh of pwm_counter_tb is
                     last_cyc        <= '1';
                     pwm_init        <= nx_pwm_ini;
                 end if;
-                    cnt_len         <= std_logic_vector(to_unsigned(mem(i), cnt_len'length));
+                -- CNT_LEN
+                cnt_len         <= std_logic_vector(to_unsigned(mem(i), cnt_len'length));
+                -- CNT_LEN_NEXT
                 if (i < (n_estados - 1)) then
                     cnt_len_next    <= std_logic_vector(to_unsigned(mem(i+1), cnt_len'length));
                 elsif (j < (n_ciclos - 1)) then
@@ -125,9 +137,20 @@ architecture beh of pwm_counter_tb is
                 else
                     cnt_len_next    <= std_logic_vector(to_unsigned(nx_cnt_len, cnt_len'length));
                 end if;
-                    p_wait(mem(i)*clk_period);
+                -- CNT_LEN_NEXT_2
+                if (i < (n_estados - 2)) then
+                    cnt_len_next_2  <= std_logic_vector(to_unsigned(mem(i+2), cnt_len'length));
+                elsif (i < (n_estados - 1)) and (j < (n_ciclos - 1)) then
+                    cnt_len_next_2  <= std_logic_vector(to_unsigned(mem(0), cnt_len'length));
+                elsif (i < (n_estados - 1)) and (j = (n_ciclos - 1)) then
+                    cnt_len_next_2  <= std_logic_vector(to_unsigned(nx_cnt_len, cnt_len'length));
+                elsif (i = (n_estados - 1)) and (j < (n_ciclos - 1)) then
+                    cnt_len_next_2  <= std_logic_vector(to_unsigned(mem(1), cnt_len'length));
+                elsif (i = (n_estados - 1)) and (j = (n_ciclos - 1)) then
+                    cnt_len_next_2  <= std_logic_vector(to_unsigned(nx_cnt_len_2, cnt_len'length));
+                end if;
+                p_wait(mem(i)*clk_period);
             end loop;
-
         end loop;
     end procedure cnt_cyc;
 
@@ -142,15 +165,17 @@ begin
             G_STATE_MAX_L2  => C_STATE_MAX_L2
         )
         port map (
-            CLK_I           => CLK_I,
-            RST_I           => RST_I,
-            EN_I            => EN_I,
-            CNT_LEN_I       => CNT_LEN_I,
-            CNT_LEN_NEXT_I  => CNT_LEN_NEXT_I,
-            SWITCH_MEM_I    => SWITCH_MEM_I,
-            PWM_INIT_I      => PWM_INIT_I,
-            PWM_O           => PWM_O,
-            CNT_END_O       => CNT_END_O
+            CLK_I               => CLK_I,
+            RST_I               => RST_I,
+            EN_I                => EN_I,
+            CNT_LEN_I           => CNT_LEN_I,
+            CNT_LEN_NEXT_I      => CNT_LEN_NEXT_I,
+            CNT_LEN_NEXT_2_I    => CNT_LEN_NEXT_2_I,
+            SWITCH_MEM_I        => SWITCH_MEM_I,
+            PWM_INIT_I          => PWM_INIT_I,
+            PWM_O               => PWM_O,
+            CNT_END_O           => CNT_END_O,
+            CNT_END_PRE_O       => CNT_END_PRE_O
         );
 
     -------------------------------------------------
@@ -165,6 +190,18 @@ begin
         wait for clk_period/2;
     end process;
 
+    -- Delay
+    P_DELAY : process (RST_I, CLK_I)
+    begin
+        if (RST_I = C_RST_POL) then
+            r_end_pre_d1 <= '0';   
+        elsif rising_edge(CLK_I) then
+            r_end_pre_d1 <= CNT_END_PRE_O; 
+        end if;
+    end process;
+
+    s_end_verif <= r_end_pre_d1 xor CNT_END_O; 
+
     -------------------------------------------------
     -- Estímulos
     -------------------------------------------------
@@ -174,7 +211,8 @@ begin
         variable v_estados  : integer := 0;
         variable v_ciclos   : integer := 0;
         variable v_nx_pwm_init      : std_logic;
-        variable v_nx_pwm_val       : integer;
+        variable v_nx_pwm_val       : integer := 0;
+        variable v_nx_pwm_val_2     : integer := 0;
 
     begin
 
@@ -184,7 +222,7 @@ begin
         -- Init
         ------------------------------
         sim <= x"49_4E_49_54_20_20";    -- INIT
-        reset(RST_I, EN_I, CNT_LEN_I, CNT_LEN_NEXT_I, SWITCH_MEM_I, PWM_INIT_I);
+        reset(RST_I, EN_I, CNT_LEN_I, CNT_LEN_NEXT_I, CNT_LEN_NEXT_2_I, SWITCH_MEM_I, PWM_INIT_I);
         p_wait(10*clk_period);
 
         ------------------------------
@@ -200,16 +238,17 @@ begin
 
         ------------------------------
         -- Run 1
-        --  5 estados: 3-5-1-2-1, empieza en '1'
+        --  5 estados: 2-5-1-2-1, empieza en '1'
         --  4 ciclos
         ------------------------------
         sim         <= x"52_55_4E_20_31_20";    -- RUN 1
         v_mem       := (0 => 2, 1 => 5, 2 => 1, 3 => 2, 4 => 1, others => 0);
         v_estados   := 5;
         v_ciclos    := 4;
-        v_nx_pwm_init := '0';
-        v_nx_pwm_val  := 1;
-        cnt_cyc(v_mem, v_ciclos, v_estados, v_nx_pwm_init, v_nx_pwm_val, CNT_LEN_I, CNT_LEN_NEXT_I, SWITCH_MEM_I, PWM_INIT_I);
+        v_nx_pwm_init   := '0';
+        v_nx_pwm_val    := 1;
+        v_nx_pwm_val_2  := 4;
+        cnt_cyc(v_mem, v_ciclos, v_estados, v_nx_pwm_init, v_nx_pwm_val, v_nx_pwm_val_2, CNT_LEN_I, CNT_LEN_NEXT_I, CNT_LEN_NEXT_2_I, SWITCH_MEM_I, PWM_INIT_I);
       
         ------------------------------
         -- Run 2
@@ -220,9 +259,10 @@ begin
         v_mem       := (0 => 1, 1 => 4, 2 => 1, 3 => 2, others => 0);
         v_estados   := 4;
         v_ciclos    := 2;
-        v_nx_pwm_init := '0';
-        v_nx_pwm_val  := 2;
-        cnt_cyc(v_mem, v_ciclos, v_estados, v_nx_pwm_init, v_nx_pwm_val, CNT_LEN_I, CNT_LEN_NEXT_I, SWITCH_MEM_I, PWM_INIT_I);
+        v_nx_pwm_init   := '0';
+        v_nx_pwm_val    := 2;
+        v_nx_pwm_val_2  := 3;
+        cnt_cyc(v_mem, v_ciclos, v_estados, v_nx_pwm_init, v_nx_pwm_val, v_nx_pwm_val_2, CNT_LEN_I, CNT_LEN_NEXT_I, CNT_LEN_NEXT_2_I, SWITCH_MEM_I, PWM_INIT_I);
       
         ------------------------------
         -- Run 3
@@ -233,10 +273,11 @@ begin
         v_mem       := (0 => 2, 1 => 3, 2 => 2, others => 0);
         v_estados   := 3;
         v_ciclos    := 3;
-        v_nx_pwm_init := '0';
-        v_nx_pwm_val  := 1;
-        cnt_cyc(v_mem, v_ciclos, v_estados, v_nx_pwm_init, v_nx_pwm_val, CNT_LEN_I, CNT_LEN_NEXT_I, SWITCH_MEM_I, PWM_INIT_I);
-     
+        v_nx_pwm_init   := '0';
+        v_nx_pwm_val    := 1;
+        v_nx_pwm_val_2  := 1;
+        cnt_cyc(v_mem, v_ciclos, v_estados, v_nx_pwm_init, v_nx_pwm_val, v_nx_pwm_val_2, CNT_LEN_I, CNT_LEN_NEXT_I, CNT_LEN_NEXT_2_I, SWITCH_MEM_I, PWM_INIT_I);
+   
         ------------------------------
         -- Run 4
         --  5 estados: 1-1-1-1-1, empieza en '0'
@@ -246,9 +287,10 @@ begin
         v_mem       := (0 => 1, 1 => 1, 2 => 1, 3 => 1, 4 => 1, others => 0);
         v_estados   := 5;
         v_ciclos    := 2;
-        v_nx_pwm_init := '1';
-        v_nx_pwm_val  := 1;
-        cnt_cyc(v_mem, v_ciclos, v_estados, v_nx_pwm_init, v_nx_pwm_val, CNT_LEN_I, CNT_LEN_NEXT_I, SWITCH_MEM_I, PWM_INIT_I);
+        v_nx_pwm_init   := '1';
+        v_nx_pwm_val    := 1;
+        v_nx_pwm_val_2  := 1;
+        cnt_cyc(v_mem, v_ciclos, v_estados, v_nx_pwm_init, v_nx_pwm_val, v_nx_pwm_val_2, CNT_LEN_I, CNT_LEN_NEXT_I, CNT_LEN_NEXT_2_I, SWITCH_MEM_I, PWM_INIT_I);
      
         ------------------------------
         -- Run 5
@@ -259,8 +301,24 @@ begin
         v_mem       := (0 => 1, 1 => 1, 2 => 1, 3 => 1, 4 => 1, others => 0);
         v_estados   := 5;
         v_ciclos    := 2;
-        v_nx_pwm_init := '1';
-        cnt_cyc(v_mem, v_ciclos, v_estados, v_nx_pwm_init, v_nx_pwm_val, CNT_LEN_I, CNT_LEN_NEXT_I, SWITCH_MEM_I, PWM_INIT_I);
+        v_nx_pwm_init   := '1';
+        v_nx_pwm_val    := 2;
+        v_nx_pwm_val_2  := 1;
+        cnt_cyc(v_mem, v_ciclos, v_estados, v_nx_pwm_init, v_nx_pwm_val, v_nx_pwm_val_2, CNT_LEN_I, CNT_LEN_NEXT_I, CNT_LEN_NEXT_2_I, SWITCH_MEM_I, PWM_INIT_I);     
+     
+        ------------------------------
+        -- Run 6
+        --  6 estados: 2-1-3-1-2-2, empieza en '1'
+        --  5 ciclos
+        ------------------------------
+        sim         <= x"52_55_4E_20_36_20";    -- RUN 6
+        v_mem       := (0 => 2, 1 => 1, 2 => 3, 3 => 1, 4 => 2, 5 => 2, others => 0);
+        v_estados   := 6;
+        v_ciclos    := 5;
+        v_nx_pwm_init   := '0';
+        v_nx_pwm_val    := 2;
+        v_nx_pwm_val_2  := 1;
+        cnt_cyc(v_mem, v_ciclos, v_estados, v_nx_pwm_init, v_nx_pwm_val, v_nx_pwm_val_2, CNT_LEN_I, CNT_LEN_NEXT_I, CNT_LEN_NEXT_2_I, SWITCH_MEM_I, PWM_INIT_I);
      
         ------------------------------
         -- End

@@ -8,3 +8,12 @@ notas.txt
 versiones/
 pruebas/
 *.db
+*_antiguo*
+# Ignorar archivos de los autotest por falta de espacio
+pwm_dp_mem_inputs.txt
+pwm_dp_mem_outputs.txt
+pwm_dp_mem_outputs_ref.txt
+pwm_top_inputs.txt
+pwm_top_io_check.txt
+pwm_top_outputs.txt
+pwm_top_outputs_ref.txt

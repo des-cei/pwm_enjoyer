@@ -1,7 +1,8 @@
 -- Módulo: pwm_dp_mem
 -- Autor: Alejandro Martínez Salgado
 -- Fecha de creación: 01.07.2025
--- NOTE: Se supone que siempre se escribirán estados con valores no nulos.
+
+-- NOTE: Se supone que siempre se escribirán estados con valores no nulos
 
 -----------------------------------------------------------
 -- Librerías
@@ -25,22 +26,23 @@ entity pwm_dp_mem is
         G_RST_POL   : std_logic := '1'
     );
     port (
-        CLK_I           : in std_logic;     
-        RST_I           : in std_logic;
-        EN_I            : in std_logic; -- Mismo enable que el contador
+        CLK_I               : in std_logic;     
+        RST_I               : in std_logic;
+        EN_I                : in std_logic;                                     -- Mismo enable que el contador
         ---------
-        EN_WR_CONFIG_I  : in std_logic;                                     -- Bloqueo de escritura de configuración
-        WR_EN_I         : in std_logic;                                     -- Enable de escritura
-        WR_ADDR_I       : in std_logic_vector((G_ADDR_W - 1) downto 0);     -- Dirección de escritura
-        WR_DATA_I       : in std_logic_vector((G_DATA_W - 1) downto 0);     -- Dato de escritura
+        UNLOCKED_I          : in std_logic;                                     -- Bloqueo de escritura de configuración
+        WR_EN_I             : in std_logic;                                     -- Enable de escritura
+        WR_ADDR_I           : in std_logic_vector((G_ADDR_W - 1) downto 0);     -- Dirección de escritura
+        WR_DATA_I           : in std_logic_vector((G_DATA_W - 1) downto 0);     -- Dato de escritura
         ---------
-        SWITCH_MEM_I    : in std_logic;                                     -- Señal de actualización de memoria
-        LAST_CYC_I      : in std_logic;                                     -- Indicador de último valor del último ciclo
-        N_ADDR_I        : in std_logic_vector((G_ADDR_W - 1) downto 0);     -- Número de estados del PWM
-        RD_ADDR_I       : in std_logic_vector((G_ADDR_W - 1) downto 0);     -- Dirección de lectura
-        RD_DATA_O       : out std_logic_vector((G_DATA_W - 1) downto 0);    -- Dato de lectura
-        RD_DATA_NEXT_O  : out std_logic_vector((G_DATA_W - 1) downto 0);    -- Siguiente dato de lectura
-        NEXT_CONFIG_O   : out mem                                           -- Siguiente configuración
+        SWITCH_MEM_I        : in std_logic;                                     -- Señal de actualización de memoria
+        LAST_CYC_I          : in std_logic;                                     -- Indicador de último valor del último ciclo
+        N_ADDR_I            : in std_logic_vector((G_ADDR_W - 1) downto 0);     -- Número de estados del PWM
+        RD_ADDR_I           : in std_logic_vector((G_ADDR_W - 1) downto 0);     -- Dirección de lectura
+        RD_DATA_O           : out std_logic_vector((G_DATA_W - 1) downto 0);    -- Dato de lectura
+        RD_DATA_NEXT_O      : out std_logic_vector((G_DATA_W - 1) downto 0);    -- Siguiente dato de lectura
+        RD_DATA_NEXT_2_O    : out std_logic_vector((G_DATA_W - 1) downto 0);    -- Siguiente 2 dato de lectura
+        EARLY_SW_O          : out std_logic                                     -- Protección ante SWITCH sin configuración previa
     );
 end entity pwm_dp_mem;
 
@@ -64,25 +66,27 @@ architecture beh of pwm_dp_mem is
             C_MEM_MODE   : string := "LOW_LATENCY" -- Memory performance configuration mode ("HIGH_PERFORMANCE", "LOW_LATENCY")
         );
         port (
-            n_addr      : in  std_logic_vector(C_ADDR_WIDTH-2 downto 0);
+            n_addr          : in  std_logic_vector(C_ADDR_WIDTH-2 downto 0);
             -- Port A --
-            clk_a       : in  std_logic;
-            rst_a       : in  std_logic;
-            en_a        : in  std_logic;
-            we_a        : in  std_logic;
-            addr_a      : in  std_logic_vector(C_ADDR_WIDTH-1 downto 0);
-            din_a       : in  std_logic_vector(C_DATA_WIDTH-1 downto 0);
-            dout_a      : out std_logic_vector(C_DATA_WIDTH-1 downto 0);
-            dout_a_next : out std_logic_vector(C_DATA_WIDTH-1 downto 0);
+            clk_a           : in  std_logic;
+            rst_a           : in  std_logic;
+            en_a            : in  std_logic;
+            we_a            : in  std_logic;
+            addr_a          : in  std_logic_vector(C_ADDR_WIDTH-1 downto 0);
+            din_a           : in  std_logic_vector(C_DATA_WIDTH-1 downto 0);
+            dout_a          : out std_logic_vector(C_DATA_WIDTH-1 downto 0);
+            dout_a_next     : out std_logic_vector(C_DATA_WIDTH-1 downto 0);
+            dout_a_next_2   : out std_logic_vector(C_DATA_WIDTH-1 downto 0);
             -- Port B --
-            clk_b       : in  std_logic;
-            rst_b       : in  std_logic;
-            en_b        : in  std_logic;
-            we_b        : in  std_logic;
-            addr_b      : in  std_logic_vector(C_ADDR_WIDTH-1 downto 0);
-            din_b       : in  std_logic_vector(C_DATA_WIDTH-1 downto 0);
-            dout_b      : out std_logic_vector(C_DATA_WIDTH-1 downto 0);
-            dout_b_next : out std_logic_vector(C_DATA_WIDTH-1 downto 0)
+            clk_b           : in  std_logic;
+            rst_b           : in  std_logic;
+            en_b            : in  std_logic;
+            we_b            : in  std_logic;
+            addr_b          : in  std_logic_vector(C_ADDR_WIDTH-1 downto 0);
+            din_b           : in  std_logic_vector(C_DATA_WIDTH-1 downto 0);
+            dout_b          : out std_logic_vector(C_DATA_WIDTH-1 downto 0);
+            dout_b_next     : out std_logic_vector(C_DATA_WIDTH-1 downto 0);
+            dout_b_next_2   : out std_logic_vector(C_DATA_WIDTH-1 downto 0)
         );
     end component bram_dualport;
 
@@ -107,6 +111,7 @@ architecture beh of pwm_dp_mem is
     signal s_rd_addr        : std_logic_vector((G_ADDR_W - 1) downto 0);
     signal s_rd_data        : std_logic_vector((G_DATA_W - 1) downto 0) := (others => '0');
     signal s_rd_data_next   : std_logic_vector((G_DATA_W - 1) downto 0) := (others => '0');
+    signal s_rd_data_next_2 : std_logic_vector((G_DATA_W - 1) downto 0) := (others => '0');
     signal s_switch_mem     : std_logic;
     signal s_last_cyc       : std_logic;
     signal r_n_addr         : std_logic_vector((N_ADDR_I'length - 1) downto 0);
@@ -125,6 +130,8 @@ architecture beh of pwm_dp_mem is
     signal s_dout_b         : std_logic_vector((G_DATA_W - 1) downto 0) := (others => '0');
     signal s_dout_a_next    : std_logic_vector((G_DATA_W - 1) downto 0) := (others => '0');
     signal s_dout_b_next    : std_logic_vector((G_DATA_W - 1) downto 0) := (others => '0');
+    signal s_dout_a_next_2  : std_logic_vector((G_DATA_W - 1) downto 0) := (others => '0');
+    signal s_dout_b_next_2  : std_logic_vector((G_DATA_W - 1) downto 0) := (others => '0');
 
     -- Señales de control
     signal r_wr_port            : std_logic;
@@ -132,7 +139,7 @@ architecture beh of pwm_dp_mem is
     signal r_prev_last_state    : std_logic_vector(WR_DATA_I'high downto 0);
     signal r_prev_last2_state   : std_logic_vector(WR_DATA_I'high downto 0);
     signal r_next_first_state   : std_logic_vector(WR_DATA_I'high downto 0);
-    signal s_init               : std_logic := '1';
+    signal r_next_first2_state  : std_logic_vector(WR_DATA_I'high downto 0);
 
     -- Señales registradas
     signal s_wr_addr_d1     : std_logic_vector(WR_ADDR_I'high downto 0);
@@ -143,6 +150,9 @@ architecture beh of pwm_dp_mem is
     -- Enable del contador
     signal s_en_cnt     : std_logic;
     signal s_en_cnt_d1  : std_logic;
+
+    -- Protección
+    signal r_early_sw   : std_logic;
 
 begin
 
@@ -157,41 +167,44 @@ begin
             C_MEM_MODE      => G_MEM_MODE
         )
         port map (
-            N_ADDR      => r_n_addr,
+            N_ADDR          => r_n_addr,
             -- Port A --
-            CLK_A       => CLK_I,
-            RST_A       => RST_I,
-            EN_A        => s_en_a,
-            WE_A        => s_we_a,
-            ADDR_A      => s_addr_a,
-            DIN_A       => s_din_a,
-            DOUT_A      => s_dout_a,
-            DOUT_A_NEXT => s_dout_a_next,
+            CLK_A           => CLK_I,
+            RST_A           => RST_I,
+            EN_A            => s_en_a,
+            WE_A            => s_we_a,
+            ADDR_A          => s_addr_a,
+            DIN_A           => s_din_a,
+            DOUT_A          => s_dout_a,
+            DOUT_A_NEXT     => s_dout_a_next,
+            DOUT_A_NEXT_2   => s_dout_a_next_2,
             -- Port B --
-            CLK_B       => CLK_I,
-            RST_B       => RST_I,
-            EN_B        => s_en_b,
-            WE_B        => s_we_b,
-            ADDR_B      => s_addr_b,
-            DIN_B       => s_din_b,
-            DOUT_B      => s_dout_b,
-            DOUT_B_NEXT => s_dout_b_next
+            CLK_B           => CLK_I,
+            RST_B           => RST_I,
+            EN_B            => s_en_b,
+            WE_B            => s_we_b,
+            ADDR_B          => s_addr_b,
+            DIN_B           => s_din_b,
+            DOUT_B          => s_dout_b,
+            DOUT_B_NEXT     => s_dout_b_next,
+            DOUT_B_NEXT_2   => s_dout_b_next_2
         );
 
     -------------------------------------------------
     -- Combinacionales
     -------------------------------------------------
     -- Entradas y salidas
-    s_en_cnt        <= EN_I;
-    s_switch_mem    <= SWITCH_MEM_I;
-    s_last_cyc      <= LAST_CYC_I;
-    s_wr_en         <= WR_EN_I      when (EN_WR_CONFIG_I = '1') else '0';
-    s_wr_addr       <= WR_ADDR_I    when (EN_WR_CONFIG_I = '1') else (others => '0');
-    s_wr_data       <= WR_DATA_I    when (EN_WR_CONFIG_I = '1') else (others => '0');
-    s_rd_addr       <= RD_ADDR_I;
-    RD_DATA_O       <= s_rd_data;
-    RD_DATA_NEXT_O  <= s_rd_data_next;
-    NEXT_CONFIG_O   <= r_next_config;
+    s_en_cnt            <= EN_I;
+    s_switch_mem        <= SWITCH_MEM_I;
+    s_last_cyc          <= LAST_CYC_I;
+    s_wr_en             <= WR_EN_I      when (UNLOCKED_I = '1') else '0';
+    s_wr_addr           <= WR_ADDR_I    when (UNLOCKED_I = '1') else (others => '0');
+    s_wr_data           <= WR_DATA_I    when (UNLOCKED_I = '1') else (others => '0');
+    s_rd_addr           <= RD_ADDR_I;
+    RD_DATA_O           <= s_rd_data;
+    RD_DATA_NEXT_O      <= s_rd_data_next;
+    RD_DATA_NEXT_2_O    <= s_rd_data_next_2;
+    EARLY_SW_O          <= r_early_sw;
 
     -- Reset de bram_dualport
     s_rst <= RST_I when (G_RST_POL = '1') else (not RST_I);
@@ -226,12 +239,21 @@ begin
     --  SWITCH = 1      -> 1 si el último es '1', primer valor si la siguiente config. si no
     --  Desde RD_ADDR_D1 = ÚLTIMA DIRECCIÓN hasta antes de SWITCH = 1 
     --                  -> Según BRAM si el último es '1', primer valor de la siguiente config.
-    s_rd_data_next <=   r_next_first_state  when (s_init = '1') else
+    s_rd_data_next <=   r_next_first_state  when (s_en_cnt = '0') else
                         r_next_first_state  when (s_switch_mem_d1 = '1') else
                         r_next_first_state  when ((s_switch_mem = '1') and (r_prev_last_state /= C_UNO)) else
                         C_UNO               when ((s_switch_mem = '1') and (r_prev_last_state = C_UNO)) else
                         r_next_first_state  when ((s_rd_addr_d1 = std_logic_vector(unsigned(r_n_addr) - 1) and (s_last_cyc_d1 = '1') and (r_prev_last_state /= C_UNO))) else
                         s_dout_a_next       when (s_we_a = '0') else s_dout_b_next;
+
+    -- 2º Dato de lectura anticipado
+    s_rd_data_next_2 <= r_next_first2_state when (s_en_cnt = '0') else
+                        r_next_first2_state when (s_switch_mem_d1 = '1') else
+                        r_next_first2_state when ((s_switch_mem = '1') and (r_prev_last_state /= C_UNO)) else
+                        r_next_first_state  when ((s_switch_mem = '1') and (r_prev_last_state = C_UNO)) else
+                        r_next_first2_state when ((s_rd_addr_d1 = std_logic_vector(unsigned(r_n_addr) - 1) and (s_last_cyc_d1 = '1') and (r_prev_last_state /= C_UNO))) else
+                        r_next_first_state  when ((s_rd_addr_d1 = std_logic_vector(unsigned(r_n_addr) - 2) and (s_last_cyc_d1 = '1'))) else
+                        s_dout_a_next_2     when (s_we_a = '0') else s_dout_b_next_2;
 
     -------------------------------------------------
     -- Procesos
@@ -242,11 +264,9 @@ begin
         if (RST_I = G_RST_POL) then
             r_wr_port   <= '0';
             r_n_addr    <= (others => '0');
-            s_init      <= '1';
         elsif rising_edge(SWITCH_MEM_I) then
             r_wr_port   <= not r_wr_port;
             r_n_addr    <= N_ADDR_I;
-            s_init      <= '0';
         end if;
     end process P_SWITCH;
 
@@ -277,13 +297,15 @@ begin
             r_next_config       <= (others => (others => '0'));
             r_prev_last_state   <= (others => '0');
             r_prev_last2_state  <= (others => '0');
-            r_next_first_state  <= (others => '0');
+            r_next_first_state  <= s_dout_a_next;
+            r_next_first2_state <= s_dout_a_next_2;
         elsif rising_edge(CLK_I) then
             if ((s_en_cnt = '0') and (s_en_cnt_d1 = '1')) then
                 r_next_config       <= (others => (others => '0'));
                 r_prev_last_state   <= (others => '0');
                 r_prev_last2_state  <= (others => '0');
                 r_next_first_state  <= (others => '0');
+                r_next_first2_state <= (others => '0');
             elsif (s_wr_en = '1') then
                 if (s_wr_addr = C_CEROS_ADDR) then
                     r_next_config       <= (0 => s_wr_data, others => (others => '0'));
@@ -292,9 +314,26 @@ begin
                     r_next_first_state  <= s_wr_data;
                 else
                     r_next_config(to_integer(unsigned(s_wr_addr))) <= s_wr_data;
+                    if (to_integer(unsigned(s_wr_addr)) = 1) then
+                        r_next_first2_state <= s_wr_data;
+                    end if;
                 end if;
             end if;
         end if;
     end process P_NEXT_CONF;
+
+    -- Aviso de update sin configuración inmediatamente anterior
+    P_EARLY_SW : process (CLK_I, RST_I)
+    begin
+        if (RST_I = G_RST_POL) then
+            r_early_sw <= '1';
+        elsif rising_edge(CLK_I) then
+            if (s_switch_mem = '1') then
+                r_early_sw <= '1';
+            elsif (s_wr_en = '1') then
+                r_early_sw <= '0';
+            end if;
+        end if;
+    end process P_EARLY_SW;
 
 end architecture beh;

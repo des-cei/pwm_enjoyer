@@ -30,16 +30,12 @@ architecture beh of pwm_enjoyer_tb is
         generic (
             -- Valor activo del reset
             G_RST_POL           : std_logic := '1';
-            -- Número máximo de pulsos que dura un estado
-            G_STATE_MAX_N       : natural := 2**32 - 1;
             -- Tamaño del vector de número de pulsos de un estado {integer(ceil(log2(real(G_STATE_MAX_N))))}
             G_STATE_MAX_L2      : natural := 32;
             -- Número máximo de estados, tamaño máximo de la memoria
             G_MEM_SIZE_MAX_N    : natural := 128;
             -- Tamaño del vector del número de estados {integer(ceil(log2(real(G_MEM_SIZE_MAX_N))))}
             G_MEM_SIZE_MAX_L2   : natural := 32;
-            -- Número máximo de ciclos de reloj que puede durar una configuración {G_STATE_MAX_N*G_MEM_SIZE_MAX_N}
-            G_PERIOD_MAX_N      : natural := 2**32 - 1;
             -- Tamaño del vector del número máximo de ciclos de reloj {integer(ceil(log2(real(G_PERIOD_MAX_N))))}
             G_PERIOD_MAX_L2     : natural := 32;
             -- Número de PWMS
@@ -144,11 +140,9 @@ begin
     uut : component pwm_enjoyer
         generic map (
             G_RST_POL           => C_RST_POL,
-            G_STATE_MAX_N       => C_STATE_MAX_N,
             G_STATE_MAX_L2      => C_STATE_MAX_L2,
             G_MEM_SIZE_MAX_N    => C_MEM_SIZE_MAX_N,
             G_MEM_SIZE_MAX_L2   => C_MEM_SIZE_MAX_L2,
-            G_PERIOD_MAX_N      => C_PERIOD_MAX_N,
             G_PERIOD_MAX_L2     => C_PERIOD_MAX_L2,
             G_PWM_N             => C_PWM_N
         )
@@ -308,7 +302,7 @@ begin
         p_wait(10*clk_period);
         REG_DIRECCIONES_I   <= x"FFFFFFFF";
         REG_CONTROL_I       <= x"00000004";
-        p_wait(30*clk_period);
+        p_wait(100*clk_period);
 
         ------------------------------
         -- Apagar todos
@@ -316,7 +310,7 @@ begin
         sim <= x"53_48_55_54_44_57";    -- SHUTDW
 
         REG_CONTROL_I       <= x"00000001";
-        p_wait(50*clk_period);
+        p_wait(100*clk_period);
 
         ------------------------------
         -- Configurar todos los PWM pares

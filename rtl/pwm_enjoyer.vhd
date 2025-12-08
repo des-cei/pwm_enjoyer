@@ -19,16 +19,12 @@ entity pwm_enjoyer is
     generic (
         -- Valor activo del reset
         G_RST_POL           : std_logic := '1';
-        -- Número máximo de pulsos que dura un estado
-        G_STATE_MAX_N       : natural := 2**32 - 1;
         -- Tamaño del vector de número de pulsos de un estado {integer(ceil(log2(real(G_STATE_MAX_N))))}
         G_STATE_MAX_L2      : natural := 32;
         -- Número máximo de estados, tamaño máximo de la memoria
         G_MEM_SIZE_MAX_N    : natural := 128;
         -- Tamaño del vector del número de estados {integer(ceil(log2(real(G_MEM_SIZE_MAX_N))))}
         G_MEM_SIZE_MAX_L2   : natural := 32;
-        -- Número máximo de ciclos de reloj que puede durar una configuración {G_STATE_MAX_N*G_MEM_SIZE_MAX_N}
-        G_PERIOD_MAX_N      : natural := 2**32 - 1;
         -- Tamaño del vector del número máximo de ciclos de reloj {integer(ceil(log2(real(G_PERIOD_MAX_N))))}
         G_PERIOD_MAX_L2     : natural := 32;
         -- Número de PWMS
@@ -129,7 +125,6 @@ begin
             generic map (
                 G_STATE_MAX_L2      => G_STATE_MAX_L2,
                 G_MEM_SIZE_MAX_L2   => G_MEM_SIZE_MAX_L2,
-                G_PERIOD_MAX_N      => G_PERIOD_MAX_N,
                 G_PERIOD_MAX_L2     => G_PERIOD_MAX_L2,
                 G_MEM_SIZE_MAX_N    => G_MEM_SIZE_MAX_N,
                 G_MEM_MODE          => "LOW_LATENCY",
@@ -147,7 +142,7 @@ begin
                 N_TOT_CYC_I     => s_pwm_top_inputs(i).n_tot_cyc,
                 PWM_INIT_I      => s_pwm_top_inputs(i).pwm_init,
                 PWM_O           => s_pwm_top_outputs(i).pwm,
-                EN_WR_CONFIG_O  => s_pwm_top_outputs(i).en_wr_config
+                UNLOCKED_O  => s_pwm_top_outputs(i).en_wr_config
             );
     end generate gen_pwm_top_nom;
 
@@ -157,7 +152,6 @@ begin
             generic map (
                 G_STATE_MAX_L2      => G_STATE_MAX_L2,
                 G_MEM_SIZE_MAX_L2   => G_MEM_SIZE_MAX_L2,
-                G_PERIOD_MAX_N      => G_PERIOD_MAX_N,
                 G_PERIOD_MAX_L2     => G_PERIOD_MAX_L2,
                 G_MEM_SIZE_MAX_N    => G_MEM_SIZE_MAX_N,
                 G_MEM_MODE          => "LOW_LATENCY",
@@ -175,7 +169,7 @@ begin
                 N_TOT_CYC_I     => s_pwm_top_inputs(i).n_tot_cyc,
                 PWM_INIT_I      => s_pwm_top_inputs(i).pwm_init,
                 PWM_O           => s_pwm_top_outputs(i).pwm_red_1,
-                EN_WR_CONFIG_O  => s_pwm_top_outputs(i).en_wr_config_red_1
+                UNLOCKED_O  => s_pwm_top_outputs(i).en_wr_config_red_1
             );
     end generate gen_pwm_top_red_1;
 
@@ -185,7 +179,6 @@ begin
             generic map (
                 G_STATE_MAX_L2      => G_STATE_MAX_L2,
                 G_MEM_SIZE_MAX_L2   => G_MEM_SIZE_MAX_L2,
-                G_PERIOD_MAX_N      => G_PERIOD_MAX_N,
                 G_PERIOD_MAX_L2     => G_PERIOD_MAX_L2,
                 G_MEM_SIZE_MAX_N    => G_MEM_SIZE_MAX_N,
                 G_MEM_MODE          => "LOW_LATENCY",
@@ -203,7 +196,7 @@ begin
                 N_TOT_CYC_I     => s_pwm_top_inputs(i).n_tot_cyc,
                 PWM_INIT_I      => s_pwm_top_inputs(i).pwm_init,
                 PWM_O           => s_pwm_top_outputs(i).pwm_red_2,
-                EN_WR_CONFIG_O  => s_pwm_top_outputs(i).en_wr_config_red_2
+                UNLOCKED_O  => s_pwm_top_outputs(i).en_wr_config_red_2
             );
     end generate gen_pwm_top_red_2;
 

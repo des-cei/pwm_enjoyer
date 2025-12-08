@@ -1,5 +1,0 @@
-# This file is automatically written.  Do not modify.
-proc gen_USERPARAMETER_G_STATE_MAX_L2_VALUE {G_STATE_MAX_N } {expr {ceil(log($G_STATE_MAX_N) / log(2.0))}}
-proc gen_USERPARAMETER_G_MEM_SIZE_MAX_L2_VALUE {G_MEM_SIZE_MAX_N } {expr {ceil(log($G_MEM_SIZE_MAX_N) / log(2.0))}}
-proc gen_USERPARAMETER_G_PERIOD_MAX_N_VALUE {G_STATE_MAX_N G_MEM_SIZE_MAX_N } {expr {$G_STATE_MAX_N * $G_MEM_SIZE_MAX_N}}
-proc gen_USERPARAMETER_G_PERIOD_MAX_L2_VALUE {G_PERIOD_MAX_N } {expr {ceil(log($G_PERIOD_MAX_N) / log(2.0))}}

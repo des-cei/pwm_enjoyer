@@ -170,27 +170,40 @@ if __name__ == "__main__":
     # TODO A partir de aquí todo podría mejorar con una interfaz gráfica
 
     # Se clasifican las señales por orden deseado de aparición y se clasifican entre I/O o descartes
-    orden = [
-        {"nombre": "CLK",		    "tipo": "NO",   "orden": 0},
-        {"nombre": "EN",		    "tipo": "I",    "orden": 1},
-        {"nombre": "NEXT_CONFIG_0",	"tipo": "I",    "orden": 6},
-        {"nombre": "NEXT_CONFIG_1",	"tipo": "I",    "orden": 7},
-        {"nombre": "NEXT_CONFIG_2",	"tipo": "I",    "orden": 8},
-        {"nombre": "NEXT_CONFIG_3",	"tipo": "I",    "orden": 9},
-        {"nombre": "NEXT_CONFIG_4",	"tipo": "I",    "orden": 10},
-        {"nombre": "NEXT_CONFIG_5",	"tipo": "I",    "orden": 11},
-        {"nombre": "NEXT_CONFIG_6",	"tipo": "I",    "orden": 12},
-        {"nombre": "N_ADDR",	    "tipo": "I",    "orden": 2},
-        {"nombre": "N_TOT_CYC",		"tipo": "I",    "orden": 3},
-        {"nombre": "UPD_MEM",	    "tipo": "I",    "orden": 4},
-        {"nombre": "RD_ADDR",       "tipo": "O",    "orden": 1},
-        {"nombre": "RD_DATA",		"tipo": "NO",   "orden": 0},
-        {"nombre": "CNT_END",	    "tipo": "I",    "orden": 5},
-        {"nombre": "LAST_CYC",      "tipo": "O",    "orden": 4},
-        {"nombre": "SWITCH_MEM",    "tipo": "O",    "orden": 3},
-        {"nombre": "EN_CNT",		"tipo": "O",    "orden": 2},
-        {"nombre": "STATE",	        "tipo": "NO",   "orden": 0},
-        {"nombre": "EN_WR_CONFIG",  "tipo": "O",    "orden": 5}
+    # orden = [ # * STATE_CTRLR
+    #     {"nombre": "CLK",		    "tipo": "NO",   "orden": 0},
+    #     {"nombre": "EN",		    "tipo": "I",    "orden": 1},
+    #     {"nombre": "NEXT_CONFIG_0",	"tipo": "I",    "orden": 6},
+    #     {"nombre": "NEXT_CONFIG_1",	"tipo": "I",    "orden": 7},
+    #     {"nombre": "NEXT_CONFIG_2",	"tipo": "I",    "orden": 8},
+    #     {"nombre": "NEXT_CONFIG_3",	"tipo": "I",    "orden": 9},
+    #     {"nombre": "NEXT_CONFIG_4",	"tipo": "I",    "orden": 10},
+    #     {"nombre": "NEXT_CONFIG_5",	"tipo": "I",    "orden": 11},
+    #     {"nombre": "NEXT_CONFIG_6",	"tipo": "I",    "orden": 12},
+    #     {"nombre": "N_ADDR",	    "tipo": "I",    "orden": 2},
+    #     {"nombre": "N_TOT_CYC",		"tipo": "I",    "orden": 3},
+    #     {"nombre": "UPD_MEM",	    "tipo": "I",    "orden": 4},
+    #     {"nombre": "RD_ADDR",       "tipo": "O",    "orden": 1},
+    #     {"nombre": "RD_DATA",		"tipo": "NO",   "orden": 0},
+    #     {"nombre": "CNT_END",	    "tipo": "I",    "orden": 5},
+    #     {"nombre": "LAST_CYC",      "tipo": "O",    "orden": 4},
+    #     {"nombre": "SWITCH_MEM",    "tipo": "O",    "orden": 3},
+    #     {"nombre": "EN_CNT",		"tipo": "O",    "orden": 2},
+    #     {"nombre": "STATE",	        "tipo": "NO",   "orden": 0},
+    #     {"nombre": "EN_WR_CONFIG",  "tipo": "O",    "orden": 5}
+    # ]
+    orden = [ # * PWM_DP_MEM
+        {"nombre": "CLK",		        "tipo": "NO",   "orden": 0},
+        {"nombre": "WR_EN",		        "tipo": "I",    "orden": 1},
+        {"nombre": "WR_ADDR",           "tipo": "I",    "orden": 2},
+        {"nombre": "WR_DATA",           "tipo": "I",    "orden": 3},
+        {"nombre": "N_ADDR",            "tipo": "I",    "orden": 6},
+        {"nombre": "LAST_CYC",          "tipo": "I",    "orden": 5},
+        {"nombre": "SWITCH_MEM",        "tipo": "I",    "orden": 4},
+        {"nombre": "RD_ADDR",		    "tipo": "I",    "orden": 7},
+        {"nombre": "RD_DATA",		    "tipo": "O",    "orden": 1},
+        {"nombre": "RD_DATA_NEXT",      "tipo": "O",    "orden": 2},
+        {"nombre": "RD_DATA_NEXT_2",    "tipo": "O",    "orden": 3}
     ]
 
     # Añade los campos nuevos a los señales
@@ -215,8 +228,8 @@ if __name__ == "__main__":
     # print("----------------------")
     # pp(tabla_out_ordenada)
 
-    # concatenar = True
-    concatenar = False
+    concatenar = True
+    # concatenar = False
 
     if not concatenar:
         # Se exportan los dos ficheros

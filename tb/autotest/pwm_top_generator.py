@@ -3,7 +3,7 @@ import os
 import math
 
 
-def generar_config(index, n_max_estados, n_max_dato):
+def generar_config(index, n_max_estados, n_max_dato, n_max_ciclos):
     """Crear los datos iniciales."""
 
     n_tot_cyc = 0     # (*)
@@ -23,20 +23,14 @@ def generar_config(index, n_max_estados, n_max_dato):
         if random.random() < 0.25:
             data[-1] = 1
 
-        # Evita configuraciones prohibidas
-        datos_no_validos = [[1,1], [1,1,1], [1,2], [2,1]]
-
-        while data in datos_no_validos:
-            data = [random.randint(1, 20) for _ in range(n_addr)]
-
         # Número de pulsos por ciclo (N_TOT_CYC)
         n_tot_cyc = sum(data)
 
-        print(  f"CONFIG: {index}\n" +
-                f"TRY: {iter}\n" +
-                f"ESTADOS: {n_addr}\n" +
-                f"DATOS: {data}\n" +
-                f"SUMA: {n_tot_cyc} => {int(math.log2(n_tot_cyc)) + 1} bits \n")
+        # print(  f"CONFIG: {index}\n" +
+        #         f"TRY: {iter}\n" +
+        #         f"ESTADOS: {n_addr}\n" +
+        #         f"DATOS: {data}\n" +
+        #         f"SUMA: {n_tot_cyc} => {int(math.log2(n_tot_cyc)) + 1} bits \n")
         iter += 1
 
     # WR_ADDR
@@ -46,12 +40,10 @@ def generar_config(index, n_max_estados, n_max_dato):
     init = random.choice([0, 1])
 
     # Número entero de ciclos
-    # NOTE: Hay que evitar que haya una combinación de ciclos y n_tot_cyc menor de lo debido, de tal forma que no se pueda meter una config
-    ciclos = random.randint(4 + (n_addr // n_tot_cyc), 12) 
+    ciclos = random.randint(4, n_max_ciclos) 
 
     # Update de la primera configuración
     if index == 0:
-        # first_upd = random.randint(n_addr + 1, 15)
         first_upd = random.randint(n_addr + 1, n_addr + 15)
     else:
         first_upd = 0
@@ -75,7 +67,7 @@ def generar_salidas(config_dic, index):
 
     dic_salidas = {"steps": [],
                    "pwm": [],
-                   "en_wr_config": [],
+                   "unlock": [],
                    "n_config_out": [],
                    "ciclo": []
                    }
@@ -101,7 +93,7 @@ def generar_salidas(config_dic, index):
         else:
             dic_salidas["pwm"]  += pwm_ciclo_par
             
-        dic_salidas["en_wr_config"] += [0 for _ in range(longitud_ciclo)]
+        dic_salidas["unlock"] += [0 for _ in range(longitud_ciclo)]
 
     return dic_salidas
 
@@ -122,7 +114,7 @@ def generar_entradas (config_dic, index, dic_salidas, long_ent_prev, config_dic_
     lon_start = 0
     lon_end = 0
     for i in range(len(dic_salidas["pwm"])):
-        if (int(dic_salidas["n_config_out"][i], 2) == (index + 1)) and (int(dic_salidas["ciclo"][i], 2) == 3) and (int(dic_salidas["steps"][i], 2) == 2):
+        if (int(dic_salidas["n_config_out"][i], 2) == (index + 1)) and (int(dic_salidas["ciclo"][i], 2) == 1) and (int(dic_salidas["steps"][i], 2) == 2):
             lon_start = i
         elif (int(dic_salidas["n_config_out"][i], 2) == (index + 1)) and (int(dic_salidas["ciclo"][i], 2) == (config_dic["ciclos"] - 1)) and (int(dic_salidas["steps"][i], 2) == (config_dic["n_tot_cyc"] - 1)):
             lon_end = i - config_dic_next["n_addr"] - 1
@@ -142,14 +134,6 @@ def generar_entradas (config_dic, index, dic_salidas, long_ent_prev, config_dic_
     upd_pos = random.randint(max(upd_start, long_ent_prev), upd_end) - long_ent_prev
     while (upd_pos < config_dic["n_addr"] + 1):
         upd_pos += 1
-
-
-    # print(f"Lon_start: {lon_start}\t Lon_end: {lon_end}")
-    # print(f"UPD_start: {upd_start}\t UPD_end: {upd_end}")
-    # print(f"N: {index}\t Longitud entradas: {long_ent_prev}\t UPD pos: {upd_pos}\t Longitud: {longitud}")
-    # print()
-
-    # print(f'N: {index}\t N_ADDR: {config_dic["n_addr"]}\t UPD pos: {upd_pos}')
 
     for n, i in enumerate(range(longitud)):
         dic_entradas["n_config"].append(index + 1)
@@ -207,108 +191,119 @@ if __name__ == "__main__":
 
     ruta = os.path.dirname(os.path.abspath(__file__))
 
-    # * CONFIGURACIÓN DE USUARIO -------------------------------
+    # USER: Configurar ----------------------------------------
     # Hay que tener en cuenta que los registros son de 32 bits.
     #   Si bien el requisto máximo es de 128 estados de 32 bits, el valor de
     #   N_TOT_CYC = SUM(dato_i) no puede superar (2*32 - 1) (*)
 
-    n_config = 20           # Número de secuencias
-    n_max_estados = 128     # Número máximo de estados
-    n_max_dato = 1000;      # Valor máximo de un dato (2**32 - 1 = 4.294.967.295, pero para que sea coherente con TOT_CYC tiene que ser 1FF_FFFF = 33.554.431
+    worst_case = True
 
-    # * --------------------------------------------------------
+    if worst_case:
+        n_config = 50           # Número de secuencias
+        n_max_estados = 128     # Número máximo de estados (128)
+        n_max_dato = 15000      # Valor máximo de un dato (2**32 - 1 = 4.294.967.295, pero para que sea coherente con TOT_CYC tiene que ser 1FF_FFFF = 33.554.431
+        n_max_ciclos = 1500     # Número máximo de repeticiones de ciclos
+    else:
+        n_config = 30           # Número de secuencias
+        n_max_estados = 20      # Número máximo de estados (128)
+        n_max_dato = 150        # Valor máximo de un dato (2**32 - 1 = 4.294.967.295, pero para que sea coherente con TOT_CYC tiene que ser 1FF_FFFF = 33.554.431
+        n_max_ciclos = 40       # Número máximo de repeticiones de ciclos
 
-    config_list = []
-    offset = 0
-    ceros_inicio = [0]*5
-    separacion = ["-------"]
-    formato = "08b"
+    # USER ----------------------------------------------------
 
-    dic_salidas = {"steps": [],
-                   "pwm": [],
-                   "en_wr_config": [],
-                   "n_config_out": [],
-                   "ciclo": []
-                   }
-    
-    dic_entradas = {"n_config": [],
-                    "n_addr": [],
-                    "n_tot_cyc": [],
-                    "pwm_init": [],
-                    "wr_en": [],
-                    "wr_addr": [],
-                    "wr_data": [],
-                    "upd_mem": []
-                    }
-    
-    dic_check = {"n_config": ["N_CONFIG"],
-                 "n_addr": ["N_ADDR"],
-                 "n_tot_cyc": ["N_TOT_CY"],
-                 "pwm_init": ["PWM_INIT"],
-                 "wr_en": ["WR_EN"],
-                 "wr_addr": ["WR_ADDR"],
-                 "wr_data": ["WR_DATA"],
-                 "upd_mem": ["UPD_MEM"],
-                 "steps": ["STEPS"],
-                 "pwm": ["PWM"],
-                 "en_wr_config": ["EN_WR_CO"],
-                 "n_config_out": ["N_CONF_O"],
-                 "ciclo": ["CICLO"]}
+    ok = False
+    n_try = 0
 
-    # Generar configuraciones automáticamente
-    for i in range(n_config):
-        config_list.append(generar_config(i, n_max_estados, n_max_dato))
-        # print(config_list[i])
+    while not ok:
+        try:
 
-    # Generar configuraciones manualmente
-    # config_list = [
-    #     {'n_config': 1, 'n_addr': 2, 'wr_addr': [0, 1], 'wr_data': [16, 1], 'pwm_init': 0, 'ciclos': 5, 'n_tot_cyc': 17, 'first_upd': 8},
-    #     {'n_config': 2, 'n_addr': 3, 'wr_addr': [0, 1, 2], 'wr_data': [7, 17, 1], 'pwm_init': 0, 'ciclos': 9, 'n_tot_cyc': 25, 'first_upd': 0},
-    #     {'n_config': 3, 'n_addr': 6, 'wr_addr': [0, 1, 2, 3, 4, 5], 'wr_data': [6, 12, 7, 17, 7, 1], 'pwm_init': 0, 'ciclos': 12, 'n_tot_cyc': 50, 'first_upd': 0},
-    #     {'n_config': 4, 'n_addr': 2, 'wr_addr': [0, 1], 'wr_data': [20, 7], 'pwm_init': 0, 'ciclos': 5, 'n_tot_cyc': 27, 'first_upd': 0},
-    #     {'n_config': 5, 'n_addr': 7, 'wr_addr': [0, 1, 2, 3, 4, 5, 6], 'wr_data': [11, 13, 4, 2, 3, 11, 1], 'pwm_init': 0, 'ciclos': 8, 'n_tot_cyc': 45, 'first_upd': 0},
-    #     {'n_config': 6, 'n_addr': 2, 'wr_addr': [0, 1], 'wr_data': [1, 4], 'pwm_init': 1, 'ciclos': 8, 'n_tot_cyc': 5, 'first_upd': 0},
-    #     {'n_config': 7, 'n_addr': 7, 'wr_addr': [0, 1, 2, 3, 4, 5, 6], 'wr_data': [1, 5, 20, 8, 15, 4, 3], 'pwm_init': 0, 'ciclos': 12, 'n_tot_cyc': 56, 'first_upd': 0},
-    #     {'n_config': 8, 'n_addr': 4, 'wr_addr': [0, 1, 2, 3], 'wr_data': [5, 6, 14, 1], 'pwm_init': 1, 'ciclos': 7, 'n_tot_cyc': 26, 'first_upd': 0},
-    #     {'n_config': 9, 'n_addr': 2, 'wr_addr': [0, 1], 'wr_data': [10, 18], 'pwm_init': 0, 'ciclos': 9, 'n_tot_cyc': 28, 'first_upd': 0},
-    #     {'n_config': 10, 'n_addr': 7, 'wr_addr': [0, 1, 2, 3, 4, 5, 6], 'wr_data': [1, 2, 15, 4, 15, 14, 4], 'pwm_init': 0, 'ciclos': 8, 'n_tot_cyc': 55, 'first_upd': 0}
-    # ]
+            n_try += 1 
 
-    for n, config in enumerate(config_list):
+            config_list = []
+            ceros_inicio = [0]*5
+            separacion = ["-------"]
+            formato = "032b"
 
-        first_update_list = [0,0,0] + [0 for _ in range(config["first_upd"])]
-        ouput_offset = ceros_inicio + first_update_list
+            dic_salidas = {"steps": [],
+                        "pwm": [],
+                        "unlock": [],
+                        "n_config_out": [],
+                        "ciclo": []
+                        }
+            
+            dic_entradas = {"n_config": [],
+                            "n_addr": [],
+                            "n_tot_cyc": [],
+                            "pwm_init": [],
+                            "wr_en": [],
+                            "wr_addr": [],
+                            "wr_data": [],
+                            "upd_mem": []
+                            }
+            
+            dic_check = {"n_config": ["N_CONFIG"],
+                        "n_addr": ["N_ADDR"],
+                        "n_tot_cyc": ["N_TOT_CY"],
+                        "pwm_init": ["PWM_INIT"],
+                        "wr_en": ["WR_EN"],
+                        "wr_addr": ["WR_ADDR"],
+                        "wr_data": ["WR_DATA"],
+                        "upd_mem": ["UPD_MEM"],
+                        "steps": ["STEPS"],
+                        "pwm": ["PWM"],
+                        "unlock": ["UNLOCK"],
+                        "n_config_out": ["N_CONF_O"],
+                        "ciclo": ["CICLO"]}
 
-        dic_salidas_gen = {}
-        dic_entradas_gen = {}
+            # Generar configuraciones automáticamente
+            for i in range(n_config):
+                config_list.append(generar_config(i, n_max_estados, n_max_dato, n_max_ciclos))
 
-        # Generar las salidas
-        dic_salidas_gen = generar_salidas(config, n)
-        for salida, lista in dic_salidas.items():
-            # Inicio
-            if n == 0:
-                lista += int_a_bin(ceros_inicio + first_update_list, formato) 
-                dic_check[salida] += ceros_inicio + separacion + first_update_list + separacion
-            # Configuraciones
-            lista += int_a_bin(dic_salidas_gen[salida], formato)
-            dic_check[salida] += dic_salidas_gen[salida] + separacion
+            for n, config in enumerate(config_list):
 
-        # Generar las entradas en el momento correspondiente a las salidas
-        if n == 0:
-            dic_entradas_gen = generar_entradas(config, n, dic_salidas, len(dic_entradas["n_addr"]))
-        elif n < (n_config - 1):
-            dic_entradas_gen = generar_entradas(config, n, dic_salidas, len(dic_entradas["n_addr"]), config_list[n - 1], config_list[n + 1])
-        else:
-            dic_entradas_gen = generar_entradas(config, n, dic_salidas, len(dic_entradas["n_addr"]), config_list[n - 1])
-        for entrada, lista in dic_entradas.items():
-            # Inicio
-            if n == 0:
-                lista += int_a_bin(ceros_inicio, formato) 
-                dic_check[entrada] += ceros_inicio + separacion
-            # Configuraciones
-            lista += int_a_bin(dic_entradas_gen[entrada], formato)
-            dic_check[entrada] += dic_entradas_gen[entrada] + separacion
+                first_update_list = [0,0,0] + [0 for _ in range(config["first_upd"])]
 
-    exportar_txt(dic_salidas, os.path.join(ruta, "pwm_top_outputs_ref.txt"))
-    exportar_txt(dic_entradas, os.path.join(ruta, "pwm_top_inputs.txt"))
-    exportar_txt(dic_check, os.path.join(ruta, "pwm_top_io_check.txt"))
+                dic_salidas_gen = {}
+                dic_entradas_gen = {}
+
+                # Generar las salidas
+                dic_salidas_gen = generar_salidas(config, n)
+                for salida, lista in dic_salidas.items():
+                    # Inicio
+                    if n == 0:
+                        lista += int_a_bin(ceros_inicio + first_update_list, formato) 
+                        dic_check[salida] += ceros_inicio + separacion + first_update_list + separacion
+                    # Configuraciones
+                    lista += int_a_bin(dic_salidas_gen[salida], formato)
+                    dic_check[salida] += dic_salidas_gen[salida] + separacion
+
+                # Generar las entradas en el momento correspondiente a las salidas
+                if n == 0:
+                    dic_entradas_gen = generar_entradas(config, n, dic_salidas, len(dic_entradas["n_addr"]))
+                elif n < (n_config - 1):
+                    dic_entradas_gen = generar_entradas(config, n, dic_salidas, len(dic_entradas["n_addr"]), config_list[n - 1], config_list[n + 1])
+                else:
+                    dic_entradas_gen = generar_entradas(config, n, dic_salidas, len(dic_entradas["n_addr"]), config_list[n - 1])
+                for entrada, lista in dic_entradas.items():
+                    # Inicio
+                    if n == 0:
+                        lista += int_a_bin(ceros_inicio, formato) 
+                        dic_check[entrada] += ceros_inicio + separacion
+                    # Configuraciones
+                    lista += int_a_bin(dic_entradas_gen[entrada], formato)
+                    dic_check[entrada] += dic_entradas_gen[entrada] + separacion
+
+            ok = True
+
+        except Exception as e:
+            print(f"Try: {n_try}")
+            print(type(e), e)
+
+    if worst_case:
+        exportar_txt(dic_salidas, os.path.join(ruta, "pwm_top_outputs_ref_WC.txt"))
+        exportar_txt(dic_entradas, os.path.join(ruta, "pwm_top_inputs_WC.txt"))
+        exportar_txt(dic_check, os.path.join(ruta, "pwm_top_io_check_WC.txt"))
+    else:
+        exportar_txt(dic_salidas, os.path.join(ruta, "pwm_top_outputs_ref.txt"))
+        exportar_txt(dic_entradas, os.path.join(ruta, "pwm_top_inputs.txt"))
+        exportar_txt(dic_check, os.path.join(ruta, "pwm_top_io_check.txt"))

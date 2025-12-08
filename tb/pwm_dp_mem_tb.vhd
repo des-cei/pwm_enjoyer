@@ -36,20 +36,22 @@ architecture beh of pwm_dp_mem_tb is
             G_RST_POL   : std_logic := '1'
         );
         port (
-            CLK_I           : in std_logic;     
-            RST_I           : in std_logic;
-            EN_WR_CONFIG_I  : in std_logic;                                     -- Bloqueo de escritura de configuración
-            WR_EN_I         : in std_logic;                                     -- Enable de escritura
-            WR_ADDR_I       : in std_logic_vector((G_ADDR_W - 1) downto 0);     -- Dirección de escritura
-            WR_DATA_I       : in std_logic_vector((G_DATA_W - 1) downto 0);     -- Dato de escritura
-            SWITCH_MEM_I    : in std_logic;                                     -- Señal de actualización de memoria
-            LAST_CYC_I      : in std_logic;                                     -- Indicador de último valor del último ciclo
-            N_ADDR_I        : in std_logic_vector((G_ADDR_W - 1) downto 0);     -- Número de estados del PWM
-            RD_ADDR_I       : in std_logic_vector((G_ADDR_W - 1) downto 0);     -- Dirección de lectura
-            RD_DATA_O       : out std_logic_vector((G_DATA_W - 1) downto 0);    -- Dato de lectura
-            RD_DATA_NEXT_O  : out std_logic_vector((G_DATA_W - 1) downto 0);    -- Siguiente dato de lectura
-            NEXT_CONFIG_O   : out mem                                           -- Siguiente configuración
-        );
+            CLK_I               : in std_logic;     
+            RST_I               : in std_logic;
+            EN_I                : in std_logic; -- Mismo enable que el contador
+            UNLOCKED_I          : in std_logic;                                     -- Bloqueo de escritura de configuración
+            WR_EN_I             : in std_logic;                                     -- Enable de escritura
+            WR_ADDR_I           : in std_logic_vector((G_ADDR_W - 1) downto 0);     -- Dirección de escritura
+            WR_DATA_I           : in std_logic_vector((G_DATA_W - 1) downto 0);     -- Dato de escritura
+            SWITCH_MEM_I        : in std_logic;                                     -- Señal de actualización de memoria
+            LAST_CYC_I          : in std_logic;                                     -- Indicador de último valor del último ciclo
+            N_ADDR_I            : in std_logic_vector((G_ADDR_W - 1) downto 0);     -- Número de estados del PWM
+            RD_ADDR_I           : in std_logic_vector((G_ADDR_W - 1) downto 0);     -- Dirección de lectura
+            RD_DATA_O           : out std_logic_vector((G_DATA_W - 1) downto 0);    -- Dato de lectura
+            RD_DATA_NEXT_O      : out std_logic_vector((G_DATA_W - 1) downto 0);    -- Siguiente dato de lectura
+            RD_DATA_NEXT_2_O    : out std_logic_vector((G_DATA_W - 1) downto 0);    -- Siguiente 2 dato de lectura
+            EARLY_SW_O          : out std_logic                                     -- Protección ante SWITCH sin configuración previa
+            );
     end component pwm_dp_mem;
 
     -------------------------------------------------
@@ -62,7 +64,8 @@ architecture beh of pwm_dp_mem_tb is
     -- Port map
     signal CLK_I            : std_logic;     
     signal RST_I            : std_logic;
-    signal EN_WR_CONFIG_I   : std_logic;                                
+    signal EN_I             : std_logic;
+    signal UNLOCKED_I       : std_logic;                                
     signal WR_EN_I          : std_logic;                                
     signal WR_ADDR_I        : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0);
     signal WR_DATA_I        : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0);
@@ -72,10 +75,8 @@ architecture beh of pwm_dp_mem_tb is
     signal RD_ADDR_I        : std_logic_vector((C_MEM_SIZE_MAX_L2 - 1) downto 0) := (others => '0');
     signal RD_DATA_O        : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0);
     signal RD_DATA_NEXT_O   : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0);
-    signal NEXT_CONFIG_O    : mem;
-
-    -- Constantes
-    constant C_CEROS    : std_logic_vector((RD_ADDR_I'length - 1) downto 0) := (others => '0');
+    signal RD_DATA_NEXT_2_O : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0);
+    signal EARLY_SW_O       : std_logic;    
 
     -- Soporte
     type memory is array (0 to (C_MEM_SIZE_MAX_N - 1)) of integer range 0 to C_STATE_MAX_N;
@@ -103,7 +104,7 @@ architecture beh of pwm_dp_mem_tb is
     -- Reset
     procedure reset (
         signal rst          : out std_logic;
-        signal en_wr_config : out std_logic;
+        signal unlocked     : out std_logic;
         signal wr_en        : out std_logic;
         signal wr_addr      : out std_logic_vector;
         signal wr_data      : out std_logic_vector;
@@ -112,7 +113,7 @@ architecture beh of pwm_dp_mem_tb is
     ) is 
     begin
         rst             <= C_RST_POL;
-        en_wr_config    <= '1';
+        unlocked        <= '1';
         wr_en           <= '0';
         wr_addr         <= (others => '0');
         wr_data         <= (others => '0');
@@ -171,19 +172,21 @@ begin
             G_RST_POL   => C_RST_POL
         )
         port map (
-            CLK_I           => CLK_I,
-            RST_I           => RST_I,
-            EN_WR_CONFIG_I  => EN_WR_CONFIG_I,
-            WR_EN_I         => WR_EN_I,
-            WR_ADDR_I       => WR_ADDR_I,
-            WR_DATA_I       => WR_DATA_I,
-            SWITCH_MEM_I    => SWITCH_MEM_I,
-            LAST_CYC_I      => LAST_CYC_I,
-            N_ADDR_I        => N_ADDR_I,
-            RD_ADDR_I       => RD_ADDR_I,
-            RD_DATA_O       => RD_DATA_O, 
-            RD_DATA_NEXT_O  => RD_DATA_NEXT_O,
-            NEXT_CONFIG_O   => NEXT_CONFIG_O 
+            CLK_I               => CLK_I,
+            RST_I               => RST_I,
+            EN_I                => EN_I,
+            UNLOCKED_I          => UNLOCKED_I,
+            WR_EN_I             => WR_EN_I,
+            WR_ADDR_I           => WR_ADDR_I,
+            WR_DATA_I           => WR_DATA_I,
+            SWITCH_MEM_I        => SWITCH_MEM_I,
+            LAST_CYC_I          => LAST_CYC_I,
+            N_ADDR_I            => N_ADDR_I,
+            RD_ADDR_I           => RD_ADDR_I,
+            RD_DATA_O           => RD_DATA_O, 
+            RD_DATA_NEXT_O      => RD_DATA_NEXT_O,
+            RD_DATA_NEXT_2_O    => RD_DATA_NEXT_2_O,
+            EARLY_SW_O          => EARLY_SW_O
         );
 
     -------------------------------------------------
@@ -286,9 +289,11 @@ begin
         -- Init
         ------------------------------
         sim <= x"49_4E_49_54_20_20";    -- INIT
-        reset(RST_I, EN_WR_CONFIG_I, WR_EN_I, WR_ADDR_I, WR_DATA_I, req_switch_1, N_ADDR_I);
+        reset(RST_I, UNLOCKED_I, WR_EN_I, WR_ADDR_I, WR_DATA_I, req_switch_1, N_ADDR_I);
 
         p_wait(10*clk_period);
+
+        EN_I <= '1';
 
         ------------------------------
         -- Config 1
@@ -416,10 +421,46 @@ begin
         p_wait(50*clk_period);
 
         ------------------------------
+        -- Config 8
+        ------------------------------
+        sim <= x"43_4F_4E_46_20_38";    -- CONF 8
+        v_mem_len := 3;
+        v_mem := (  0 => 6,
+                    1 => 2,
+                    2 => 3,
+                    others => 0);
+        N_ADDR_I <= std_logic_vector(to_unsigned(v_mem_len, N_ADDR_I'length));
+        wr_config(v_mem, v_mem_len, 0, WR_EN_I, WR_ADDR_I, WR_DATA_I);
+        p_wait(20*clk_period);
+
+        -- Update 8
+        pulso(req_switch_1);
+        p_wait(50*clk_period);
+
+        ------------------------------
+        -- Config 9
+        ------------------------------
+        sim <= x"43_4F_4E_46_20_39";    -- CONF 9
+        v_mem_len := 5;
+        v_mem := (  0 => 2,
+                    1 => 5,
+                    2 => 4,
+                    3 => 3,
+                    4 => 1,
+                    others => 0);
+        N_ADDR_I <= std_logic_vector(to_unsigned(v_mem_len, N_ADDR_I'length));
+        wr_config(v_mem, v_mem_len, 0, WR_EN_I, WR_ADDR_I, WR_DATA_I);
+        p_wait(20*clk_period);
+
+        -- Update 9
+        pulso(req_switch_1);
+        p_wait(50*clk_period);
+
+        ------------------------------
         -- Reset
         ------------------------------
         sim <= x"52_45_53_45_54_20";    -- RESET
-        reset(RST_I, EN_WR_CONFIG_I, WR_EN_I, WR_ADDR_I, WR_DATA_I, req_switch_1, N_ADDR_I);
+        reset(RST_I, UNLOCKED_I, WR_EN_I, WR_ADDR_I, WR_DATA_I, req_switch_1, N_ADDR_I);
 
         p_wait(10*clk_period);
         

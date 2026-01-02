@@ -1,4 +1,4 @@
 # This file is automatically written.  Do not modify.
 proc gen_USERPARAMETER_G_STATE_MAX_L2_VALUE {C_S_AXI_DATA_WIDTH } {expr {$C_S_AXI_DATA_WIDTH}}
-proc gen_USERPARAMETER_G_MEM_SIZE_MAX_L2_VALUE {G_MEM_SIZE_MAX_N } {expr {ceil(log($G_MEM_SIZE_MAX_N) / log(2.0))}}
+proc gen_USERPARAMETER_G_MEM_SIZE_MAX_L2_VALUE {G_MEM_SIZE_MAX_N } {expr {ceil(log($G_MEM_SIZE_MAX_N + 1) / log(2.0))}}
 proc gen_USERPARAMETER_G_PERIOD_MAX_L2_VALUE {C_S_AXI_DATA_WIDTH } {expr {$C_S_AXI_DATA_WIDTH}}

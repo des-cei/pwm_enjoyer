@@ -62,7 +62,8 @@ entity pwm_top is
         PWM_INIT_I      : in std_logic;                                             -- Valor inicial de salida
         -- Salidas
         PWM_O           : out std_logic;                                            -- Salida del PWM
-        UNLOCKED_O      : out std_logic                                             -- Habilitación de configuración de memoria
+        UNLOCKED_O      : out std_logic;                                            -- Habilitación de configuración de memoria
+        STATUS_O        : out std_logic_vector(1 downto 0)                          -- Estado (00 = Apagado, 01 = Apagando, 11 = Activo)
     );
 end entity pwm_top;
 
@@ -102,14 +103,32 @@ architecture str of pwm_top is
     signal s_rd_data_next_2 : std_logic_vector((G_STATE_MAX_L2 - 1) downto 0) := (others => '0');
     signal s_early_sw       : std_logic := '1';
 
-    -- -------------------------------------------------
-    -- -- ILA
-    -- -------------------------------------------------
-    -- attribute MARK_DEBUG : string;
-    -- attribute MARK_DEBUG of EN_I         : signal is "true";
-    -- attribute MARK_DEBUG of UPD_MEM_I    : signal is "true";
-    -- attribute MARK_DEBUG of PWM_O        : signal is "true";
-    -- attribute MARK_DEBUG of UNLOCKED_O   : signal is "true";
+    -------------------------------------------------
+    -- ILA
+    -------------------------------------------------
+    attribute MARK_DEBUG : string;
+    attribute MARK_DEBUG of s_cnt_end           : signal is "true";
+    attribute MARK_DEBUG of s_cnt_end_pre       : signal is "true";
+    attribute MARK_DEBUG of s_rd_addr           : signal is "true";
+    attribute MARK_DEBUG of s_en_cnt            : signal is "true";
+    attribute MARK_DEBUG of s_switch_mem        : signal is "true";
+    attribute MARK_DEBUG of s_last_cyc          : signal is "true";
+    attribute MARK_DEBUG of s_unlocked          : signal is "true";
+    attribute MARK_DEBUG of s_rd_data           : signal is "true";
+    attribute MARK_DEBUG of s_rd_data_next      : signal is "true";
+    attribute MARK_DEBUG of s_rd_data_next_2    : signal is "true";
+    attribute MARK_DEBUG of s_early_sw          : signal is "true";
+    attribute MARK_DEBUG of EN_I                : signal is "true";
+    attribute MARK_DEBUG of UPD_MEM_I           : signal is "true";
+    attribute MARK_DEBUG of WR_EN_I             : signal is "true";
+    attribute MARK_DEBUG of WR_ADDR_I           : signal is "true";
+    attribute MARK_DEBUG of WR_DATA_I           : signal is "true";
+    attribute MARK_DEBUG of N_ADDR_I            : signal is "true";
+    attribute MARK_DEBUG of N_TOT_CYC_I         : signal is "true";
+    attribute MARK_DEBUG of PWM_INIT_I          : signal is "true";
+    attribute MARK_DEBUG of PWM_O               : signal is "true";
+    attribute MARK_DEBUG of UNLOCKED_O          : signal is "true";
+    attribute MARK_DEBUG of STATUS_O            : signal is "true";
 
 begin
 
@@ -137,7 +156,8 @@ begin
             EN_CNT_O        => s_en_cnt,
             SWITCH_MEM_O    => s_switch_mem,
             LAST_CYC_O      => s_last_cyc,
-            UNLOCKED_O      => s_unlocked
+            UNLOCKED_O      => s_unlocked,
+            STATUS_O        => STATUS_O
         );
 
     -- Memoria

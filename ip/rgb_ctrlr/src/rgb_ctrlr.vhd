@@ -21,7 +21,7 @@ entity rgb_ctrlr is
     port (
         CLK_I   : in std_logic;
         RST_I   : in std_logic;
-        MODE_I  : in std_logic_vector(1 downto 0);
+        MODE_I  : in std_logic_vector(2 downto 0);
         RED_O   : out std_logic;
         GREEN_O : out std_logic;
         BLUE_O  : out std_logic
@@ -55,7 +55,7 @@ architecture beh of rgb_ctrlr is
     -------------------------------------------------
     -- Tipos
     -------------------------------------------------
-    type t_color is (NONE, RED, GREEN, BLUE, YELLOW, ORANGE, VIOLET);
+    type t_color is (NONE, RED, GREEN, BLUE, YELLOW, ORANGE, VIOLET, CIAN);
     type t_params is record
         duty    : integer range 0 to 100;
         period  : integer range 0 to G_PERIOD_MAX_US;
@@ -130,12 +130,15 @@ begin
     GREEN_O <= s_green.pwm;
     BLUE_O  <= s_blue.pwm;
 
+    -- USER : Map mode-color
     with r_mode select
-        s_color <=  BLUE    when "00",
-                    YELLOW  when "01",
-                    GREEN   when "10",
-                    RED     when "11",
+        s_color <=  BLUE    when "000", -- Apagados
+                    CIAN    when "001", -- Apagando
+                    YELLOW  when "010", -- Configurando
+                    GREEN   when "011", -- Activos
+                    RED     when "100", -- Fallo
                     NONE    when others;
+    -- USER ----------------
 
     -------------------------------------------------
     -- Procesos
@@ -226,6 +229,17 @@ begin
                     s_green.period  <= C_PERIOD_US;
                     -- B
                     s_blue.duty     <= 83;
+                    s_blue.period   <= C_PERIOD_US;
+
+                when CIAN =>
+                    -- R
+                    s_red.duty      <= 0;
+                    s_red.period    <= C_PERIOD_US;
+                    -- G
+                    s_green.duty    <= 100;
+                    s_green.period  <= C_PERIOD_US;
+                    -- B
+                    s_blue.duty     <= 100;
                     s_blue.period   <= C_PERIOD_US;
 
                 when NONE =>

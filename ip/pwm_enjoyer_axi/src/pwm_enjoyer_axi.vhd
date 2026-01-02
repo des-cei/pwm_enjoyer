@@ -14,12 +14,14 @@ entity pwm_enjoyer_axi is
         G_STATE_MAX_L2      : natural := 32;
         -- Número máximo de estados, tamaño máximo de la memoria
         G_MEM_SIZE_MAX_N    : natural := 128;
-        -- Tamaño del vector del número de estados {integer(ceil(log2(real(G_MEM_SIZE_MAX_N))))}
+        -- Tamaño del vector del número de estados {integer(ceil(log2(real(G_MEM_SIZE_MAX_N + 1))))}
         G_MEM_SIZE_MAX_L2   : natural := 32;
         -- Tamaño del vector del número máximo de ciclos de reloj {integer(ceil(log2(real(G_PERIOD_MAX_N))))}
         G_PERIOD_MAX_L2     : natural := 32;
         -- Número de PWMS
         G_PWM_N             : natural := 32;
+		-- Redundancias
+		G_EN_REDUNDANCY     : std_logic := '1';
 		-- Width of S_AXI data bus
 		C_S_AXI_DATA_WIDTH	: natural := 32;
 		-- Width of S_AXI address bus
@@ -28,7 +30,7 @@ entity pwm_enjoyer_axi is
 	port (
 		-- Users to add ports here
 		PWMS_O		: out std_logic_vector((G_PWM_N - 1) downto 0);
-		STATUS_O 	: out std_logic_vector(1 downto 0);
+		STATUS_O 	: out std_logic_vector(2 downto 0);
 		-- User ------------------
 		-- Global Clock Signal
 		S_AXI_ACLK	: in std_logic;
@@ -144,6 +146,36 @@ architecture arch_imp of pwm_enjoyer_axi is
 	signal state_read : std_logic_vector(1 downto 0);
 	signal state_write: std_logic_vector(1 downto 0); 
 
+	constant C_CEROS : std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
+
+	-------------------------------------------------
+    -- ILA
+    -------------------------------------------------
+    attribute MARK_DEBUG : string;
+    attribute MARK_DEBUG of axi_awaddr	: signal is "true";
+    attribute MARK_DEBUG of axi_awready	: signal is "true";
+    attribute MARK_DEBUG of axi_wready	: signal is "true";
+    attribute MARK_DEBUG of axi_bresp	: signal is "true";
+    attribute MARK_DEBUG of axi_bvalid	: signal is "true";
+    attribute MARK_DEBUG of axi_araddr	: signal is "true";
+    attribute MARK_DEBUG of axi_arready	: signal is "true";
+    attribute MARK_DEBUG of axi_rresp	: signal is "true";
+    attribute MARK_DEBUG of axi_rvalid	: signal is "true";
+    attribute MARK_DEBUG of slv_reset	: signal is "true";
+    attribute MARK_DEBUG of slv_reg0	: signal is "true";
+    attribute MARK_DEBUG of slv_reg1	: signal is "true";
+    attribute MARK_DEBUG of slv_reg2	: signal is "true";
+    attribute MARK_DEBUG of slv_reg3	: signal is "true";
+    attribute MARK_DEBUG of slv_reg4	: signal is "true";
+    attribute MARK_DEBUG of slv_reg5	: signal is "true";
+    attribute MARK_DEBUG of slv_reg6	: signal is "true";
+    attribute MARK_DEBUG of slv_reg7	: signal is "true";
+    attribute MARK_DEBUG of slv_reg8	: signal is "true";
+    attribute MARK_DEBUG of slv_reg9	: signal is "true";
+    attribute MARK_DEBUG of byte_index	: signal is "true";
+    attribute MARK_DEBUG of state_read	: signal is "true";
+    attribute MARK_DEBUG of state_write	: signal is "true";
+
 begin
 	-- I/O Connections assignments
 
@@ -236,11 +268,11 @@ begin
 				slv_reg4 <= (others => '0');
 				slv_reg5 <= (others => '0');
 				slv_reg6 <= (others => '0');
-				slv_reg7 <= (others => '0');
-				slv_reg8 <= (others => '0');
-				slv_reg9 <= (others => '0');
+				-- slv_reg7 <= (others => '0');	-- NOTE : Only Read Register 
+				-- slv_reg8 <= (others => '0');	-- NOTE : Only Read Register 
+				-- slv_reg9 <= (others => '0');	-- NOTE : Only Read Register 
 			else
-	     		if (S_AXI_WVALID = '1') then
+				if (S_AXI_WVALID = '1') then
 	          		case (mem_logic) is
 						when b"0000" =>
 							for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
@@ -298,30 +330,30 @@ begin
 									slv_reg6(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 								end if;
 							end loop;
-						when b"0111" =>
-							for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
-								if ( S_AXI_WSTRB(byte_index) = '1' ) then
-									-- Respective byte enables are asserted as per write strobes                   
-									-- slave registor 7
-									slv_reg7(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
-								end if;
-							end loop;
-						when b"1000" =>
-							for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
-								if ( S_AXI_WSTRB(byte_index) = '1' ) then
-									-- Respective byte enables are asserted as per write strobes                   
-									-- slave registor 8
-									slv_reg8(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
-								end if;
-							end loop;
-						when b"1001" =>
-							for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
-								if ( S_AXI_WSTRB(byte_index) = '1' ) then
-									-- Respective byte enables are asserted as per write strobes                   
-									-- slave registor 9
-									slv_reg9(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
-								end if;
-							end loop;
+						-- when b"0111" =>	-- NOTE : Only Read Register 
+						-- 	for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
+						-- 		if ( S_AXI_WSTRB(byte_index) = '1' ) then
+						-- 			-- Respective byte enables are asserted as per write strobes                   
+						-- 			-- slave registor 7
+						-- 			slv_reg7(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+						-- 		end if;
+						-- 	end loop;
+						-- when b"1000" =>	-- NOTE : Only Read Register 
+						-- 	for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
+						-- 		if ( S_AXI_WSTRB(byte_index) = '1' ) then
+						-- 			-- Respective byte enables are asserted as per write strobes                   
+						-- 			-- slave registor 8
+						-- 			slv_reg8(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+						-- 		end if;
+						-- 	end loop;
+						-- when b"1001" =>	-- NOTE : Only Read Register 
+						-- 	for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
+						-- 		if ( S_AXI_WSTRB(byte_index) = '1' ) then
+						-- 			-- Respective byte enables are asserted as per write strobes                   
+						-- 			-- slave registor 9
+						-- 			slv_reg9(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+						-- 		end if;
+						-- 	end loop;
 						when others =>
 							slv_reg0 <= slv_reg0;
 							slv_reg1 <= slv_reg1;
@@ -330,11 +362,17 @@ begin
 							slv_reg4 <= slv_reg4;
 							slv_reg5 <= slv_reg5;
 							slv_reg6 <= slv_reg6;
-							slv_reg7 <= slv_reg7;
-							slv_reg8 <= slv_reg8;
-							slv_reg9 <= slv_reg9;
+							-- slv_reg7 <= slv_reg7;	-- NOTE : Only Read Register 
+							-- slv_reg8 <= slv_reg8;	-- NOTE : Only Read Register 
+							-- slv_reg9 <= slv_reg9;	-- NOTE : Only Read Register 
 					end case;
 	     		end if;
+
+				-- Reset del WR_DATA_VALID para que solo dure 1 pulso
+				if (slv_reg3 /= C_CEROS) then
+					slv_reg3 <= (others => '0');
+				end if;
+
 	    	end if;
 	  	end if;                   
 	end process; 
@@ -406,7 +444,8 @@ begin
 			G_MEM_SIZE_MAX_N    => G_MEM_SIZE_MAX_N,
 			G_MEM_SIZE_MAX_L2   => G_MEM_SIZE_MAX_L2,
 			G_PERIOD_MAX_L2     => G_PERIOD_MAX_L2,
-			G_PWM_N             => G_PWM_N
+			G_PWM_N             => G_PWM_N,
+			G_EN_REDUNDANCY 	=> G_EN_REDUNDANCY
 		)
 		port map (
 			CLK_I               => S_AXI_ACLK,

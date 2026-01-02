@@ -71,6 +71,7 @@ architecture beh of control_unit is
     -- Constantes
     -------------------------------------------------
     constant C_CEROS    : std_logic_vector(31 downto 0) := (others => '0');
+    constant C_UNOS     : std_logic_vector(31 downto 0) := (others => '1');
 
     -------------------------------------------------
     -- Señales
@@ -90,17 +91,46 @@ architecture beh of control_unit is
     -- Interconexiones
     signal r_pwm_top_inputs : modulo_pwm_in;
     signal s_config_error   : std_logic_vector((G_PWM_N - 1) downto 0);
-    signal s_en_wr_config   : std_logic_vector((G_PWM_N - 1) downto 0);
+    signal s_unlocked       : std_logic_vector((G_PWM_N - 1) downto 0);
 
     -- Máquina de estados
     type fsm is (S_IDLE, S_SHUTDOWN, S_APAGAR, S_ACTUALIZAR, S_CONFIGURAR, S_UNKOWN);
-    signal s_estado     : fsm;
-    signal r_wr_en      : std_logic;
-    signal r_wr_addr    : unsigned((PWM_TOP_INPUTS_O(0).wr_addr'length - 1) downto 0);
-    signal s_status     : std_logic_vector(1 downto 0);
+    signal s_estado         : fsm;
+    signal r_wr_addr        : unsigned((PWM_TOP_INPUTS_O(0).wr_addr'length - 1) downto 0);
+    signal s_status         : std_logic_vector(2 downto 0);
+    signal s_invalid_n_addr : std_logic;
+    signal s_pwm_activos    : std_logic_vector((G_PWM_N - 1) downto 0);
+    signal s_pwm_apagando   : std_logic_vector((G_PWM_N - 1) downto 0);
+    signal s_pwm_apagados   : std_logic_vector((G_PWM_N - 1) downto 0);
     
     -- Detección de flancos
     signal s_estado_d1      : fsm;
+
+    -------------------------------------------------
+    -- ILA
+    -------------------------------------------------
+    attribute MARK_DEBUG : string;
+    attribute MARK_DEBUG of r_direcciones       : signal is "true";
+    attribute MARK_DEBUG of r_control           : signal is "true";
+    attribute MARK_DEBUG of r_wr_data           : signal is "true";
+    attribute MARK_DEBUG of r_wr_data_valid     : signal is "true";
+    attribute MARK_DEBUG of r_n_addr            : signal is "true";
+    attribute MARK_DEBUG of r_n_tot_cyc         : signal is "true";
+    attribute MARK_DEBUG of r_pwm_init          : signal is "true";
+    attribute MARK_DEBUG of r_redundancias      : signal is "true";
+    attribute MARK_DEBUG of r_errores           : signal is "true";
+    attribute MARK_DEBUG of r_status            : signal is "true";
+    attribute MARK_DEBUG of r_pwm_top_inputs    : signal is "true";
+    attribute MARK_DEBUG of s_config_error      : signal is "true";
+    attribute MARK_DEBUG of s_unlocked          : signal is "true";
+    attribute MARK_DEBUG of s_estado            : signal is "true";
+    attribute MARK_DEBUG of r_wr_addr           : signal is "true";
+    attribute MARK_DEBUG of s_status            : signal is "true";
+    attribute MARK_DEBUG of s_invalid_n_addr    : signal is "true";
+    attribute MARK_DEBUG of s_pwm_activos       : signal is "true";
+    attribute MARK_DEBUG of s_pwm_apagando      : signal is "true";
+    attribute MARK_DEBUG of s_pwm_apagados      : signal is "true";
+    attribute MARK_DEBUG of s_estado_d1         : signal is "true";
 
 begin
 
@@ -141,6 +171,14 @@ begin
                     S_CONFIGURAR    when "1000",
                     S_IDLE          when others;
 
+    -- Estado propio de cada PWM
+    gen_pwm_states : for i in 0 to (G_PWM_N - 1) generate
+    begin
+        s_pwm_activos(i)    <= '1' when (PWM_TOP_OUTPUTS_I(i).status = "11") else '0';
+        s_pwm_apagando(i)   <= '1' when (PWM_TOP_OUTPUTS_I(i).status = "01") else '0';
+        s_pwm_apagados(i)   <= '1' when (PWM_TOP_OUTPUTS_I(i).status = "00") else '0';
+    end generate gen_pwm_states;
+
     -------------------------------------------------
     -- Procesos
     -------------------------------------------------
@@ -163,10 +201,7 @@ begin
             r_direcciones   <= REG_DIRECCIONES_I;
             r_control       <= REG_CONTROL_I(3 downto 0);
             r_wr_data       <= REG_WR_DATA_I;
-            r_wr_data_valid <= REG_WR_DATA_VALID_I(0);
-            if (r_wr_data_valid = '1') then
-                r_wr_data_valid <= '0'; -- Reset automático del WR_DATA_EN
-            end if;
+            r_wr_data_valid <= REG_WR_DATA_VALID_I(0);  -- Se resetea desde el wrapper AXI
             r_n_addr        <= REG_N_ADDR_I;
             r_n_tot_cyc     <= REG_N_TOT_CYC_I;
             r_pwm_init      <= REG_PWM_INIT_I(0);
@@ -177,9 +212,9 @@ begin
                 else
                     r_redundancias(i)   <= '1'; -- Las salidas no coinciden
                 end if;
-                r_errores(i)        <= s_config_error(i) or (not s_en_wr_config(i));
+                r_errores(i)        <= s_config_error(i) or (not s_unlocked(i)) or s_invalid_n_addr;
             end loop;
-            r_status(1 downto 0)    <= s_status;
+            r_status(2 downto 0)    <= s_status;
         end if;
     end process P_REG;
 
@@ -197,8 +232,9 @@ begin
     P_FSM : process (CLK_I, RST_I)
     begin
         if (RST_I = G_RST_POL) then
-            r_wr_en     <= '0';
-            r_wr_addr   <= (others => '0');
+            r_wr_addr           <= (others => '0');
+            s_status            <= "000";
+            s_invalid_n_addr    <= '0';
             for i in 0 to (G_PWM_N - 1) loop
                 r_pwm_top_inputs(i).en        <= '0';
                 r_pwm_top_inputs(i).upd_mem   <= '0';
@@ -209,7 +245,7 @@ begin
                 r_pwm_top_inputs(i).n_tot_cyc <= (others => '0');
                 r_pwm_top_inputs(i).pwm_init  <= '0';
             end loop;
-            s_status    <= "00";
+            
         elsif rising_edge(CLK_I) then
             case s_estado is
 
@@ -228,16 +264,43 @@ begin
                             r_pwm_top_inputs(i).n_addr    <= (others => '0');
                             r_pwm_top_inputs(i).n_tot_cyc <= (others => '0');
                             r_pwm_top_inputs(i).pwm_init  <= '0';
-                            s_status <= "00";
                         end if;
                     end loop;
 
+                    if (s_pwm_activos /= C_CEROS) then
+                        s_status <= "011";
+                    elsif (s_pwm_apagando /= C_CEROS) then
+                        s_status <= "001";
+                    elsif (s_pwm_apagados = C_UNOS) then
+                        s_status <= "000";
+                    end if;
+
                 when S_APAGAR =>
+                    -- for i in 0 to (G_PWM_N - 1) loop
+                    --     if (r_direcciones(i) = '1') then
+                    --         r_pwm_top_inputs(i).en <= '0';
+                    --     end if;
+                    -- end loop;
                     for i in 0 to (G_PWM_N - 1) loop
                         if (r_direcciones(i) = '1') then
-                            r_pwm_top_inputs(i).en <= '0';
+                            r_pwm_top_inputs(i).en        <= '0';
+                            r_pwm_top_inputs(i).upd_mem   <= '0';
+                            r_pwm_top_inputs(i).wr_en     <= '0';
+                            r_pwm_top_inputs(i).wr_addr   <= (others => '0');
+                            r_pwm_top_inputs(i).wr_data   <= (others => '0');
+                            r_pwm_top_inputs(i).n_addr    <= (others => '0');
+                            r_pwm_top_inputs(i).n_tot_cyc <= (others => '0');
+                            r_pwm_top_inputs(i).pwm_init  <= '0';
                         end if;
                     end loop;
+
+                    if (s_pwm_activos /= C_CEROS) then
+                        s_status <= "011";
+                    elsif (s_pwm_apagando /= C_CEROS) then
+                        s_status <= "001";
+                    elsif (s_pwm_apagados = C_UNOS) then
+                        s_status <= "000";
+                    end if;
 
                 when S_ACTUALIZAR =>
                     for i in 0 to (G_PWM_N - 1) loop
@@ -246,10 +309,11 @@ begin
                             if (s_estado_d1 /= S_ACTUALIZAR) then
                                 if ((r_errores = C_CEROS) and (r_redundancias = C_CEROS)) then
                                     r_pwm_top_inputs(i).upd_mem <= '1';
-                                    s_status    <= "10";
+                                    s_status    <= "011";
                                 else
-                                    s_status    <= "11";
+                                    s_status    <= "100";
                                 end if;
+                                r_wr_addr       <= (others => '0');
                             else
                                 r_pwm_top_inputs(i).upd_mem <= '0';
                             end if;
@@ -257,32 +321,39 @@ begin
                     end loop;
 
                 when S_CONFIGURAR =>
-                    for i in 0 to (G_PWM_N - 1) loop
-                        if (r_direcciones(i) = '1') then
-                            if (s_en_wr_config(i) = '1') then
-                                r_pwm_top_inputs(i).en          <= '1';
-                                r_pwm_top_inputs(i).wr_en       <= '0';
-                                r_pwm_top_inputs(i).n_addr      <= r_n_addr((r_pwm_top_inputs(i).n_addr'length - 1) downto 0);
-                                r_pwm_top_inputs(i).n_tot_cyc   <= r_n_tot_cyc((r_pwm_top_inputs(i).n_tot_cyc'length - 1) downto 0);
-                                r_pwm_top_inputs(i).pwm_init    <= r_pwm_init;
-                                
-                                if (r_wr_data_valid = '1') then
-                                    r_pwm_top_inputs(i).wr_en   <= '1';
-                                    r_pwm_top_inputs(i).wr_addr <= std_logic_vector(r_wr_addr);
-                                    r_pwm_top_inputs(i).wr_data <= r_wr_data((r_pwm_top_inputs(i).wr_data'length - 1) downto 0);
-                                    if (r_wr_addr = (unsigned(r_n_addr) - 1)) then
-                                        r_wr_addr   <= (others => '0');
-                                    else
-                                        r_wr_addr   <= r_wr_addr + 1;
+                    if (to_integer(unsigned(r_n_addr)) > 1) then
+                        s_invalid_n_addr <= '0';
+                        for i in 0 to (G_PWM_N - 1) loop
+                            if (r_direcciones(i) = '1') then
+                                if (s_unlocked(i) = '1') then
+                                    r_pwm_top_inputs(i).en          <= '1';
+                                    r_pwm_top_inputs(i).wr_en       <= '0';
+                                    r_pwm_top_inputs(i).n_addr      <= r_n_addr((r_pwm_top_inputs(i).n_addr'length - 1) downto 0);
+                                    r_pwm_top_inputs(i).n_tot_cyc   <= r_n_tot_cyc((r_pwm_top_inputs(i).n_tot_cyc'length - 1) downto 0);
+                                    r_pwm_top_inputs(i).pwm_init    <= r_pwm_init;
+                                    
+                                    if (r_wr_data_valid = '1') then
+                                        r_pwm_top_inputs(i).wr_en   <= '1';
+                                        r_pwm_top_inputs(i).wr_addr <= std_logic_vector(r_wr_addr);
+                                        r_pwm_top_inputs(i).wr_data <= r_wr_data((r_pwm_top_inputs(i).wr_data'length - 1) downto 0);
+                                        if (r_wr_addr = (unsigned(r_n_addr) - 1)) then
+                                            r_wr_addr   <= (others => '0');
+                                        else
+                                            r_wr_addr   <= r_wr_addr + 1;
+                                        end if;
                                     end if;
                                 end if;
                             end if;
-                        end if;
-                    end loop;
-                    s_status <= "01";
+                        end loop;
+                        s_status <= "010";
+                    -- No debe permitir escribir en la memoria si N_ADDR < 2
+                    else
+                        s_invalid_n_addr    <= '1';
+                    end if;
+                            
 
                 when others =>
-                    s_status <= "11";
+                    s_status <= "100";
 
             end case;
         end if;
@@ -291,7 +362,7 @@ begin
     -- Habilitación de configuraciones (combinacional)
     gen_pwm_outputs : for i in 0 to (G_PWM_N - 1) generate
     begin
-        s_en_wr_config(i) <= PWM_TOP_OUTPUTS_I(i).en_wr_config and PWM_TOP_OUTPUTS_I(i).en_wr_config_red_1 and PWM_TOP_OUTPUTS_I(i).en_wr_config_red_2;
+        s_unlocked(i) <= PWM_TOP_OUTPUTS_I(i).unlocked and PWM_TOP_OUTPUTS_I(i).unlocked_red_1 and PWM_TOP_OUTPUTS_I(i).unlocked_red_2;
     end generate gen_pwm_outputs;
 
 end architecture beh;

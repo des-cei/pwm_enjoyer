@@ -18,7 +18,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>47d44543</spirit:value>
+            <spirit:value>e20973ad</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -34,7 +34,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>47d44543</spirit:value>
+            <spirit:value>e20973ad</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -85,7 +85,7 @@
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
           <spirit:vector>
-            <spirit:left spirit:format="long">1</spirit:left>
+            <spirit:left spirit:format="long">2</spirit:left>
             <spirit:right spirit:format="long">0</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
@@ -173,7 +173,7 @@
       <spirit:file>
         <spirit:name>src/rgb_ctrlr.vhd</spirit:name>
         <spirit:fileType>vhdlSource</spirit:fileType>
-        <spirit:userFileType>CHECKSUM_6bcb988a</spirit:userFileType>
+        <spirit:userFileType>CHECKSUM_4b0e89ba</spirit:userFileType>
         <spirit:userFileType>IMPORTED_FILE</spirit:userFileType>
       </spirit:file>
     </spirit:fileSet>
@@ -255,13 +255,13 @@
       </xilinx:taxonomies>
       <xilinx:displayName>rgb_ctrlr_v1_0</xilinx:displayName>
       <xilinx:definitionSource>package_project</xilinx:definitionSource>
-      <xilinx:coreRevision>2</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2025-12-08T16:46:50Z</xilinx:coreCreationDateTime>
+      <xilinx:coreRevision>3</xilinx:coreRevision>
+      <xilinx:coreCreationDateTime>2025-12-21T12:12:15Z</xilinx:coreCreationDateTime>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
       <xilinx:xilinxVersion>2024.2</xilinx:xilinxVersion>
-      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="28f75108"/>
-      <xilinx:checksum xilinx:scope="ports" xilinx:value="8e6ba3b2"/>
+      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="54df1af4"/>
+      <xilinx:checksum xilinx:scope="ports" xilinx:value="7110c395"/>
       <xilinx:checksum xilinx:scope="hdlParameters" xilinx:value="6eebe49c"/>
       <xilinx:checksum xilinx:scope="parameters" xilinx:value="0bfffb39"/>
     </xilinx:packagingInfo>

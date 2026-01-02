@@ -63,7 +63,8 @@ architecture beh of pwm_top_autotest_tb is
             PWM_INIT_I      : in std_logic;                                             -- Valor inicial de salida
             -- Salidas
             PWM_O           : out std_logic;                                            -- Salida del PWM
-            UNLOCKED_O      : out std_logic                                             -- Habilitación de configuración de memoria
+            UNLOCKED_O      : out std_logic;                                            -- Habilitación de configuración de memoria
+            STATUS_O        : out std_logic_vector(1 downto 0)                          -- Estado (00 = Apagado, 01 = Apagando, 11 = Activo)
         );
     end component pwm_top;
 
@@ -86,6 +87,7 @@ architecture beh of pwm_top_autotest_tb is
     signal PWM_INIT_I   : std_logic;                                            -- Valor inicial de salida
     signal PWM_O        : std_logic;                                            -- Salida del PWM
     signal UNLOCKED_O   : std_logic;                                            -- Habilitación de configuración de memoria
+    signal STATUS_O     : std_logic_vector(1 downto 0);                         -- Estado (00 = Apagado, 01 = Apagando, 11 = Activo)
 
     -- Vectores de datos
     type vec_input is array (0 to (C_N_INPUTS - 1)) of bit_vector((C_WIDTH - 1) downto 0);
@@ -125,7 +127,8 @@ begin
             N_TOT_CYC_I => N_TOT_CYC_I,
             PWM_INIT_I  => PWM_INIT_I,
             PWM_O       => PWM_O,
-            UNLOCKED_O  => UNLOCKED_O
+            UNLOCKED_O  => UNLOCKED_O,
+            STATUS_O    => STATUS_O
         );
 
     -------------------------------------------------

@@ -12,14 +12,14 @@
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0.000000 us"></ZoomStartTime>
-      <ZoomEndTime time="4.156001 us"></ZoomEndTime>
-      <Cursor1Time time="2.345062 us"></Cursor1Time>
+      <ZoomEndTime time="5.512241 us"></ZoomEndTime>
+      <Cursor1Time time="0.000000 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="156"></NameColumnWidth>
+      <NameColumnWidth column_width="152"></NameColumnWidth>
       <ValueColumnWidth column_width="58"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="31" />
+   <WVObjectSize size="32" />
    <wvobject fp_name="/state_ctrlr_tb/CLK_I" type="logic">
       <obj_property name="ElementShortName">CLK_I</obj_property>
       <obj_property name="ObjectShortName">CLK_I</obj_property>
@@ -42,15 +42,15 @@
       <obj_property name="UseCustomSignalColor">true</obj_property>
    </wvobject>
    <wvobject fp_name="/state_ctrlr_tb/WR_ADDR_I" type="array">
-      <obj_property name="ElementShortName">WR_ADDR_I[6:0]</obj_property>
-      <obj_property name="ObjectShortName">WR_ADDR_I[6:0]</obj_property>
+      <obj_property name="ElementShortName">WR_ADDR_I[7:0]</obj_property>
+      <obj_property name="ObjectShortName">WR_ADDR_I[7:0]</obj_property>
       <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
       <obj_property name="UseCustomSignalColor">true</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="/state_ctrlr_tb/WR_DATA_I" type="array">
-      <obj_property name="ElementShortName">WR_DATA_I[4:0]</obj_property>
-      <obj_property name="ObjectShortName">WR_DATA_I[4:0]</obj_property>
+      <obj_property name="ElementShortName">WR_DATA_I[31:0]</obj_property>
+      <obj_property name="ObjectShortName">WR_DATA_I[31:0]</obj_property>
       <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
       <obj_property name="UseCustomSignalColor">true</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
@@ -66,25 +66,25 @@
       <obj_property name="UseCustomSignalColor">true</obj_property>
    </wvobject>
    <wvobject fp_name="/state_ctrlr_tb/N_ADDR_I" type="array">
-      <obj_property name="ElementShortName">N_ADDR_I[6:0]</obj_property>
-      <obj_property name="ObjectShortName">N_ADDR_I[6:0]</obj_property>
+      <obj_property name="ElementShortName">N_ADDR_I[7:0]</obj_property>
+      <obj_property name="ObjectShortName">N_ADDR_I[7:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="/state_ctrlr_tb/uut/r_n_addr" type="array">
-      <obj_property name="ElementShortName">r_n_addr[6:0]</obj_property>
-      <obj_property name="ObjectShortName">r_n_addr[6:0]</obj_property>
+      <obj_property name="ElementShortName">r_n_addr[7:0]</obj_property>
+      <obj_property name="ObjectShortName">r_n_addr[7:0]</obj_property>
       <obj_property name="CustomSignalColor">#008000</obj_property>
       <obj_property name="UseCustomSignalColor">true</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="/state_ctrlr_tb/N_TOT_CYC_I" type="array">
-      <obj_property name="ElementShortName">N_TOT_CYC_I[11:0]</obj_property>
-      <obj_property name="ObjectShortName">N_TOT_CYC_I[11:0]</obj_property>
+      <obj_property name="ElementShortName">N_TOT_CYC_I[31:0]</obj_property>
+      <obj_property name="ObjectShortName">N_TOT_CYC_I[31:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="/state_ctrlr_tb/uut/r_n_tot_cyc" type="array">
-      <obj_property name="ElementShortName">r_n_tot_cyc[11:0]</obj_property>
-      <obj_property name="ObjectShortName">r_n_tot_cyc[11:0]</obj_property>
+      <obj_property name="ElementShortName">r_n_tot_cyc[31:0]</obj_property>
+      <obj_property name="ObjectShortName">r_n_tot_cyc[31:0]</obj_property>
       <obj_property name="CustomSignalColor">#008000</obj_property>
       <obj_property name="UseCustomSignalColor">true</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
@@ -142,6 +142,12 @@
       <obj_property name="ElementShortName">r_state</obj_property>
       <obj_property name="ObjectShortName">r_state</obj_property>
    </wvobject>
+   <wvobject fp_name="/state_ctrlr_tb/STATUS_O" type="array">
+      <obj_property name="ElementShortName">STATUS_O[1:0]</obj_property>
+      <obj_property name="ObjectShortName">STATUS_O[1:0]</obj_property>
+      <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
    <wvobject fp_name="/state_ctrlr_tb/LAST_CYC_O" type="logic">
       <obj_property name="ElementShortName">LAST_CYC_O</obj_property>
       <obj_property name="ObjectShortName">LAST_CYC_O</obj_property>
@@ -153,8 +159,8 @@
       <obj_property name="UseCustomSignalColor">true</obj_property>
    </wvobject>
    <wvobject fp_name="/state_ctrlr_tb/RD_ADDR_O" type="array">
-      <obj_property name="ElementShortName">RD_ADDR_O[6:0]</obj_property>
-      <obj_property name="ObjectShortName">RD_ADDR_O[6:0]</obj_property>
+      <obj_property name="ElementShortName">RD_ADDR_O[7:0]</obj_property>
+      <obj_property name="ObjectShortName">RD_ADDR_O[7:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       <obj_property name="CustomSignalColor">#FF00FF</obj_property>
       <obj_property name="UseCustomSignalColor">true</obj_property>
@@ -172,22 +178,22 @@
       <obj_property name="ObjectShortName">EN_CNT_O</obj_property>
    </wvobject>
    <wvobject fp_name="/state_ctrlr_tb/DATA_I" type="array">
-      <obj_property name="ElementShortName">DATA_I[4:0]</obj_property>
-      <obj_property name="ObjectShortName">DATA_I[4:0]</obj_property>
+      <obj_property name="ElementShortName">DATA_I[31:0]</obj_property>
+      <obj_property name="ObjectShortName">DATA_I[31:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
       <obj_property name="UseCustomSignalColor">true</obj_property>
    </wvobject>
    <wvobject fp_name="/state_ctrlr_tb/DATA_NEXT_I" type="array">
-      <obj_property name="ElementShortName">DATA_NEXT_I[4:0]</obj_property>
-      <obj_property name="ObjectShortName">DATA_NEXT_I[4:0]</obj_property>
+      <obj_property name="ElementShortName">DATA_NEXT_I[31:0]</obj_property>
+      <obj_property name="ObjectShortName">DATA_NEXT_I[31:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
       <obj_property name="UseCustomSignalColor">true</obj_property>
    </wvobject>
    <wvobject fp_name="/state_ctrlr_tb/DATA_NEXT_2_I" type="array">
-      <obj_property name="ElementShortName">DATA_NEXT_2_I[4:0]</obj_property>
-      <obj_property name="ObjectShortName">DATA_NEXT_2_I[4:0]</obj_property>
+      <obj_property name="ElementShortName">DATA_NEXT_2_I[31:0]</obj_property>
+      <obj_property name="ObjectShortName">DATA_NEXT_2_I[31:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
       <obj_property name="UseCustomSignalColor">true</obj_property>

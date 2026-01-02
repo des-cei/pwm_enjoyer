@@ -108,12 +108,12 @@ architecture beh of control_unit_tb is
         reg_n_to    <= (others => '0');
         reg_init    <= (others => '0');
         for i in 0 to (C_PWM_N - 1) loop
-            pwm_out(i).pwm                  <= '0';
-            pwm_out(i).en_wr_config         <= '1';
-            pwm_out(i).pwm_red_1            <= '0';
-            pwm_out(i).en_wr_config_red_1   <= '1';
-            pwm_out(i).pwm_red_2            <= '0';
-            pwm_out(i).en_wr_config_red_2   <= '1';
+            pwm_out(i).pwm              <= '0';
+            pwm_out(i).unlocked         <= '1';
+            pwm_out(i).pwm_red_1        <= '0';
+            pwm_out(i).unlocked_red_1   <= '1';
+            pwm_out(i).pwm_red_2        <= '0';
+            pwm_out(i).unlocked_red_2   <= '1';
         end loop;
         p_wait(clk_period);
         rst         <= not C_RST_POL;
@@ -443,12 +443,12 @@ begin
         sim <= x"45_4E_57_52_43_46";    -- ENWRCF
 
         -- EN_WR_CONFIG
-        PWM_TOP_OUTPUTS_I(0).en_wr_config          <= '1';
-        PWM_TOP_OUTPUTS_I(0).en_wr_config_red_1    <= '1';
-        PWM_TOP_OUTPUTS_I(0).en_wr_config_red_2    <= '0';
-        PWM_TOP_OUTPUTS_I(1).en_wr_config          <= '1';
-        PWM_TOP_OUTPUTS_I(1).en_wr_config_red_1    <= '1';
-        PWM_TOP_OUTPUTS_I(1).en_wr_config_red_2    <= '1';
+        PWM_TOP_OUTPUTS_I(0).unlocked       <= '1';
+        PWM_TOP_OUTPUTS_I(0).unlocked_red_1 <= '1';
+        PWM_TOP_OUTPUTS_I(0).unlocked_red_2 <= '0';
+        PWM_TOP_OUTPUTS_I(1).unlocked       <= '1';
+        PWM_TOP_OUTPUTS_I(1).unlocked_red_1 <= '1';
+        PWM_TOP_OUTPUTS_I(1).unlocked_red_2 <= '1';
 
         p_wait(10*clk_period);
 

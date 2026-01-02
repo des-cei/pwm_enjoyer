@@ -39,7 +39,9 @@ architecture beh of pwm_enjoyer_tb is
             -- Tamaño del vector del número máximo de ciclos de reloj {integer(ceil(log2(real(G_PERIOD_MAX_N))))}
             G_PERIOD_MAX_L2     : natural := 32;
             -- Número de PWMS
-            G_PWM_N             : natural := 32
+            G_PWM_N             : natural := 32;
+            -- Redundancias
+            G_EN_REDUNDANCY     : std_logic := '1'
         );
         port (
             CLK_I               : in std_logic;
@@ -144,7 +146,8 @@ begin
             G_MEM_SIZE_MAX_N    => C_MEM_SIZE_MAX_N,
             G_MEM_SIZE_MAX_L2   => C_MEM_SIZE_MAX_L2,
             G_PERIOD_MAX_L2     => C_PERIOD_MAX_L2,
-            G_PWM_N             => C_PWM_N
+            G_PWM_N             => C_PWM_N,
+            G_EN_REDUNDANCY     => C_EN_REDUNDANCY
         )
         port map (
             CLK_I               => CLK_I,

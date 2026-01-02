@@ -50,18 +50,18 @@ entity bram_dualport is
         dout_b_next_2   : out std_logic_vector(C_DATA_WIDTH-1 downto 0)
 
     );
-    -- DEBUG
-    attribute mark_debug : string;
-    attribute mark_debug of en_a   : signal is "true";
-    attribute mark_debug of we_a   : signal is "true";
-    attribute mark_debug of addr_a : signal is "true";
-    attribute mark_debug of din_a  : signal is "true";
-    attribute mark_debug of dout_a : signal is "true";
-    attribute mark_debug of en_b   : signal is "true";
-    attribute mark_debug of we_b   : signal is "true";
-    attribute mark_debug of addr_b : signal is "true";
-    attribute mark_debug of din_b  : signal is "true";
-    attribute mark_debug of dout_b : signal is "true";
+    -- -- DEBUG
+    -- attribute mark_debug : string;
+    -- attribute mark_debug of en_a   : signal is "true";
+    -- attribute mark_debug of we_a   : signal is "true";
+    -- attribute mark_debug of addr_a : signal is "true";
+    -- attribute mark_debug of din_a  : signal is "true";
+    -- attribute mark_debug of dout_a : signal is "true";
+    -- attribute mark_debug of en_b   : signal is "true";
+    -- attribute mark_debug of we_b   : signal is "true";
+    -- attribute mark_debug of addr_b : signal is "true";
+    -- attribute mark_debug of din_b  : signal is "true";
+    -- attribute mark_debug of dout_b : signal is "true";
 end bram_dualport;
 
 architecture behavioral of bram_dualport is

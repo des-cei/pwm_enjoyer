@@ -47,7 +47,11 @@ architecture beh of config_error is
     -------------------------------------------------
     -- Constantes
     -------------------------------------------------
-    constant C_CEROS    : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0) := (others => '0');
+    constant C_CEROS        : std_logic_vector((G_MEM_SIZE_MAX_L2 - 1) downto 0) := (others => '0');
+    constant C_N_ADDR_MIN   : unsigned(31 downto 0) := to_unsigned(2, 32);
+    constant C_N_ADDR_MAX   : unsigned(31 downto 0) := to_unsigned(128, 32);
+    constant C_N_TOT_MIN    : unsigned(31 downto 0) := to_unsigned(2, 32);
+    constant C_N_TOT_MAX    : unsigned(31 downto 0) := (others => '1');
 
     -------------------------------------------------
     -- Señales
@@ -56,6 +60,7 @@ architecture beh of config_error is
     signal s_error      : std_logic;    -- Cualquier error
     signal s_err_n_addr : std_logic;    -- Error en el número de direcciones
     signal s_err_n_tot  : std_logic;    -- Error en la suma total de estados
+    signal s_err_limit  : std_logic;    -- Error en límites de configuración
 
     -- Contadores
     signal r_cnt_n_addr  : unsigned((G_MEM_SIZE_MAX_L2 - 1) downto 0);
@@ -64,6 +69,19 @@ architecture beh of config_error is
     -- Delays
     signal r_wr_en_d1   : std_logic;
     signal r_wr_en_d2   : std_logic;
+
+    -------------------------------------------------
+    -- ILA
+    -------------------------------------------------
+    attribute MARK_DEBUG : string;
+    attribute MARK_DEBUG of s_error         : signal is "true";
+    attribute MARK_DEBUG of s_err_n_addr    : signal is "true";
+    attribute MARK_DEBUG of s_err_n_tot     : signal is "true";
+    attribute MARK_DEBUG of s_err_limit     : signal is "true";
+    attribute MARK_DEBUG of r_cnt_n_addr    : signal is "true";
+    attribute MARK_DEBUG of r_cnt_n_tot     : signal is "true";
+    attribute MARK_DEBUG of r_wr_en_d1      : signal is "true";
+    attribute MARK_DEBUG of r_wr_en_d2      : signal is "true";
 
 begin
 
@@ -79,9 +97,14 @@ begin
     CONFIG_ERROR_O  <= s_error;
 
     -- Errores
-    s_error         <= (s_err_n_addr or s_err_n_tot) when (PWM_TOP_INPUTS_I.en = '1') else '0';
-    s_err_n_addr    <= '1' when (r_cnt_n_addr /= unsigned(PWM_TOP_INPUTS_I.n_addr)) else '0';
-    s_err_n_tot     <= '1' when (r_cnt_n_tot /= unsigned(PWM_TOP_INPUTS_I.n_tot_cyc)) else '0';
+    s_error         <= (s_err_n_addr or s_err_n_tot or s_err_limit) when (PWM_TOP_INPUTS_I.en = '1') else '0';
+    s_err_n_addr    <= '1' when (resize(r_cnt_n_addr, PWM_TOP_INPUTS_I.n_addr'length) /= unsigned(PWM_TOP_INPUTS_I.n_addr)) else '0';
+    s_err_n_tot     <= '1' when (resize(r_cnt_n_tot, PWM_TOP_INPUTS_I.n_tot_cyc'length) /= unsigned(PWM_TOP_INPUTS_I.n_tot_cyc)) else '0';
+    s_err_limit     <= '1' when ((resize(r_cnt_n_addr, 32) < C_N_ADDR_MIN) or
+                                 (resize(r_cnt_n_addr, 32) > C_N_ADDR_MAX) or
+                                 (resize(r_cnt_n_tot, 32) < C_N_TOT_MIN) or
+                                 (resize(r_cnt_n_tot, 32) > C_N_TOT_MAX))
+                        else '0';
 
     -------------------------------------------------
     -- Procesos

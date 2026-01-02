@@ -64,6 +64,16 @@ architecture beh of pwm_counter is
     signal r_cnt_end_pre    : std_logic;
     signal r_switch_mem     : std_logic;
 
+    -------------------------------------------------
+    -- ILA
+    -------------------------------------------------
+    attribute MARK_DEBUG : string;
+    attribute MARK_DEBUG of r_cnt           : signal is "true";
+    attribute MARK_DEBUG of r_pwm           : signal is "true";
+    attribute MARK_DEBUG of r_cnt_end       : signal is "true";
+    attribute MARK_DEBUG of r_cnt_end_pre   : signal is "true";
+    attribute MARK_DEBUG of r_switch_mem    : signal is "true";
+
 begin
 
     -------------------------------------------------

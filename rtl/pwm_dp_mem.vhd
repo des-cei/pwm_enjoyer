@@ -154,6 +154,49 @@ architecture beh of pwm_dp_mem is
     -- Protección
     signal r_early_sw   : std_logic;
 
+    -------------------------------------------------
+    -- ILA
+    -------------------------------------------------
+    attribute MARK_DEBUG : string;
+    attribute MARK_DEBUG of s_wr_en             : signal is "true";
+    attribute MARK_DEBUG of s_wr_addr           : signal is "true";
+    attribute MARK_DEBUG of s_wr_data           : signal is "true";
+    attribute MARK_DEBUG of s_rd_addr           : signal is "true";
+    attribute MARK_DEBUG of s_rd_data           : signal is "true";
+    attribute MARK_DEBUG of s_rd_data_next      : signal is "true";
+    attribute MARK_DEBUG of s_rd_data_next_2    : signal is "true";
+    attribute MARK_DEBUG of s_switch_mem        : signal is "true";
+    attribute MARK_DEBUG of s_last_cyc          : signal is "true";
+    attribute MARK_DEBUG of r_n_addr            : signal is "true";
+    attribute MARK_DEBUG of s_rst               : signal is "true";
+    attribute MARK_DEBUG of s_en_a              : signal is "true";
+    attribute MARK_DEBUG of s_en_b              : signal is "true";
+    attribute MARK_DEBUG of s_we_a              : signal is "true";
+    attribute MARK_DEBUG of s_we_b              : signal is "true";
+    attribute MARK_DEBUG of s_addr_a            : signal is "true";
+    attribute MARK_DEBUG of s_addr_b            : signal is "true";
+    attribute MARK_DEBUG of s_din_a             : signal is "true";
+    attribute MARK_DEBUG of s_din_b             : signal is "true";
+    attribute MARK_DEBUG of s_dout_a            : signal is "true";
+    attribute MARK_DEBUG of s_dout_b            : signal is "true";
+    attribute MARK_DEBUG of s_dout_a_next       : signal is "true";
+    attribute MARK_DEBUG of s_dout_b_next       : signal is "true";
+    attribute MARK_DEBUG of s_dout_a_next_2     : signal is "true";
+    attribute MARK_DEBUG of s_dout_b_next_2     : signal is "true";
+    attribute MARK_DEBUG of r_wr_port           : signal is "true";
+    attribute MARK_DEBUG of r_next_config       : signal is "true";
+    attribute MARK_DEBUG of r_prev_last_state   : signal is "true";
+    attribute MARK_DEBUG of r_prev_last2_state  : signal is "true";
+    attribute MARK_DEBUG of r_next_first_state  : signal is "true";
+    attribute MARK_DEBUG of r_next_first2_state : signal is "true";
+    attribute MARK_DEBUG of s_wr_addr_d1        : signal is "true";
+    attribute MARK_DEBUG of s_rd_addr_d1        : signal is "true";
+    attribute MARK_DEBUG of s_switch_mem_d1     : signal is "true";
+    attribute MARK_DEBUG of s_last_cyc_d1       : signal is "true";
+    attribute MARK_DEBUG of s_en_cnt            : signal is "true";
+    attribute MARK_DEBUG of s_en_cnt_d1         : signal is "true";
+    attribute MARK_DEBUG of r_early_sw          : signal is "true";
+
 begin
 
     -------------------------------------------------
@@ -309,9 +352,20 @@ begin
             elsif (s_wr_en = '1') then
                 if (s_wr_addr = C_CEROS_ADDR) then
                     r_next_config       <= (0 => s_wr_data, others => (others => '0'));
-                    r_prev_last_state   <= r_next_config(to_integer(unsigned(r_n_addr) - 1));
-                    r_prev_last2_state  <= r_next_config(to_integer(unsigned(r_n_addr) - 2));
                     r_next_first_state  <= s_wr_data;
+                    if (r_early_sw = '1') then
+                        if (to_integer(unsigned(r_n_addr)) > 1) then
+                            r_prev_last_state   <= r_next_config(to_integer(unsigned(r_n_addr) - 1));
+                            r_prev_last2_state  <= r_next_config(to_integer(unsigned(r_n_addr) - 2));
+                        else
+                            r_prev_last_state   <= (others => '0');
+                            r_prev_last2_state  <= (others => '0');
+                        end if;    
+                    -- Hay una configuración pendiente de switch que se debe sobreescribir
+                    else
+                        r_prev_last_state   <= (others => '0');
+                        r_prev_last2_state  <= (others => '0');
+                    end if;
                 else
                     r_next_config(to_integer(unsigned(s_wr_addr))) <= s_wr_data;
                     if (to_integer(unsigned(s_wr_addr)) = 1) then

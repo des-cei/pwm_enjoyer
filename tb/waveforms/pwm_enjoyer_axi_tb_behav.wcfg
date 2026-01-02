@@ -1,0 +1,593 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="pwm_enjoyer_axi_tb_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="axi_vip_pkg" />
+            <top_module name="glbl" />
+            <top_module name="my_pkg" />
+            <top_module name="pwm_enjoyer_axi_tb" />
+            <top_module name="std" />
+            <top_module name="xil_common_vip_pkg" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="2,007,153.666 ns"></ZoomStartTime>
+      <ZoomEndTime time="2,008,519.667 ns"></ZoomEndTime>
+      <Cursor1Time time="2,008,292.000 ns"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="232"></NameColumnWidth>
+      <ValueColumnWidth column_width="116"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="27" />
+   <wvobject fp_name="/pwm_enjoyer_axi_tb/aclk_i" type="logic">
+      <obj_property name="ElementShortName">aclk_i</obj_property>
+      <obj_property name="ObjectShortName">aclk_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_enjoyer_axi_tb/aresetn_i" type="logic">
+      <obj_property name="ElementShortName">aresetn_i</obj_property>
+      <obj_property name="ObjectShortName">aresetn_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_enjoyer_axi_tb/test" type="array">
+      <obj_property name="ElementShortName">test[4:0]</obj_property>
+      <obj_property name="ObjectShortName">test[4:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      <obj_property name="CustomSignalColor">#DCDCDC</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="WaveformStyle">STYLE_DIGITAL</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_enjoyer_axi_tb/pwms_o[0]" type="logic">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">[0]</obj_property>
+      <obj_property name="ObjectShortName">[0]</obj_property>
+      <obj_property name="CustomSignalColor">#00FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="label">PWM_0</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_enjoyer_axi_tb/pwms_o[1]" type="logic">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">[1]</obj_property>
+      <obj_property name="ObjectShortName">[1]</obj_property>
+      <obj_property name="CustomSignalColor">#00FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="label">PWM_1</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_enjoyer_axi_tb/pwms_o[2]" type="logic">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">[2]</obj_property>
+      <obj_property name="ObjectShortName">[2]</obj_property>
+      <obj_property name="CustomSignalColor">#00FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="label">PWM_2</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_enjoyer_axi_tb/pwms_o[3]" type="logic">
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="ElementShortName">[3]</obj_property>
+      <obj_property name="ObjectShortName">[3]</obj_property>
+      <obj_property name="CustomSignalColor">#00FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="label">PWM_3</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_enjoyer_axi_tb/status_o" type="array">
+      <obj_property name="ElementShortName">status_o[2:0]</obj_property>
+      <obj_property name="ObjectShortName">status_o[2:0]</obj_property>
+      <obj_property name="CustomSignalColor">#008080</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_enjoyer_axi_tb/resp" type="array">
+      <obj_property name="ElementShortName">resp[1:0]</obj_property>
+      <obj_property name="ObjectShortName">resp[1:0]</obj_property>
+      <obj_property name="CustomSignalColor">#FF0080</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/REG_DIRECCIONES_I" type="array">
+      <obj_property name="ElementShortName">REG_DIRECCIONES_I[31:0]</obj_property>
+      <obj_property name="ObjectShortName">REG_DIRECCIONES_I[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/REG_CONTROL_I" type="array">
+      <obj_property name="ElementShortName">REG_CONTROL_I[31:0]</obj_property>
+      <obj_property name="ObjectShortName">REG_CONTROL_I[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/REG_WR_DATA_I" type="array">
+      <obj_property name="ElementShortName">REG_WR_DATA_I[31:0]</obj_property>
+      <obj_property name="ObjectShortName">REG_WR_DATA_I[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/REG_WR_DATA_VALID_I" type="array">
+      <obj_property name="ElementShortName">REG_WR_DATA_VALID_I[31:0]</obj_property>
+      <obj_property name="ObjectShortName">REG_WR_DATA_VALID_I[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/REG_N_ADDR_I" type="array">
+      <obj_property name="ElementShortName">REG_N_ADDR_I[31:0]</obj_property>
+      <obj_property name="ObjectShortName">REG_N_ADDR_I[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/REG_N_TOT_CYC_I" type="array">
+      <obj_property name="ElementShortName">REG_N_TOT_CYC_I[31:0]</obj_property>
+      <obj_property name="ObjectShortName">REG_N_TOT_CYC_I[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/REG_PWM_INIT_I" type="array">
+      <obj_property name="ElementShortName">REG_PWM_INIT_I[31:0]</obj_property>
+      <obj_property name="ObjectShortName">REG_PWM_INIT_I[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/REG_REDUNDANCIAS_O" type="array">
+      <obj_property name="ElementShortName">REG_REDUNDANCIAS_O[31:0]</obj_property>
+      <obj_property name="ObjectShortName">REG_REDUNDANCIAS_O[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/REG_ERRORES_O" type="array">
+      <obj_property name="ElementShortName">REG_ERRORES_O[31:0]</obj_property>
+      <obj_property name="ObjectShortName">REG_ERRORES_O[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/REG_STATUS_O" type="array">
+      <obj_property name="ElementShortName">REG_STATUS_O[31:0]</obj_property>
+      <obj_property name="ObjectShortName">REG_STATUS_O[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/s_estado" type="other">
+      <obj_property name="ElementShortName">s_estado</obj_property>
+      <obj_property name="ObjectShortName">s_estado</obj_property>
+      <obj_property name="CustomSignalColor">#FF00FF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/r_wr_data_valid" type="logic">
+      <obj_property name="ElementShortName">r_wr_data_valid</obj_property>
+      <obj_property name="ObjectShortName">r_wr_data_valid</obj_property>
+      <obj_property name="CustomSignalColor">#FF00FF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/s_pwm_activos" type="array">
+      <obj_property name="ElementShortName">s_pwm_activos[31:0]</obj_property>
+      <obj_property name="ObjectShortName">s_pwm_activos[31:0]</obj_property>
+      <obj_property name="CustomSignalColor">#008080</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/s_pwm_apagando" type="array">
+      <obj_property name="ElementShortName">s_pwm_apagando[31:0]</obj_property>
+      <obj_property name="ObjectShortName">s_pwm_apagando[31:0]</obj_property>
+      <obj_property name="CustomSignalColor">#008080</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/s_pwm_apagados" type="array">
+      <obj_property name="ElementShortName">s_pwm_apagados[31:0]</obj_property>
+      <obj_property name="ObjectShortName">s_pwm_apagados[31:0]</obj_property>
+      <obj_property name="CustomSignalColor">#008080</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject fp_name="group304" type="group">
+      <obj_property name="label">config_0</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/r_pwm_top_inputs[0].en" type="logic">
+         <obj_property name="ElementShortName">.en</obj_property>
+         <obj_property name="ObjectShortName">.en</obj_property>
+         <obj_property name="CustomSignalColor">#800080</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/r_pwm_top_inputs[0].upd_mem" type="logic">
+         <obj_property name="ElementShortName">.upd_mem</obj_property>
+         <obj_property name="ObjectShortName">.upd_mem</obj_property>
+         <obj_property name="CustomSignalColor">#800080</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/r_pwm_top_inputs[0].wr_en" type="logic">
+         <obj_property name="ElementShortName">.wr_en</obj_property>
+         <obj_property name="ObjectShortName">.wr_en</obj_property>
+         <obj_property name="CustomSignalColor">#800080</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/r_pwm_top_inputs[0].wr_addr" type="array">
+         <obj_property name="ElementShortName">.wr_addr[7:0]</obj_property>
+         <obj_property name="ObjectShortName">.wr_addr[7:0]</obj_property>
+         <obj_property name="CustomSignalColor">#800080</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/r_pwm_top_inputs[0].wr_data" type="array">
+         <obj_property name="ElementShortName">.wr_data[31:0]</obj_property>
+         <obj_property name="ObjectShortName">.wr_data[31:0]</obj_property>
+         <obj_property name="CustomSignalColor">#800080</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/r_pwm_top_inputs[0].n_addr" type="array">
+         <obj_property name="ElementShortName">.n_addr[7:0]</obj_property>
+         <obj_property name="ObjectShortName">.n_addr[7:0]</obj_property>
+         <obj_property name="CustomSignalColor">#800080</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/r_pwm_top_inputs[0].n_tot_cyc" type="array">
+         <obj_property name="ElementShortName">.n_tot_cyc[31:0]</obj_property>
+         <obj_property name="ObjectShortName">.n_tot_cyc[31:0]</obj_property>
+         <obj_property name="CustomSignalColor">#800080</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/r_pwm_top_inputs[0].pwm_init" type="logic">
+         <obj_property name="ElementShortName">.pwm_init</obj_property>
+         <obj_property name="ObjectShortName">.pwm_init</obj_property>
+         <obj_property name="CustomSignalColor">#800080</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/\gen_pwm_top_nom(0)\/pwm_nom_i/UNLOCKED_O" type="logic">
+         <obj_property name="ElementShortName">UNLOCKED_O</obj_property>
+         <obj_property name="ObjectShortName">UNLOCKED_O</obj_property>
+         <obj_property name="CustomSignalColor">#D2691E</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/\gen_pwm_top_nom(0)\/pwm_nom_i/STATUS_O" type="array">
+         <obj_property name="ElementShortName">STATUS_O[1:0]</obj_property>
+         <obj_property name="ObjectShortName">STATUS_O[1:0]</obj_property>
+         <obj_property name="CustomSignalColor">#008080</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/\gen_pwm_top_nom(0)\/pwm_nom_i/fsm_i/r_state" type="other">
+         <obj_property name="ElementShortName">r_state</obj_property>
+         <obj_property name="ObjectShortName">r_state</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/\gen_pwm_top_nom(0)\/pwm_nom_i/fsm_i/EN_CNT_O" type="logic">
+         <obj_property name="ElementShortName">EN_CNT_O</obj_property>
+         <obj_property name="ObjectShortName">EN_CNT_O</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/\gen_pwm_top_nom(0)\/pwm_nom_i/mem_i/s_en_cnt" type="logic">
+         <obj_property name="ElementShortName">s_en_cnt</obj_property>
+         <obj_property name="ObjectShortName">s_en_cnt</obj_property>
+         <obj_property name="CustomSignalColor">#F0E68C</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/\gen_pwm_top_nom(0)\/pwm_nom_i/mem_i/s_en_cnt_d1" type="logic">
+         <obj_property name="ElementShortName">s_en_cnt_d1</obj_property>
+         <obj_property name="ObjectShortName">s_en_cnt_d1</obj_property>
+         <obj_property name="CustomSignalColor">#F0E68C</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/\gen_pwm_top_nom(0)\/pwm_nom_i/fsm_i/RD_ADDR_O" type="array">
+         <obj_property name="ElementShortName">RD_ADDR_O[7:0]</obj_property>
+         <obj_property name="ObjectShortName">RD_ADDR_O[7:0]</obj_property>
+         <obj_property name="CustomSignalColor">#00FF00</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/\gen_pwm_top_nom(0)\/pwm_nom_i/mem_i/r_next_config" type="array">
+         <obj_property name="ElementShortName">r_next_config[0:127][31:0]</obj_property>
+         <obj_property name="ObjectShortName">r_next_config[0:127][31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/\gen_pwm_top_nom(0)\/pwm_nom_i/mem_i/r_prev_last_state" type="array">
+         <obj_property name="ElementShortName">r_prev_last_state[31:0]</obj_property>
+         <obj_property name="ObjectShortName">r_prev_last_state[31:0]</obj_property>
+         <obj_property name="CustomSignalColor">#FFFF00</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/\gen_pwm_top_nom(0)\/pwm_nom_i/mem_i/r_prev_last2_state" type="array">
+         <obj_property name="ElementShortName">r_prev_last2_state[31:0]</obj_property>
+         <obj_property name="ObjectShortName">r_prev_last2_state[31:0]</obj_property>
+         <obj_property name="CustomSignalColor">#FFFF00</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/\gen_pwm_top_nom(0)\/pwm_nom_i/mem_i/RD_DATA_O" type="array">
+         <obj_property name="ElementShortName">RD_DATA_O[31:0]</obj_property>
+         <obj_property name="ObjectShortName">RD_DATA_O[31:0]</obj_property>
+         <obj_property name="CustomSignalColor">#008000</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/\gen_pwm_top_nom(0)\/pwm_nom_i/mem_i/RD_DATA_NEXT_O" type="array">
+         <obj_property name="ElementShortName">RD_DATA_NEXT_O[31:0]</obj_property>
+         <obj_property name="ObjectShortName">RD_DATA_NEXT_O[31:0]</obj_property>
+         <obj_property name="CustomSignalColor">#008000</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/\gen_pwm_top_nom(0)\/pwm_nom_i/mem_i/RD_DATA_NEXT_2_O" type="array">
+         <obj_property name="ElementShortName">RD_DATA_NEXT_2_O[31:0]</obj_property>
+         <obj_property name="ObjectShortName">RD_DATA_NEXT_2_O[31:0]</obj_property>
+         <obj_property name="CustomSignalColor">#008000</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/\gen_config_err(0)\/config_err_i/s_error" type="logic">
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="ElementShortName">s_error</obj_property>
+         <obj_property name="ObjectShortName">s_error</obj_property>
+         <obj_property name="label">s_error/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/\gen_config_err(0)\/config_err_i/s_error /pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/\gen_config_err(0)\/config_err_i/s_err_n_addr /pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/\gen_config_err(0)\/config_err_i/s_err_n_tot /pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/\gen_config_err(0)\/config_err_i/s_err_limit /pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/\gen_config_err(0)\/config_err_i/r_cnt_n_addr /pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/\gen_config_err(0)\/config_err_i/r_cnt_n_tot</obj_property>
+         <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/\gen_config_err(0)\/config_err_i/s_err_n_addr" type="logic">
+         <obj_property name="ElementShortName">s_err_n_addr</obj_property>
+         <obj_property name="ObjectShortName">s_err_n_addr</obj_property>
+         <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/\gen_config_err(0)\/config_err_i/s_err_n_tot" type="logic">
+         <obj_property name="ElementShortName">s_err_n_tot</obj_property>
+         <obj_property name="ObjectShortName">s_err_n_tot</obj_property>
+         <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/\gen_config_err(0)\/config_err_i/s_err_limit" type="logic">
+         <obj_property name="ElementShortName">s_err_limit</obj_property>
+         <obj_property name="ObjectShortName">s_err_limit</obj_property>
+         <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/\gen_config_err(0)\/config_err_i/r_cnt_n_addr" type="array">
+         <obj_property name="ElementShortName">r_cnt_n_addr[7:0]</obj_property>
+         <obj_property name="ObjectShortName">r_cnt_n_addr[7:0]</obj_property>
+         <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/\gen_config_err(0)\/config_err_i/r_cnt_n_tot" type="array">
+         <obj_property name="ElementShortName">r_cnt_n_tot[31:0]</obj_property>
+         <obj_property name="ObjectShortName">r_cnt_n_tot[31:0]</obj_property>
+         <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group303" type="group">
+      <obj_property name="label">config_1</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/r_pwm_top_inputs[1].en" type="logic">
+         <obj_property name="ElementShortName">.en</obj_property>
+         <obj_property name="ObjectShortName">.en</obj_property>
+         <obj_property name="CustomSignalColor">#800080</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/r_pwm_top_inputs[1].upd_mem" type="logic">
+         <obj_property name="ElementShortName">.upd_mem</obj_property>
+         <obj_property name="ObjectShortName">.upd_mem</obj_property>
+         <obj_property name="CustomSignalColor">#800080</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/r_pwm_top_inputs[1].wr_en" type="logic">
+         <obj_property name="ElementShortName">.wr_en</obj_property>
+         <obj_property name="ObjectShortName">.wr_en</obj_property>
+         <obj_property name="CustomSignalColor">#800080</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/r_pwm_top_inputs[1].wr_addr" type="array">
+         <obj_property name="ElementShortName">.wr_addr[7:0]</obj_property>
+         <obj_property name="ObjectShortName">.wr_addr[7:0]</obj_property>
+         <obj_property name="CustomSignalColor">#800080</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/r_pwm_top_inputs[1].wr_data" type="array">
+         <obj_property name="ElementShortName">.wr_data[31:0]</obj_property>
+         <obj_property name="ObjectShortName">.wr_data[31:0]</obj_property>
+         <obj_property name="CustomSignalColor">#800080</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/r_pwm_top_inputs[1].n_addr" type="array">
+         <obj_property name="ElementShortName">.n_addr[7:0]</obj_property>
+         <obj_property name="ObjectShortName">.n_addr[7:0]</obj_property>
+         <obj_property name="CustomSignalColor">#800080</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/r_pwm_top_inputs[1].n_tot_cyc" type="array">
+         <obj_property name="ElementShortName">.n_tot_cyc[31:0]</obj_property>
+         <obj_property name="ObjectShortName">.n_tot_cyc[31:0]</obj_property>
+         <obj_property name="CustomSignalColor">#800080</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/r_pwm_top_inputs[1].pwm_init" type="logic">
+         <obj_property name="ElementShortName">.pwm_init</obj_property>
+         <obj_property name="ObjectShortName">.pwm_init</obj_property>
+         <obj_property name="CustomSignalColor">#800080</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/\gen_pwm_top_nom(1)\/pwm_nom_i/UNLOCKED_O" type="logic">
+         <obj_property name="ElementShortName">UNLOCKED_O</obj_property>
+         <obj_property name="ObjectShortName">UNLOCKED_O</obj_property>
+         <obj_property name="CustomSignalColor">#D2691E</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/\gen_config_err(1)\/config_err_i/s_error" type="logic">
+         <obj_property name="ElementShortName">s_error</obj_property>
+         <obj_property name="ObjectShortName">s_error</obj_property>
+         <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/\gen_config_err(1)\/config_err_i/s_err_n_addr" type="logic">
+         <obj_property name="ElementShortName">s_err_n_addr</obj_property>
+         <obj_property name="ObjectShortName">s_err_n_addr</obj_property>
+         <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/\gen_config_err(1)\/config_err_i/s_err_n_tot" type="logic">
+         <obj_property name="ElementShortName">s_err_n_tot</obj_property>
+         <obj_property name="ObjectShortName">s_err_n_tot</obj_property>
+         <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/\gen_config_err(1)\/config_err_i/s_err_limit" type="logic">
+         <obj_property name="ElementShortName">s_err_limit</obj_property>
+         <obj_property name="ObjectShortName">s_err_limit</obj_property>
+         <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/\gen_config_err(1)\/config_err_i/r_cnt_n_addr" type="array">
+         <obj_property name="ElementShortName">r_cnt_n_addr[7:0]</obj_property>
+         <obj_property name="ObjectShortName">r_cnt_n_addr[7:0]</obj_property>
+         <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/\gen_config_err(1)\/config_err_i/r_cnt_n_tot" type="array">
+         <obj_property name="ElementShortName">r_cnt_n_tot[31:0]</obj_property>
+         <obj_property name="ObjectShortName">r_cnt_n_tot[31:0]</obj_property>
+         <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group302" type="group">
+      <obj_property name="label">config_2</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/r_pwm_top_inputs[2].en" type="logic">
+         <obj_property name="ElementShortName">.en</obj_property>
+         <obj_property name="ObjectShortName">.en</obj_property>
+         <obj_property name="CustomSignalColor">#800080</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/r_pwm_top_inputs[2].upd_mem" type="logic">
+         <obj_property name="ElementShortName">.upd_mem</obj_property>
+         <obj_property name="ObjectShortName">.upd_mem</obj_property>
+         <obj_property name="CustomSignalColor">#800080</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/r_pwm_top_inputs[2].wr_en" type="logic">
+         <obj_property name="ElementShortName">.wr_en</obj_property>
+         <obj_property name="ObjectShortName">.wr_en</obj_property>
+         <obj_property name="CustomSignalColor">#800080</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/r_pwm_top_inputs[2].wr_addr" type="array">
+         <obj_property name="ElementShortName">.wr_addr[7:0]</obj_property>
+         <obj_property name="ObjectShortName">.wr_addr[7:0]</obj_property>
+         <obj_property name="CustomSignalColor">#800080</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/r_pwm_top_inputs[2].wr_data" type="array">
+         <obj_property name="ElementShortName">.wr_data[31:0]</obj_property>
+         <obj_property name="ObjectShortName">.wr_data[31:0]</obj_property>
+         <obj_property name="CustomSignalColor">#800080</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/r_pwm_top_inputs[2].n_addr" type="array">
+         <obj_property name="ElementShortName">.n_addr[7:0]</obj_property>
+         <obj_property name="ObjectShortName">.n_addr[7:0]</obj_property>
+         <obj_property name="CustomSignalColor">#800080</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/r_pwm_top_inputs[2].n_tot_cyc" type="array">
+         <obj_property name="ElementShortName">.n_tot_cyc[31:0]</obj_property>
+         <obj_property name="ObjectShortName">.n_tot_cyc[31:0]</obj_property>
+         <obj_property name="CustomSignalColor">#800080</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/r_pwm_top_inputs[2].pwm_init" type="logic">
+         <obj_property name="ElementShortName">.pwm_init</obj_property>
+         <obj_property name="ObjectShortName">.pwm_init</obj_property>
+         <obj_property name="CustomSignalColor">#800080</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/\gen_pwm_top_nom(2)\/pwm_nom_i/UNLOCKED_O" type="logic">
+         <obj_property name="ElementShortName">UNLOCKED_O</obj_property>
+         <obj_property name="ObjectShortName">UNLOCKED_O</obj_property>
+         <obj_property name="CustomSignalColor">#D2691E</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/\gen_pwm_top_nom(2)\/pwm_nom_i/STATUS_O" type="array">
+         <obj_property name="ElementShortName">STATUS_O[1:0]</obj_property>
+         <obj_property name="ObjectShortName">STATUS_O[1:0]</obj_property>
+         <obj_property name="CustomSignalColor">#008080</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/\gen_pwm_top_nom(2)\/pwm_nom_i/fsm_i/r_state" type="other">
+         <obj_property name="ElementShortName">r_state</obj_property>
+         <obj_property name="ObjectShortName">r_state</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/\gen_pwm_top_nom(2)\/pwm_nom_i/fsm_i/EN_CNT_O" type="logic">
+         <obj_property name="ElementShortName">EN_CNT_O</obj_property>
+         <obj_property name="ObjectShortName">EN_CNT_O</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/\gen_pwm_top_nom(2)\/pwm_nom_i/mem_i/s_en_cnt" type="logic">
+         <obj_property name="ElementShortName">s_en_cnt</obj_property>
+         <obj_property name="ObjectShortName">s_en_cnt</obj_property>
+         <obj_property name="CustomSignalColor">#F0E68C</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/\gen_pwm_top_nom(2)\/pwm_nom_i/mem_i/s_en_cnt_d1" type="logic">
+         <obj_property name="ElementShortName">s_en_cnt_d1</obj_property>
+         <obj_property name="ObjectShortName">s_en_cnt_d1</obj_property>
+         <obj_property name="CustomSignalColor">#F0E68C</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/\gen_pwm_top_nom(2)\/pwm_nom_i/fsm_i/RD_ADDR_O" type="array">
+         <obj_property name="ElementShortName">RD_ADDR_O[7:0]</obj_property>
+         <obj_property name="ObjectShortName">RD_ADDR_O[7:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/\gen_pwm_top_nom(2)\/pwm_nom_i/mem_i/r_prev_last_state" type="array">
+         <obj_property name="ElementShortName">r_prev_last_state[31:0]</obj_property>
+         <obj_property name="ObjectShortName">r_prev_last_state[31:0]</obj_property>
+         <obj_property name="CustomSignalColor">#FFFF00</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/\gen_pwm_top_nom(2)\/pwm_nom_i/mem_i/r_prev_last2_state" type="array">
+         <obj_property name="ElementShortName">r_prev_last2_state[31:0]</obj_property>
+         <obj_property name="ObjectShortName">r_prev_last2_state[31:0]</obj_property>
+         <obj_property name="CustomSignalColor">#FFFF00</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/\gen_pwm_top_nom(2)\/pwm_nom_i/mem_i/RD_DATA_O" type="array">
+         <obj_property name="ElementShortName">RD_DATA_O[31:0]</obj_property>
+         <obj_property name="ObjectShortName">RD_DATA_O[31:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         <obj_property name="CustomSignalColor">#008000</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/\gen_pwm_top_nom(2)\/pwm_nom_i/mem_i/RD_DATA_NEXT_O" type="array">
+         <obj_property name="ElementShortName">RD_DATA_NEXT_O[31:0]</obj_property>
+         <obj_property name="ObjectShortName">RD_DATA_NEXT_O[31:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         <obj_property name="CustomSignalColor">#008000</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/\gen_pwm_top_nom(2)\/pwm_nom_i/mem_i/RD_DATA_NEXT_2_O" type="array">
+         <obj_property name="ElementShortName">RD_DATA_NEXT_2_O[31:0]</obj_property>
+         <obj_property name="ObjectShortName">RD_DATA_NEXT_2_O[31:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         <obj_property name="CustomSignalColor">#008000</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/\gen_config_err(2)\/config_err_i/s_error" type="logic">
+         <obj_property name="ElementShortName">s_error</obj_property>
+         <obj_property name="ObjectShortName">s_error</obj_property>
+         <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/\gen_config_err(2)\/config_err_i/s_err_n_addr" type="logic">
+         <obj_property name="ElementShortName">s_err_n_addr</obj_property>
+         <obj_property name="ObjectShortName">s_err_n_addr</obj_property>
+         <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/\gen_config_err(2)\/config_err_i/s_err_n_tot" type="logic">
+         <obj_property name="ElementShortName">s_err_n_tot</obj_property>
+         <obj_property name="ObjectShortName">s_err_n_tot</obj_property>
+         <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/\gen_config_err(2)\/config_err_i/s_err_limit" type="logic">
+         <obj_property name="ElementShortName">s_err_limit</obj_property>
+         <obj_property name="ObjectShortName">s_err_limit</obj_property>
+         <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/\gen_config_err(2)\/config_err_i/r_cnt_n_addr" type="array">
+         <obj_property name="ElementShortName">r_cnt_n_addr[7:0]</obj_property>
+         <obj_property name="ObjectShortName">r_cnt_n_addr[7:0]</obj_property>
+         <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/pwm_enjoyer_axi_tb/UUT/pwm_enjoyer_axi_vip_bd_i/pwm_enjoyer_axi_0/U0/pwm_enjoyer_i/uc_i/\gen_config_err(2)\/config_err_i/r_cnt_n_tot" type="array">
+         <obj_property name="ElementShortName">r_cnt_n_tot[31:0]</obj_property>
+         <obj_property name="ObjectShortName">r_cnt_n_tot[31:0]</obj_property>
+         <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+   </wvobject>
+</wave_config>

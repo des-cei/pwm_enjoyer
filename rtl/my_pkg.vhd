@@ -28,26 +28,27 @@ package my_pkg is
     constant C_AXI_REG_W    : natural := 32;
 
     -- Profunidad de la memoria
-    constant C_MEM_SIZE_MAX_N   : natural := 128;                                           -- Número máximo de estados
-    constant C_MEM_SIZE_MAX_L2  : natural := integer(ceil(log2(real(C_MEM_SIZE_MAX_N))));   -- Tamaño del vector
+    constant C_MEM_SIZE_MAX_N   : natural := 128;                                               -- Número máximo de estados
+    constant C_MEM_SIZE_MAX_L2  : natural := integer(ceil(log2(real(C_MEM_SIZE_MAX_N + 1))));   -- Tamaño del vector
 
-    -- Ancho de la memoria                                       -- Número máximo de pulsos que dura un estado
-    -- constant C_STATE_MAX_N      : natural := 33_554_431;                                    -- Número máximo de pulsos que dura un estado
-    -- constant C_STATE_MAX_L2     : natural := integer(ceil(log2(real(C_STATE_MAX_N))));      -- Tamaño del vector
-    constant C_STATE_MAX_L2     : natural := C_AXI_REG_W;
+    -- Ancho de la memoria
+    constant C_STATE_MAX_N      : natural := 2**31 - 1;                                         -- Número máximo de pulsos que dura un estado (simulación)
+    -- constant C_STATE_MAX_L2     : natural := integer(ceil(log2(real(C_STATE_MAX_N))));       -- Tamaño del vector
+    constant C_STATE_MAX_L2     : natural := C_AXI_REG_W;                                       -- Tamaño del vector
     -- NOTE:
     --  Como el acceso a los registros es de 32 bits, para poder tener N_TOT_CYC = FFFF_FFFF, en el peor caso posible (que se 
     --      configuren C_MEM_SIZE_MAX_N estados, el valor máximo de los estados queda limitado a FFFF_FFFF / 128 = 1FF_FFFF = 33_554_431)
 
     -- Suma de todos los estados de la configuración
-    -- constant C_PERIOD_MAX_N     : natural := C_STATE_MAX_N*C_MEM_SIZE_MAX_N;                -- Número máximo de periodos de reloj
-    -- constant C_PERIOD_MAX_N     : natural := 4_294_967_295;                                 -- Número máximo de periodos de reloj
-    -- constant C_PERIOD_MAX_L2    : natural := integer(ceil(log2(real(C_PERIOD_MAX_N))));     -- Tamaño del vector
-    constant C_PERIOD_MAX_L2    : natural := C_AXI_REG_W;
+    -- constant C_PERIOD_MAX_N     : natural := 2**32 - 1;                                      -- Número máximo de periodos de reloj
+    -- constant C_PERIOD_MAX_L2    : natural := integer(ceil(log2(real(C_PERIOD_MAX_N))));      -- Tamaño del vector
+    constant C_PERIOD_MAX_L2    : natural := C_AXI_REG_W;                                       -- Tamaño del vector
 
     -- Número máximo de módulos PWM
     constant C_PWM_N    : natural := 32;
 
+    -- Habilita redundancias internas
+    constant C_EN_REDUNDANCY    : std_logic := '1';
 
     -------------------------------------------------
     -- Tipos
@@ -69,14 +70,17 @@ package my_pkg is
 
     type pwm_top_out is record
         -- Módulo principal
-        pwm                 : std_logic;
-        en_wr_config        : std_logic;
+        pwm             : std_logic;
+        unlocked        : std_logic;
+        status          : std_logic_vector(1 downto 0);
         -- Módulo redundante 1
-        pwm_red_1           : std_logic;
-        en_wr_config_red_1  : std_logic;
+        pwm_red_1       : std_logic;
+        unlocked_red_1  : std_logic;
+        status_red_1    : std_logic_vector(1 downto 0);
         -- Módulo redundante 2
-        pwm_red_2           : std_logic;
-        en_wr_config_red_2  : std_logic;
+        pwm_red_2       : std_logic;
+        unlocked_red_2  : std_logic;
+        status_red_2    : std_logic_vector(1 downto 0);
     end record pwm_top_out;
 
     type modulo_pwm_in is array (0 to (C_PWM_N - 1)) of pwm_top_in;

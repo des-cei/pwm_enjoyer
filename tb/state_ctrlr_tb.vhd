@@ -46,8 +46,9 @@ architecture beh of state_ctrlr_tb is
             EN_CNT_O        : out std_logic;                                            -- Habiltador del contador
             SWITCH_MEM_O    : out std_logic;                                            -- Cambio de memoria
             LAST_CYC_O      : out std_logic;                                            -- Indicador de último ciclo
-            UNLOCKED_O      : out std_logic                                             -- Bloqueo de escritura de configuración
-        );
+            UNLOCKED_O      : out std_logic;                                            -- Bloqueo de escritura de configuración
+            STATUS_O        : out std_logic_vector(1 downto 0)                          -- Estado (00 = Apagado, 01 = Apagando, 11 = Activo)
+    );
     end component state_ctrlr;
 
     -------------------------------------------------
@@ -72,6 +73,7 @@ architecture beh of state_ctrlr_tb is
     signal SWITCH_MEM_O     : std_logic;
     signal LAST_CYC_O       : std_logic;
     signal UNLOCKED_O       : std_logic;
+    signal STATUS_O         : std_logic_vector(1 downto 0);
 
     -- CNT Port map
     signal DATA_I           : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0);
@@ -86,7 +88,7 @@ architecture beh of state_ctrlr_tb is
     signal WR_DATA_I        : std_logic_vector((C_STATE_MAX_L2 - 1) downto 0);
 
     -- Soporte
-    type memory is array (0 to (C_MEM_SIZE_MAX_N - 1)) of integer range 0 to C_STATE_MAX_N;
+    type memory is array (0 to (C_MEM_SIZE_MAX_N - 1)) of integer range 0 to (2**31 - 1);
     shared variable v_mem       : memory := (others => 0);
     shared variable v_n_addr    : integer := 0;
     shared variable v_n_tot_cyc : integer := 0;
@@ -189,7 +191,8 @@ begin
             EN_CNT_O        => EN_CNT_O,
             SWITCH_MEM_O    => SWITCH_MEM_O,
             LAST_CYC_O      => LAST_CYC_O,
-            UNLOCKED_O      => UNLOCKED_O
+            UNLOCKED_O      => UNLOCKED_O,
+            STATUS_O        => STATUS_O
         );
 
     cnt : entity work.pwm_counter

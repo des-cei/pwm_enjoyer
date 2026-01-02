@@ -35,7 +35,8 @@ entity state_ctrlr is
         EN_CNT_O        : out std_logic;                                            -- Habiltador del contador
         SWITCH_MEM_O    : out std_logic;                                            -- Cambio de memoria
         LAST_CYC_O      : out std_logic;                                            -- Indicador de último ciclo
-        UNLOCKED_O      : out std_logic                                             -- Bloqueo de escritura de configuración
+        UNLOCKED_O      : out std_logic;                                            -- Bloqueo de escritura de configuración
+        STATUS_O        : out std_logic_vector(1 downto 0)                          -- Estado (00 = Apagado, 01 = Apagando, 11 = Activo)
     );
 end entity state_ctrlr;
 
@@ -87,6 +88,27 @@ architecture beh of state_ctrlr is
     -- Indicador de final de ciclo
     signal r_cyc_end    : std_logic;
 
+    -------------------------------------------------
+    -- ILA
+    -------------------------------------------------
+    attribute MARK_DEBUG : string;
+    attribute MARK_DEBUG of r_n_addr        : signal is "true";
+    attribute MARK_DEBUG of r_n_tot_cyc     : signal is "true";
+    attribute MARK_DEBUG of r_rd_addr       : signal is "true";
+    attribute MARK_DEBUG of r_en_cnt        : signal is "true";
+    attribute MARK_DEBUG of s_switch_mem    : signal is "true";
+    attribute MARK_DEBUG of r_last_cyc      : signal is "true";
+    attribute MARK_DEBUG of r_unlocked      : signal is "true";
+    attribute MARK_DEBUG of r_state         : signal is "true";
+    attribute MARK_DEBUG of r_next_state    : signal is "true";
+    attribute MARK_DEBUG of r_update_flag   : signal is "true";
+    attribute MARK_DEBUG of r_en_d1         : signal is "true";
+    attribute MARK_DEBUG of r_en_down       : signal is "true";
+    attribute MARK_DEBUG of r_off           : signal is "true";
+    attribute MARK_DEBUG of s_active        : signal is "true";
+    attribute MARK_DEBUG of r_cnt_pulse     : signal is "true";
+    attribute MARK_DEBUG of r_cyc_end       : signal is "true";
+
 begin
 
     -------------------------------------------------
@@ -103,6 +125,10 @@ begin
     SWITCH_MEM_O    <= s_switch_mem;
     LAST_CYC_O      <= r_last_cyc;
     UNLOCKED_O      <= r_unlocked;
+    STATUS_O        <=  "00" when ((r_state = S_IDLE) or (r_state = S_INIT)) else
+                        "01" when (((r_state = S_NEXT_CYC) and (EN_I = '0')) or
+                                (r_state = S_END_CYC)) else
+                        "11";
 
     -- Ciclo activo
     s_active <= '1' when (EN_I = '1') or (r_en_d1 = '1') or (r_en_down = '1') else '0';

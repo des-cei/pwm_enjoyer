@@ -51,7 +51,8 @@ architecture beh of pwm_top_tb is
             PWM_INIT_I      : in std_logic;                                             -- Valor inicial de salida
             -- Salidas
             PWM_O           : out std_logic;                                            -- Salida del PWM
-            UNLOCKED_O      : out std_logic                                             -- Habilitación de configuración de memoria
+            UNLOCKED_O      : out std_logic;                                            -- Habilitación de configuración de memoria
+            STATUS_O        : out std_logic_vector(1 downto 0)                          -- Estado (00 = Apagado, 01 = Apagando, 11 = Activo)
         );
     end component pwm_top;
 
@@ -75,14 +76,15 @@ architecture beh of pwm_top_tb is
     signal PWM_INIT_I   : std_logic;                                            -- Valor inicial de salida
     signal PWM_O        : std_logic;                                            -- Salida del PWM
     signal UNLOCKED_O   : std_logic;                                            -- Habilitación de configuración de memoria
+    signal STATUS_O     : std_logic_vector(1 downto 0);                         -- Estado (00 = Apagado, 01 = Apagando, 11 = Activo)
     
     -- Soporte
-    type memory is array (0 to (C_MEM_SIZE_MAX_N - 1)) of integer range 0 to C_STATE_MAX_N;
+    type memory is array (0 to (C_MEM_SIZE_MAX_N - 1)) of integer range 0 to (2**31 - 1);
     shared variable v_mem       : memory := (others => 0);
     shared variable v_n_addr    : integer := 0;
     shared variable v_n_tot     : integer := 0;
     shared variable v_pwm_init  : std_logic := '0';
-    signal cnt_pulse    : integer range 0 to C_STATE_MAX_N;
+    signal cnt_pulse    : integer range 0 to (2**31 - 1);
     signal unlocked_d1  : std_logic;
 
     -------------------------------------------------
@@ -185,7 +187,8 @@ begin
             N_TOT_CYC_I     => N_TOT_CYC_I,
             PWM_INIT_I      => PWM_INIT_I,
             PWM_O           => PWM_O,
-            UNLOCKED_O      => UNLOCKED_O
+            UNLOCKED_O      => UNLOCKED_O,
+            STATUS_O        => STATUS_O
         );
 
     -------------------------------------------------

@@ -6,9 +6,6 @@
 -- Notes:                                                --
 --     - true dual-port read-first RAM implementation    --
 --     - Optional output register                        --
--- Changelog:                                            --
---      1.1: Alejandro Martínez: added next address      --
---          data out                                     --
 -----------------------------------------------------------
 
 library ieee;
@@ -27,41 +24,36 @@ entity bram_dualport is
         C_MEM_MODE   : string := "LOW_LATENCY" -- Memory performance configuration mode ("HIGH_PERFORMANCE", "LOW_LATENCY")
     );
     port (
-        n_addr          : in  std_logic_vector(C_ADDR_WIDTH-2 downto 0);
         -- Port A --
-        clk_a           : in  std_logic;
-        rst_a           : in  std_logic;
-        en_a            : in  std_logic;
-        we_a            : in  std_logic;
-        addr_a          : in  std_logic_vector(C_ADDR_WIDTH-1 downto 0);
-        din_a           : in  std_logic_vector(C_DATA_WIDTH-1 downto 0);
-        dout_a          : out std_logic_vector(C_DATA_WIDTH-1 downto 0);
-        dout_a_next     : out std_logic_vector(C_DATA_WIDTH-1 downto 0);
-        dout_a_next_2   : out std_logic_vector(C_DATA_WIDTH-1 downto 0);
-        -- Port B --
-        clk_b           : in  std_logic;
-        rst_b           : in  std_logic;
-        en_b            : in  std_logic;
-        we_b            : in  std_logic;
-        addr_b          : in  std_logic_vector(C_ADDR_WIDTH-1 downto 0);
-        din_b           : in  std_logic_vector(C_DATA_WIDTH-1 downto 0);
-        dout_b          : out std_logic_vector(C_DATA_WIDTH-1 downto 0);
-        dout_b_next     : out std_logic_vector(C_DATA_WIDTH-1 downto 0);
-        dout_b_next_2   : out std_logic_vector(C_DATA_WIDTH-1 downto 0)
+        clk_a  : in  std_logic;
+        rst_a  : in  std_logic;
+        en_a   : in  std_logic;
+        we_a   : in  std_logic;
+        addr_a : in  std_logic_vector(C_ADDR_WIDTH-1 downto 0);
+        din_a  : in  std_logic_vector(C_DATA_WIDTH-1 downto 0);
+        dout_a : out std_logic_vector(C_DATA_WIDTH-1 downto 0);
 
+        -- Port B --
+        clk_b  : in  std_logic;
+        rst_b  : in  std_logic;
+        en_b   : in  std_logic;
+        we_b   : in  std_logic;
+        addr_b : in  std_logic_vector(C_ADDR_WIDTH-1 downto 0);
+        din_b  : in  std_logic_vector(C_DATA_WIDTH-1 downto 0);
+        dout_b : out std_logic_vector(C_DATA_WIDTH-1 downto 0)
     );
-    -- -- DEBUG
-    -- attribute mark_debug : string;
-    -- attribute mark_debug of en_a   : signal is "true";
-    -- attribute mark_debug of we_a   : signal is "true";
-    -- attribute mark_debug of addr_a : signal is "true";
-    -- attribute mark_debug of din_a  : signal is "true";
-    -- attribute mark_debug of dout_a : signal is "true";
-    -- attribute mark_debug of en_b   : signal is "true";
-    -- attribute mark_debug of we_b   : signal is "true";
-    -- attribute mark_debug of addr_b : signal is "true";
-    -- attribute mark_debug of din_b  : signal is "true";
-    -- attribute mark_debug of dout_b : signal is "true";
+    -- DEBUG
+    attribute mark_debug : string;
+    attribute mark_debug of en_a   : signal is "true";
+    attribute mark_debug of we_a   : signal is "true";
+    attribute mark_debug of addr_a : signal is "true";
+    attribute mark_debug of din_a  : signal is "true";
+    attribute mark_debug of dout_a : signal is "true";
+    attribute mark_debug of en_b   : signal is "true";
+    attribute mark_debug of we_b   : signal is "true";
+    attribute mark_debug of addr_b : signal is "true";
+    attribute mark_debug of din_b  : signal is "true";
+    attribute mark_debug of dout_b : signal is "true";
 end bram_dualport;
 
 architecture behavioral of bram_dualport is
@@ -79,13 +71,9 @@ architecture behavioral of bram_dualport is
 
     -- RAM definitions
     type mem_t is array (0 to C_MEM_DEPTH-1) of std_logic_vector(C_DATA_WIDTH-1 downto 0);
-    shared variable mem     : mem_t := (others => (others => '0'));      -- RAM memory implementation
-    signal data_a           : std_logic_vector(C_DATA_WIDTH-1 downto 0); -- Port A memory data out
-    signal data_b           : std_logic_vector(C_DATA_WIDTH-1 downto 0); -- Port B memory data out
-    signal data_a_next      : std_logic_vector(C_DATA_WIDTH-1 downto 0); -- Port A memory next data out
-    signal data_b_next      : std_logic_vector(C_DATA_WIDTH-1 downto 0); -- Port B memory next data out
-    signal data_a_next_2    : std_logic_vector(C_DATA_WIDTH-1 downto 0); -- Port A memory next data out
-    signal data_b_next_2    : std_logic_vector(C_DATA_WIDTH-1 downto 0); -- Port B memory next data out
+    shared variable mem : mem_t := (others => (others => '0'));      -- RAM memory implementation
+    signal data_a       : std_logic_vector(C_DATA_WIDTH-1 downto 0); -- Port A memory data out
+    signal data_b       : std_logic_vector(C_DATA_WIDTH-1 downto 0); -- Port B memory data out
 
     -- Force BRAM inference
     attribute ram_style : string;
@@ -110,28 +98,6 @@ begin
                 addr := to_integer(unsigned(addr_a));
                 -- Read memory
                 data_a <= mem(addr);
-                -- Next data out
-                if (unsigned(n_addr) /= 0) then
-                    if (addr < (to_integer(unsigned(n_addr) - 1))) then
-                        data_a_next <= mem(addr + 1);
-                    else
-                        data_a_next <= mem(0);
-                    end if;
-                else
-                    data_a_next <= (others => '0');
-                end if;
-                -- Next 2 data out
-                if (unsigned(n_addr) /= 0) then
-                    if (addr < (to_integer(unsigned(n_addr) - 2))) then
-                        data_a_next_2 <= mem(addr + 2);
-                    elsif (addr = (to_integer(unsigned(n_addr) - 2))) then
-                        data_a_next_2 <= mem(0);
-                    else
-                        data_a_next_2 <= mem(1);
-                    end if;
-                else
-                    data_a_next_2 <= (others => '0');
-                end if;
                 -- Write enable
                 if we_a = '1' then
                     mem(addr) := din_a;
@@ -157,28 +123,6 @@ begin
                 addr := to_integer(unsigned(addr_b));
                 -- Read memory
                 data_b <= mem(addr);
-                -- Next data out
-                if (unsigned(n_addr) /= 0) then
-                    if ((addr - C_MEM_DEPTH/2) < (to_integer(unsigned(n_addr) - 1))) then
-                        data_b_next <= mem(addr + 1);
-                    else
-                        data_b_next <= mem(C_MEM_DEPTH/2);
-                    end if;
-                else
-                    data_b_next <= (others => '0');
-                end if;
-                -- Next 2 data out
-                if (unsigned(n_addr) /= 0) then
-                    if ((addr - C_MEM_DEPTH/2) < (to_integer(unsigned(n_addr) - 2))) then
-                        data_b_next_2 <= mem(addr + 2);
-                    elsif ((addr - C_MEM_DEPTH/2) = (to_integer(unsigned(n_addr) - 2))) then
-                        data_b_next_2 <= mem(C_MEM_DEPTH/2);
-                    else
-                        data_b_next_2 <= mem(C_MEM_DEPTH/2 + 1);
-                    end if;
-                else
-                    data_b_next_2 <= (others => '0');
-                end if;
                 -- Write enable
                 if we_b = '1' then
                     mem(addr) := din_b;
@@ -197,12 +141,8 @@ begin
     no_output_register : if C_MEM_MODE = "LOW_LATENCY" generate
     begin
 
-        dout_a          <= data_a;
-        dout_b          <= data_b;
-        dout_a_next     <= data_a_next;
-        dout_b_next     <= data_b_next;
-        dout_a_next_2   <= data_a_next_2;
-        dout_b_next_2   <= data_b_next_2;
+        dout_a <= data_a;
+        dout_b <= data_b;
 
     end generate;
 

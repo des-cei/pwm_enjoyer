@@ -272,107 +272,86 @@ begin
     end process P_FSM_NEXT;
 
     -- FSM
-    P_FSM : process (RST_I, r_state, EN_I, r_cyc_end, r_update_flag)
+    P_FSM : process (r_state, EN_I, r_cyc_end, r_update_flag)
     begin
-        if (RST_I = G_RST_POL) then
-            r_next_state    <= S_IDLE;
-            r_last_cyc      <= '0';
-            r_en_cnt        <= '0';
-            r_off           <= '0';
-            r_unlocked      <= '1';
-        else
 
-            case r_state is
+        -- Por defecto
+        r_next_state <= r_state;
+        r_en_cnt     <= '0';
+        r_last_cyc   <= '0';
+        r_off        <= '0';
+        r_unlocked   <= '1';
 
-                -- No hay enable
-                when S_IDLE =>
-                    r_en_cnt            <= '0';
-                    r_last_cyc          <= '0';
-                    r_off               <= '1';
-                    r_unlocked          <= '1';
-                    if (EN_I = '1') then
-                        r_next_state    <= S_INIT;
+        case r_state is
+
+            -- No hay enable
+            when S_IDLE =>
+                r_off      <= '1';
+                if (EN_I = '1') then
+                    r_next_state <= S_INIT;
+                end if;
+
+            -- Estado inicial: la configuración no ha entrado todavía en la memoria
+            when S_INIT =>
+                if (EN_I = '1') then
+                    if ((EARLY_SW_I = '0') and (r_update_flag = '1')) then
+                        r_next_state <= S_INIT_SW;
                     end if;
+                else
+                    r_next_state <= S_IDLE;
+                end if;
 
-                -- Estado inicial: la configuración no ha entrado todavía en la memoria
-                when S_INIT =>
-                    r_en_cnt                <= '0';
-                    r_last_cyc              <= '0';
-                    r_off                   <= '0';
-                    r_unlocked              <= '1';
+            -- Primer switch
+            when S_INIT_SW =>
+                r_en_cnt    <= '1';
+                r_last_cyc  <= '1';
+                r_unlocked  <= '0';
+                if (EN_I = '1') then
+                    r_next_state <= S_NEXT_CYC;
+                else
+                    r_next_state <= S_IDLE;
+                end if;
+
+            -- Estado normal, itera entre la configuración actual
+            when S_NEXT_CYC =>
+                r_en_cnt <= '1';
+                if (r_cyc_end = '1') then
                     if (EN_I = '1') then
-                        if (EARLY_SW_I = '0') then
-                            if (r_update_flag = '1') then
-                                r_next_state    <= S_INIT_SW;
-                            end if;
+                        if (r_update_flag = '1') then
+                            r_next_state <= S_LAST_CYC;
+                        else
+                            r_next_state <= S_NEXT_CYC;
                         end if;
                     else
-                        r_next_state        <= S_IDLE;
+                        r_next_state <= S_END_CYC;
                     end if;
+                end if;
 
-                -- Primer switch
-                when S_INIT_SW =>
-                    r_en_cnt            <= '1';
-                    r_last_cyc          <= '1';
-                    r_off               <= '0';
-                    r_unlocked          <= '0';
+            -- Último estado antes de cambiar la memoria
+            when S_LAST_CYC =>
+                r_en_cnt    <= '1';
+                r_last_cyc  <= '1';
+                r_unlocked  <= '0';
+                if (r_cyc_end = '1') then
                     if (EN_I = '1') then
-                        r_next_state    <= S_NEXT_CYC;
+                        r_next_state <= S_NEXT_CYC;
                     else
-                        r_next_state    <= S_IDLE;
+                        r_next_state <= S_END_CYC;
                     end if;
+                end if;
 
-                -- Estado normal, itera entre la configuración actual
-                when S_NEXT_CYC =>
-                    r_en_cnt                    <= '1';
-                    r_last_cyc                  <= '0';
-                    r_off                       <= '0';
-                    r_unlocked                  <= '1';
-                    if (r_cyc_end = '1') then
-                        if (EN_I = '1') then
-                            if (r_update_flag = '1') then
-                                r_next_state    <= S_LAST_CYC;
-                            else
-                                r_next_state    <= S_NEXT_CYC;
-                            end if;
-                        else
-                            r_next_state            <= S_END_CYC;
-                        end if;
-                    end if;
+            -- Último ciclo antes de apagar
+            when S_END_CYC =>
+                r_en_cnt    <= '1';
+                r_unlocked  <= '0';
+                if (r_cyc_end = '1') then
+                    r_next_state <= S_IDLE;
+                end if;
 
-                -- Último estado antes de cambiar la memoria
-                when S_LAST_CYC =>
-                    r_en_cnt                <= '1';
-                    r_last_cyc              <= '1';
-                    r_off                   <= '0';
-                    r_unlocked              <= '0';
-                    if (r_cyc_end = '1') then
-                        if (EN_I = '1') then
-                            r_next_state    <= S_NEXT_CYC;
-                        else
-                            r_next_state    <= S_END_CYC;
-                        end if;
-                    end if;
+            when others =>
+                r_next_state <= S_IDLE;
 
-                -- Último ciclo antes de apagar
-                when S_END_CYC =>
-                    r_en_cnt                <= '1';
-                    r_last_cyc              <= '0';
-                    r_off                   <= '0';
-                    r_unlocked              <= '0';
-                    if (r_cyc_end = '1') then
-                        r_next_state    <= S_IDLE;
-                    end if;
-                        
-                when others =>
-                    r_next_state            <= S_IDLE;
-                    r_en_cnt                <= '0';
-                    r_last_cyc              <= '0';
-                    r_off                   <= '0';
-                    r_unlocked              <= '0';
-
-            end case;
-        end if;
+        end case;
     end process P_FSM;
 
 end architecture beh;

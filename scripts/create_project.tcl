@@ -51,26 +51,26 @@ source ../scripts/pwm_enjoyer_bd.tcl
 validate_bd_design
 save_bd_design
 ############################## comentar si da problemas
-# set bd_name [current_bd_design]
-# set bd_file [get_files [format "%s.bd" $bd_name]]
-# set wrapper_file [make_wrapper -files $bd_file -top]
-# add_files $wrapper_file
+set bd_name [current_bd_design]
+set bd_file [get_files [format "%s.bd" $bd_name]]
+set wrapper_file [make_wrapper -files $bd_file -top]
+add_files $wrapper_file
 #######################################################
 source ../scripts/pwm_enjoyer_axi_vip_bd.tcl
 validate_bd_design
 save_bd_design
 ############################## comentar si da problemas
-# set bd_name [current_bd_design]
-# set bd_file [get_files [format "%s.bd" $bd_name]]
-# set wrapper_file [make_wrapper -files $bd_file -top]
-# add_files $wrapper_file
+set bd_name [current_bd_design]
+set bd_file [get_files [format "%s.bd" $bd_name]]
+set wrapper_file [make_wrapper -files $bd_file -top]
+add_files $wrapper_file
 #######################################################
 
 ## Top module files
 ############################## comentar si da problemas
-# set_property top pwm_enjoyer_bd_wrapper [get_filesets sources_1]
+set_property top pwm_enjoyer_bd_wrapper [get_filesets sources_1]
 #######################################################
-set_property top pwm_enjoyer_axi [get_filesets sources_1]
+# set_property top pwm_enjoyer_axi [get_filesets sources_1]
 set_property top pwm_enjoyer_axi_tb [get_filesets sim_1]
 
 # ## Reset output products

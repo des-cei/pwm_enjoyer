@@ -57,16 +57,15 @@ architecture beh of pwm_dp_mem is
     component bram_dualport is
         generic (
             -- Data width (in bits)
-            C_DATA_WIDTH : integer := 32;
+            C_DATA_WIDTH    : integer := 32;
             -- Address width (in bits)
-            C_ADDR_WIDTH : integer := 32;
+            C_ADDR_WIDTH    : integer := 32;
             -- Memory depth (# positions)
-            C_MEM_DEPTH  : integer := 4096;
+            C_MEM_DEPTH     : integer := 4096;
             -- Memory configuration mode
-            C_MEM_MODE   : string := "LOW_LATENCY" -- Memory performance configuration mode ("HIGH_PERFORMANCE", "LOW_LATENCY")
+            C_MEM_MODE      : string := "LOW_LATENCY" -- Memory performance configuration mode ("HIGH_PERFORMANCE", "LOW_LATENCY")
         );
         port (
-            n_addr          : in  std_logic_vector(C_ADDR_WIDTH-2 downto 0);
             -- Port A --
             clk_a           : in  std_logic;
             rst_a           : in  std_logic;
@@ -75,8 +74,6 @@ architecture beh of pwm_dp_mem is
             addr_a          : in  std_logic_vector(C_ADDR_WIDTH-1 downto 0);
             din_a           : in  std_logic_vector(C_DATA_WIDTH-1 downto 0);
             dout_a          : out std_logic_vector(C_DATA_WIDTH-1 downto 0);
-            dout_a_next     : out std_logic_vector(C_DATA_WIDTH-1 downto 0);
-            dout_a_next_2   : out std_logic_vector(C_DATA_WIDTH-1 downto 0);
             -- Port B --
             clk_b           : in  std_logic;
             rst_b           : in  std_logic;
@@ -84,9 +81,7 @@ architecture beh of pwm_dp_mem is
             we_b            : in  std_logic;
             addr_b          : in  std_logic_vector(C_ADDR_WIDTH-1 downto 0);
             din_b           : in  std_logic_vector(C_DATA_WIDTH-1 downto 0);
-            dout_b          : out std_logic_vector(C_DATA_WIDTH-1 downto 0);
-            dout_b_next     : out std_logic_vector(C_DATA_WIDTH-1 downto 0);
-            dout_b_next_2   : out std_logic_vector(C_DATA_WIDTH-1 downto 0)
+            dout_b          : out std_logic_vector(C_DATA_WIDTH-1 downto 0)
         );
     end component bram_dualport;
 
@@ -99,6 +94,7 @@ architecture beh of pwm_dp_mem is
     -- Constantes
     -------------------------------------------------
     constant C_CEROS_ADDR   : std_logic_vector((WR_ADDR_I'length - 1) downto 0) := (others => '0');
+    constant C_UNO_ADDR     : std_logic_vector((WR_ADDR_I'length - 1) downto 0) := (0 => '1', others => '0');
     constant C_UNO          : std_logic_vector((WR_DATA_I'length - 1) downto 0) := (0 => '1', others => '0');
 
     -------------------------------------------------
@@ -124,6 +120,10 @@ architecture beh of pwm_dp_mem is
     signal s_we_b           : std_logic;
     signal s_addr_a         : std_logic_vector(G_ADDR_W downto 0);  -- (*)
     signal s_addr_b         : std_logic_vector(G_ADDR_W downto 0);  -- (*)
+    signal s_addr_a_next    : std_logic_vector(G_ADDR_W downto 0);  -- (*)
+    signal s_addr_b_next    : std_logic_vector(G_ADDR_W downto 0);  -- (*)
+    signal s_addr_a_next_2  : std_logic_vector(G_ADDR_W downto 0);  -- (*)
+    signal s_addr_b_next_2  : std_logic_vector(G_ADDR_W downto 0);  -- (*)
     signal s_din_a          : std_logic_vector((G_DATA_W - 1) downto 0) := (others => '0');
     signal s_din_b          : std_logic_vector((G_DATA_W - 1) downto 0) := (others => '0');
     signal s_dout_a         : std_logic_vector((G_DATA_W - 1) downto 0) := (others => '0');
@@ -175,6 +175,10 @@ architecture beh of pwm_dp_mem is
     attribute MARK_DEBUG of s_we_b              : signal is "true";
     attribute MARK_DEBUG of s_addr_a            : signal is "true";
     attribute MARK_DEBUG of s_addr_b            : signal is "true";
+    attribute MARK_DEBUG of s_addr_a_next       : signal is "true";
+    attribute MARK_DEBUG of s_addr_b_next       : signal is "true";
+    attribute MARK_DEBUG of s_addr_a_next_2     : signal is "true";
+    attribute MARK_DEBUG of s_addr_b_next_2     : signal is "true";
     attribute MARK_DEBUG of s_din_a             : signal is "true";
     attribute MARK_DEBUG of s_din_b             : signal is "true";
     attribute MARK_DEBUG of s_dout_a            : signal is "true";
@@ -210,7 +214,6 @@ begin
             C_MEM_MODE      => G_MEM_MODE
         )
         port map (
-            N_ADDR          => r_n_addr,
             -- Port A --
             CLK_A           => CLK_I,
             RST_A           => RST_I,
@@ -219,8 +222,6 @@ begin
             ADDR_A          => s_addr_a,
             DIN_A           => s_din_a,
             DOUT_A          => s_dout_a,
-            DOUT_A_NEXT     => s_dout_a_next,
-            DOUT_A_NEXT_2   => s_dout_a_next_2,
             -- Port B --
             CLK_B           => CLK_I,
             RST_B           => RST_I,
@@ -228,9 +229,59 @@ begin
             WE_B            => s_we_b,
             ADDR_B          => s_addr_b,
             DIN_B           => s_din_b,
-            DOUT_B          => s_dout_b,
-            DOUT_B_NEXT     => s_dout_b_next,
-            DOUT_B_NEXT_2   => s_dout_b_next_2
+            DOUT_B          => s_dout_b
+        );
+
+    bram_dp_next : component bram_dualport
+        generic map (
+            C_DATA_WIDTH    => G_DATA_W,
+            C_ADDR_WIDTH    => G_ADDR_W + 1,   -- (*) Un bit más para doblar la profundidad de memoria
+            C_MEM_DEPTH     => 2*G_MEM_DEPTH,  -- (**) El doble de la profundidad, para aprovechar el dual port 
+            C_MEM_MODE      => G_MEM_MODE
+        )
+        port map (
+            -- Port A --
+            CLK_A           => CLK_I,
+            RST_A           => RST_I,
+            EN_A            => s_en_a,
+            WE_A            => s_we_a,
+            ADDR_A          => s_addr_a_next,
+            DIN_A           => s_din_a,
+            DOUT_A          => s_dout_a_next,
+            -- Port B --
+            CLK_B           => CLK_I,
+            RST_B           => RST_I,
+            EN_B            => s_en_b,
+            WE_B            => s_we_b,
+            ADDR_B          => s_addr_b_next,
+            DIN_B           => s_din_b,
+            DOUT_B          => s_dout_b_next
+        );
+
+    bram_dp_next_2 : component bram_dualport
+        generic map (
+            C_DATA_WIDTH    => G_DATA_W,
+            C_ADDR_WIDTH    => G_ADDR_W + 1,   -- (*) Un bit más para doblar la profundidad de memoria
+            C_MEM_DEPTH     => 2*G_MEM_DEPTH,  -- (**) El doble de la profundidad, para aprovechar el dual port 
+            C_MEM_MODE      => G_MEM_MODE
+        )
+        port map (
+            -- Port A --
+            CLK_A           => CLK_I,
+            RST_A           => RST_I,
+            EN_A            => s_en_a,
+            WE_A            => s_we_a,
+            ADDR_A          => s_addr_a_next_2,
+            DIN_A           => s_din_a,
+            DOUT_A          => s_dout_a_next_2,
+            -- Port B --
+            CLK_B           => CLK_I,
+            RST_B           => RST_I,
+            EN_B            => s_en_b,
+            WE_B            => s_we_b,
+            ADDR_B          => s_addr_b_next_2,
+            DIN_B           => s_din_b,
+            DOUT_B          => s_dout_b_next_2
         );
 
     -------------------------------------------------
@@ -260,9 +311,27 @@ begin
     s_we_a <= '1' when (r_wr_port = '0') else '0';
     s_we_b <= not s_we_a;
 
-    -- Dirección de escritura/lectura
-    s_addr_a <= resize_offset(WR_ADDR_I, 0)             when (s_we_a = '1') else resize_offset(RD_ADDR_I, 0);
-    s_addr_b <= resize_offset(WR_ADDR_I, G_MEM_DEPTH)   when (s_we_b = '1') else resize_offset(RD_ADDR_I, G_MEM_DEPTH);
+    -- Dirección de escritura/lectura de la primera BRAM
+    s_addr_a <= resize_offset(WR_ADDR_I, 0)                         when (s_we_a = '1') else resize_offset(RD_ADDR_I, 0);
+    s_addr_b <= resize_offset(WR_ADDR_I, G_MEM_DEPTH)               when (s_we_b = '1') else resize_offset(RD_ADDR_I, G_MEM_DEPTH);
+
+    -- Dirección de escritura/lectura de la segunda BRAM: escritura igual que la primera, lectura + 1
+    s_addr_a_next <=    s_addr_a                                    when (s_we_a = '1') else 
+                        resize_offset(C_CEROS_ADDR, 0)              when (unsigned(RD_ADDR_I) = (unsigned(r_n_addr) - 1)) else
+                        resize_offset(std_logic_vector(unsigned(RD_ADDR_I) + 1), 0);
+    s_addr_b_next <=    s_addr_b                                    when (s_we_b = '1') else 
+                        resize_offset(C_CEROS_ADDR, G_MEM_DEPTH)    when (unsigned(RD_ADDR_I) = (unsigned(r_n_addr) - 1)) else
+                        resize_offset(std_logic_vector(unsigned(RD_ADDR_I) + 1), G_MEM_DEPTH);
+
+    -- Dirección de escritura/lectura de la tercera BRAM: escritura igual que la primera, lectura + 2
+    s_addr_a_next_2 <=  s_addr_a                                    when (s_we_a = '1') else 
+                        resize_offset(C_CEROS_ADDR, 0)              when (unsigned(RD_ADDR_I) = (unsigned(r_n_addr) - 2)) else
+                        resize_offset(C_UNO_ADDR, 0)                when (unsigned(RD_ADDR_I) = (unsigned(r_n_addr) - 1)) else
+                        resize_offset(std_logic_vector(unsigned(RD_ADDR_I) + 2), 0);
+    s_addr_b_next_2 <=  s_addr_b                                    when (s_we_b = '1') else 
+                        resize_offset(C_CEROS_ADDR, G_MEM_DEPTH)    when (unsigned(RD_ADDR_I) = (unsigned(r_n_addr) - 2)) else
+                        resize_offset(C_UNO_ADDR, G_MEM_DEPTH)      when (unsigned(RD_ADDR_I) = (unsigned(r_n_addr) - 1)) else
+                        resize_offset(std_logic_vector(unsigned(RD_ADDR_I) + 2), G_MEM_DEPTH);
 
     -- Dato de escritura
     s_din_a <= WR_DATA_I when (s_wr_en = '1') and (s_we_a = '1') and (s_wr_addr /= s_wr_addr_d1);

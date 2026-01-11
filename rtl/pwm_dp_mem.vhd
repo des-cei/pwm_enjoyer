@@ -51,6 +51,10 @@ end entity pwm_dp_mem;
 -----------------------------------------------------------
 architecture beh of pwm_dp_mem is
 
+    -- Forzar el mantener la jerarquía para optimizar los recursos
+    attribute keep_hierarchy : string;
+    attribute keep_hierarchy of beh : architecture is "yes";
+
     -------------------------------------------------
     -- Componentes
     -------------------------------------------------
@@ -135,11 +139,12 @@ architecture beh of pwm_dp_mem is
 
     -- Señales de control
     signal r_wr_port            : std_logic;
-    signal r_next_config        : mem := (others => (others => '0'));
     signal r_prev_last_state    : std_logic_vector(WR_DATA_I'high downto 0);
     signal r_prev_last2_state   : std_logic_vector(WR_DATA_I'high downto 0);
     signal r_next_first_state   : std_logic_vector(WR_DATA_I'high downto 0);
     signal r_next_first2_state  : std_logic_vector(WR_DATA_I'high downto 0);
+    signal r_tmp_last_value     : std_logic_vector(WR_DATA_I'high downto 0);
+    signal r_tmp_last2_value    : std_logic_vector(WR_DATA_I'high downto 0);
 
     -- Señales registradas
     signal s_wr_addr_d1     : std_logic_vector(WR_ADDR_I'high downto 0);
@@ -188,11 +193,12 @@ architecture beh of pwm_dp_mem is
     attribute MARK_DEBUG of s_dout_a_next_2     : signal is "true";
     attribute MARK_DEBUG of s_dout_b_next_2     : signal is "true";
     attribute MARK_DEBUG of r_wr_port           : signal is "true";
-    attribute MARK_DEBUG of r_next_config       : signal is "true";
     attribute MARK_DEBUG of r_prev_last_state   : signal is "true";
     attribute MARK_DEBUG of r_prev_last2_state  : signal is "true";
     attribute MARK_DEBUG of r_next_first_state  : signal is "true";
     attribute MARK_DEBUG of r_next_first2_state : signal is "true";
+    attribute MARK_DEBUG of r_tmp_last_value    : signal is "true";
+    attribute MARK_DEBUG of r_tmp_last2_value   : signal is "true";
     attribute MARK_DEBUG of s_wr_addr_d1        : signal is "true";
     attribute MARK_DEBUG of s_rd_addr_d1        : signal is "true";
     attribute MARK_DEBUG of s_switch_mem_d1     : signal is "true";
@@ -402,30 +408,34 @@ begin
         end if;
     end process P_EDGE;
 
-    -- Registro de la siguiente configuración
+    -- Registro de los valores críticos de la siguiente configuración
     P_NEXT_CONF : process (CLK_I, RST_I)
     begin
         if (RST_I = G_RST_POL) then
-            r_next_config       <= (others => (others => '0'));
             r_prev_last_state   <= (others => '0');
             r_prev_last2_state  <= (others => '0');
             r_next_first_state  <= s_dout_a_next;
             r_next_first2_state <= s_dout_a_next_2;
+            r_tmp_last_value    <= (others => '0');
+            r_tmp_last2_value   <= (others => '0');
         elsif rising_edge(CLK_I) then
             if ((s_en_cnt = '0') and (s_en_cnt_d1 = '1')) then
-                r_next_config       <= (others => (others => '0'));
                 r_prev_last_state   <= (others => '0');
                 r_prev_last2_state  <= (others => '0');
                 r_next_first_state  <= (others => '0');
                 r_next_first2_state <= (others => '0');
+                r_tmp_last_value    <= (others => '0');
+                r_tmp_last2_value   <= (others => '0');
             elsif (s_wr_en = '1') then
+                r_tmp_last_value    <= s_wr_data;
+                r_tmp_last2_value   <= r_tmp_last_value;
+
                 if (s_wr_addr = C_CEROS_ADDR) then
-                    r_next_config       <= (0 => s_wr_data, others => (others => '0'));
                     r_next_first_state  <= s_wr_data;
                     if (r_early_sw = '1') then
                         if (to_integer(unsigned(r_n_addr)) > 1) then
-                            r_prev_last_state   <= r_next_config(to_integer(unsigned(r_n_addr) - 1));
-                            r_prev_last2_state  <= r_next_config(to_integer(unsigned(r_n_addr) - 2));
+                            r_prev_last_state   <= r_tmp_last_value;
+                            r_prev_last2_state  <= r_tmp_last2_value;
                         else
                             r_prev_last_state   <= (others => '0');
                             r_prev_last2_state  <= (others => '0');
@@ -436,7 +446,6 @@ begin
                         r_prev_last2_state  <= (others => '0');
                     end if;
                 else
-                    r_next_config(to_integer(unsigned(s_wr_addr))) <= s_wr_data;
                     if (to_integer(unsigned(s_wr_addr)) = 1) then
                         r_next_first2_state <= s_wr_data;
                     end if;

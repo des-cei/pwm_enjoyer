@@ -17,8 +17,9 @@ use work.my_pkg.all;
 -----------------------------------------------------------
 entity control_unit is
     generic (
-        G_RST_POL   : std_logic := '1';
-        G_PWM_N     : natural := 32     -- Número máximo de módulos PWM. Si hay más de 32 hay que añadir más registros (*)
+        G_RST_POL       : std_logic := '1';
+        G_PWM_N         : natural := 32;    -- Número máximo de módulos PWM. Si hay más de 32 hay que añadir más registros (*)
+        G_EN_REDUNDANCY : std_logic := '1'  -- Habilitación de redundancias
     );
     port (
         CLK_I               : in std_logic;
@@ -70,8 +71,9 @@ architecture beh of control_unit is
     -------------------------------------------------
     -- Constantes
     -------------------------------------------------
-    constant C_CEROS    : std_logic_vector(31 downto 0) := (others => '0');
-    constant C_UNOS     : std_logic_vector(31 downto 0) := (others => '1');
+    constant C_CEROS_PWM    : std_logic_vector((G_PWM_N - 1) downto 0) := (others => '0');
+    constant C_CEROS        : std_logic_vector(31 downto 0) := (others => '0');
+    constant C_UNOS         : std_logic_vector(31 downto 0) := (others => '1');
 
     -------------------------------------------------
     -- Señales
@@ -91,7 +93,7 @@ architecture beh of control_unit is
     -- Interconexiones
     signal r_pwm_top_inputs : modulo_pwm_in;
     signal s_config_error   : std_logic_vector((G_PWM_N - 1) downto 0);
-    signal s_unlocked       : std_logic_vector((G_PWM_N - 1) downto 0);
+    signal s_redundancias   : std_logic_vector((G_PWM_N - 1) downto 0) := (others => '0');
 
     -- Máquina de estados
     type fsm is (S_IDLE, S_SHUTDOWN, S_APAGAR, S_ACTUALIZAR, S_CONFIGURAR, S_UNKOWN);
@@ -105,6 +107,9 @@ architecture beh of control_unit is
     
     -- Detección de flancos
     signal s_estado_d1      : fsm;
+
+    -- * USER: Redundancias concretas
+    -- signal s_red_157    : std_logic;
 
     -------------------------------------------------
     -- ILA
@@ -122,7 +127,7 @@ architecture beh of control_unit is
     attribute MARK_DEBUG of r_status            : signal is "true";
     attribute MARK_DEBUG of r_pwm_top_inputs    : signal is "true";
     attribute MARK_DEBUG of s_config_error      : signal is "true";
-    attribute MARK_DEBUG of s_unlocked          : signal is "true";
+    attribute MARK_DEBUG of s_redundancias      : signal is "true";
     attribute MARK_DEBUG of s_estado            : signal is "true";
     attribute MARK_DEBUG of r_wr_addr           : signal is "true";
     attribute MARK_DEBUG of s_status            : signal is "true";
@@ -207,12 +212,8 @@ begin
             r_pwm_init      <= REG_PWM_INIT_I(0);
             -- Registros de lectura
             for i in 0 to (G_PWM_N - 1) loop
-                if (PWM_TOP_OUTPUTS_I(i).pwm = PWM_TOP_OUTPUTS_I(i).pwm_red_1) and (PWM_TOP_OUTPUTS_I(i).pwm = PWM_TOP_OUTPUTS_I(i).pwm_red_2) then
-                    r_redundancias(i)   <= '0'; -- No hay disparidad
-                else
-                    r_redundancias(i)   <= '1'; -- Las salidas no coinciden
-                end if;
-                r_errores(i)        <= s_config_error(i) or (not s_unlocked(i)) or s_invalid_n_addr;
+                r_redundancias(i)   <= s_redundancias(i);
+                r_errores(i)        <= s_config_error(i) or (not PWM_TOP_OUTPUTS_I(i).unlocked) or s_invalid_n_addr;
             end loop;
             r_status(2 downto 0)    <= s_status;
         end if;
@@ -276,11 +277,6 @@ begin
                     end if;
 
                 when S_APAGAR =>
-                    -- for i in 0 to (G_PWM_N - 1) loop
-                    --     if (r_direcciones(i) = '1') then
-                    --         r_pwm_top_inputs(i).en <= '0';
-                    --     end if;
-                    -- end loop;
                     for i in 0 to (G_PWM_N - 1) loop
                         if (r_direcciones(i) = '1') then
                             r_pwm_top_inputs(i).en        <= '0';
@@ -325,7 +321,7 @@ begin
                         s_invalid_n_addr <= '0';
                         for i in 0 to (G_PWM_N - 1) loop
                             if (r_direcciones(i) = '1') then
-                                if (s_unlocked(i) = '1') then
+                                if (PWM_TOP_OUTPUTS_I(i).unlocked = '1') then
                                     r_pwm_top_inputs(i).en          <= '1';
                                     r_pwm_top_inputs(i).wr_en       <= '0';
                                     r_pwm_top_inputs(i).n_addr      <= r_n_addr((r_pwm_top_inputs(i).n_addr'length - 1) downto 0);
@@ -351,7 +347,6 @@ begin
                         s_invalid_n_addr    <= '1';
                     end if;
                             
-
                 when others =>
                     s_status <= "100";
 
@@ -359,10 +354,21 @@ begin
         end if;
     end process P_FSM;
 
-    -- Habilitación de configuraciones (combinacional)
-    gen_pwm_outputs : for i in 0 to (G_PWM_N - 1) generate
-    begin
-        s_unlocked(i) <= PWM_TOP_OUTPUTS_I(i).unlocked and PWM_TOP_OUTPUTS_I(i).unlocked_red_1 and PWM_TOP_OUTPUTS_I(i).unlocked_red_2;
-    end generate gen_pwm_outputs;
+    -- Redundancias
+    enable_redundancy : if (G_EN_REDUNDANCY = '1') generate
+        s_redundancias <= C_CEROS_PWM;
+        -- * USER: Definir las combinaciones de módulos redundantes
+        -- Por ejemplo: PWM_1, PWM_5 y PWM_7 redundantes:
+        -- s_red_157 <= '0' when ((PWM_TOP_OUTPUTS_I(1).pwm = PWM_TOP_OUTPUTS_I(5).pwm) and (PWM_TOP_OUTPUTS_I(1).pwm = PWM_TOP_OUTPUTS_I(7).pwm)) else '1';
+        -- s_redundancias(1) <= s_red_157;
+        -- s_redundancias(5) <= s_red_157;
+        -- s_redundancias(7) <= s_red_157;
+        -----------------------------------------------------------
+    end generate enable_redundancy;
+
+    disable_redundancy : if (G_EN_REDUNDANCY = '0') generate
+        -- No hay ninguna disparidad
+        s_redundancias <= C_CEROS_PWM;
+    end generate disable_redundancy;
 
 end architecture beh;

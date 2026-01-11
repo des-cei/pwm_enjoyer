@@ -1,0 +1,5 @@
+setws C:/Users/ajmsalgado/SynologyDrive/Universidad/TFM/pwm_enjoyer/vitis/sw
+platform create -name pynqz2_platform -hw C:/Users/ajmsalgado/SynologyDrive/Universidad/TFM/pwm_enjoyer/vitis/hw/PWM_ENJOYER.xsa -proc ps7_cortexa9_0 -os standalone -out C:/Users/ajmsalgado/SynologyDrive/Universidad/TFM/pwm_enjoyer/vitis/sw/platforms
+platform write
+platform generate
+app create -name pwm_enjoyer_app -platform pynqz2_platform -os standalone -proc ps7_cortexa9_0

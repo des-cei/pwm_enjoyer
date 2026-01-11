@@ -69,18 +69,9 @@ package my_pkg is
     end record pwm_top_in;
 
     type pwm_top_out is record
-        -- Módulo principal
         pwm             : std_logic;
         unlocked        : std_logic;
         status          : std_logic_vector(1 downto 0);
-        -- Módulo redundante 1
-        pwm_red_1       : std_logic;
-        unlocked_red_1  : std_logic;
-        status_red_1    : std_logic_vector(1 downto 0);
-        -- Módulo redundante 2
-        pwm_red_2       : std_logic;
-        unlocked_red_2  : std_logic;
-        status_red_2    : std_logic_vector(1 downto 0);
     end record pwm_top_out;
 
     type modulo_pwm_in is array (0 to (C_PWM_N - 1)) of pwm_top_in;

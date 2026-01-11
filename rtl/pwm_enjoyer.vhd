@@ -92,8 +92,9 @@ begin
     -- Unidad de control
     uc_i : entity work.control_unit
         generic map (
-            G_RST_POL   => G_RST_POL,
-            G_PWM_N     => G_PWM_N  
+            G_RST_POL       => G_RST_POL,
+            G_PWM_N         => G_PWM_N,
+            G_EN_REDUNDANCY => G_EN_REDUNDANCY
         )
         port map (
             CLK_I               => CLK_I,
@@ -112,9 +113,9 @@ begin
             PWM_TOP_OUTPUTS_I   => s_pwm_top_outputs
         );
 
-    -- Módulos PWM nominales
-    gen_pwm_top_nom : for i in 0 to (G_PWM_N - 1) generate
-        pwm_nom_i : entity work.pwm_top
+    -- Módulos PWM
+    gen_pwm_top : for i in 0 to (G_PWM_N - 1) generate
+        pwm_i : entity work.pwm_top
             generic map (
                 G_STATE_MAX_L2      => G_STATE_MAX_L2,
                 G_MEM_SIZE_MAX_L2   => G_MEM_SIZE_MAX_L2,
@@ -138,81 +139,7 @@ begin
                 UNLOCKED_O      => s_pwm_top_outputs(i).unlocked,
                 STATUS_O        => s_pwm_top_outputs(i).status
             );
-    end generate gen_pwm_top_nom;
-
-    -- Redundancias
-    enable_redundancy : if (G_EN_REDUNDANCY = '1') generate
-
-        -- Módulos PWM redundantes 1
-        gen_pwm_top_red_1 : for i in 0 to (G_PWM_N - 1) generate
-            pwm_red_1_i : entity work.pwm_top
-                generic map (
-                    G_STATE_MAX_L2      => G_STATE_MAX_L2,
-                    G_MEM_SIZE_MAX_L2   => G_MEM_SIZE_MAX_L2,
-                    G_PERIOD_MAX_L2     => G_PERIOD_MAX_L2,
-                    G_MEM_SIZE_MAX_N    => G_MEM_SIZE_MAX_N,
-                    G_MEM_MODE          => "LOW_LATENCY",
-                    G_RST_POL           => G_RST_POL  
-                )
-                port map (
-                    CLK_I           => CLK_I,
-                    RST_I           => RST_I,
-                    EN_I            => s_pwm_top_inputs(i).en,
-                    UPD_MEM_I       => s_pwm_top_inputs(i).upd_mem,
-                    WR_EN_I         => s_pwm_top_inputs(i).wr_en,
-                    WR_ADDR_I       => s_pwm_top_inputs(i).wr_addr,
-                    WR_DATA_I       => s_pwm_top_inputs(i).wr_data,
-                    N_ADDR_I        => s_pwm_top_inputs(i).n_addr,
-                    N_TOT_CYC_I     => s_pwm_top_inputs(i).n_tot_cyc,
-                    PWM_INIT_I      => s_pwm_top_inputs(i).pwm_init,
-                    PWM_O           => s_pwm_top_outputs(i).pwm_red_1,
-                    UNLOCKED_O      => s_pwm_top_outputs(i).unlocked_red_1,
-                    STATUS_O        => s_pwm_top_outputs(i).status_red_1
-                );
-        end generate gen_pwm_top_red_1;
-
-        -- Módulos PWM redundantes 2
-        gen_pwm_top_red_2 : for i in 0 to (G_PWM_N - 1) generate
-            pwm_red_2_i : entity work.pwm_top
-                generic map (
-                    G_STATE_MAX_L2      => G_STATE_MAX_L2,
-                    G_MEM_SIZE_MAX_L2   => G_MEM_SIZE_MAX_L2,
-                    G_PERIOD_MAX_L2     => G_PERIOD_MAX_L2,
-                    G_MEM_SIZE_MAX_N    => G_MEM_SIZE_MAX_N,
-                    G_MEM_MODE          => "LOW_LATENCY",
-                    G_RST_POL           => G_RST_POL  
-                )
-                port map (
-                    CLK_I           => CLK_I,
-                    RST_I           => RST_I,
-                    EN_I            => s_pwm_top_inputs(i).en,
-                    UPD_MEM_I       => s_pwm_top_inputs(i).upd_mem,
-                    WR_EN_I         => s_pwm_top_inputs(i).wr_en,
-                    WR_ADDR_I       => s_pwm_top_inputs(i).wr_addr,
-                    WR_DATA_I       => s_pwm_top_inputs(i).wr_data,
-                    N_ADDR_I        => s_pwm_top_inputs(i).n_addr,
-                    N_TOT_CYC_I     => s_pwm_top_inputs(i).n_tot_cyc,
-                    PWM_INIT_I      => s_pwm_top_inputs(i).pwm_init,
-                    PWM_O           => s_pwm_top_outputs(i).pwm_red_2,
-                    UNLOCKED_O      => s_pwm_top_outputs(i).unlocked_red_2,
-                    STATUS_O        => s_pwm_top_outputs(i).status_red_2
-                );
-        end generate gen_pwm_top_red_2;
-
-    end generate enable_redundancy;
-
-    disable_redundancy : if (G_EN_REDUNDANCY = '0') generate
-
-        gen_pwm_top_outputs: for i in 0 to (G_PWM_N - 1) generate
-            s_pwm_top_outputs(i).pwm_red_1      <= s_pwm_top_outputs(i).pwm;
-            s_pwm_top_outputs(i).pwm_red_2      <= s_pwm_top_outputs(i).pwm;
-            s_pwm_top_outputs(i).unlocked_red_1 <= s_pwm_top_outputs(i).unlocked;
-            s_pwm_top_outputs(i).unlocked_red_2 <= s_pwm_top_outputs(i).unlocked;
-            s_pwm_top_outputs(i).status_red_1   <= s_pwm_top_outputs(i).status;
-            s_pwm_top_outputs(i).status_red_2   <= s_pwm_top_outputs(i).status;
-        end generate gen_pwm_top_outputs;
-
-    end generate disable_redundancy;
+    end generate gen_pwm_top;
 
     -------------------------------------------------
     -- Combinacionales

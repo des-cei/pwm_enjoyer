@@ -6,7 +6,7 @@
 ##                                                      ##
 ##########################################################
 
-set prj_name "VHDL_project"
+set prj_name "PWM_ENJOYER"
 
 create_project -force $prj_name $prj_name -part xc7z020clg400-1
 set_property "target_language" "VHDL" [current_project]
